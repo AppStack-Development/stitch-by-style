@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import type { Pattern } from '../types';
 import { deletePattern, listPatterns, savePattern } from '../lib/storage';
 import { normalizePattern } from '../lib/pattern';
@@ -9,6 +9,57 @@ import { Thumb } from '../components/Thumb';
 import { Icon } from '../components/Icon';
 import { navigate } from '../App';
 import { useInstall } from '../lib/pwa';
+import { TEMPLATES } from '../lib/templates';
+
+/**
+ * Card art drawn from the real heart-keychain template, so every hole sits exactly
+ * where the printable model has one. Holes 2+ cells in from the frame are shown
+ * stitched in gold, which traces a smaller heart inside.
+ */
+function TemplateArt() {
+  const { cols, rows, mask, depth } = useMemo(() => {
+    const t = TEMPLATES.find((x) => x.id === 'keychain-heart')!;
+    const r = t.build(14, Math.round((14 * t.h) / t.w));
+    // Chebyshev distance of each hole from the nearest non-hole cell
+    const n = r.cols * r.rows;
+    const d = new Int32Array(n).fill(1e9);
+    const queue: number[] = [];
+    for (let i = 0; i < n; i++) if (r.mask[i] !== '2') { d[i] = 0; queue.push(i); }
+    for (let q = 0; q < queue.length; q++) {
+      const i = queue[q], x = i % r.cols, y = (i / r.cols) | 0;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= r.cols || ny >= r.rows) continue;
+        const j = ny * r.cols + nx;
+        if (d[j] > d[i] + 1) { d[j] = d[i] + 1; queue.push(j); }
+      }
+    }
+    return { ...r, depth: d };
+  }, []);
+  const s = 6;
+  const cells: JSX.Element[] = [];
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      const i = y * cols + x, k = mask[i];
+      if (k === '0') continue;
+      const px = x * s, py = y * s;
+      // slight overlap hides hairline seams between frame cells
+      cells.push(<rect key={'f' + i} x={px - 0.2} y={py - 0.2} width={s + 0.4} height={s + 0.4} fill="#f4f1ea" />);
+      if (k !== '2') continue;
+      if (depth[i] >= 2) {
+        cells.push(
+          <g key={'x' + i} stroke="#e9a92c" strokeWidth={1.7} strokeLinecap="round">
+            <line x1={px + 1.3} y1={py + 1.3} x2={px + s - 1.3} y2={py + s - 1.3} />
+            <line x1={px + s - 1.3} y1={py + 1.3} x2={px + 1.3} y2={py + s - 1.3} stroke="#f6c35a" />
+          </g>,
+        );
+      } else {
+        cells.push(<rect key={'h' + i} x={px + 1.6} y={py + 1.6} width={s - 3.2} height={s - 3.2} rx={0.6} fill="#8a8170" />);
+      }
+    }
+  }
+  return <svg viewBox={`-3 -3 ${cols * s + 6} ${rows * s + 6}`}>{cells}</svg>;
+}
 
 export function Home() {
   const [items, setItems] = useState<Pattern[]>(() => listPatterns());
@@ -73,9 +124,7 @@ export function Home() {
         </a>
         <a className="mode-card" href="#/new/template">
           <div className="mode-art tpl" aria-hidden="true">
-            <svg viewBox="0 0 120 80"><path d="M60 74 C20 48 14 30 24 18 C34 6 52 10 60 24 C68 10 86 6 96 18 C106 30 100 48 60 74Z" fill="#f4f1ea" stroke="#243b6b" strokeWidth="3" />
-              {Array.from({ length: 30 }, (_, i) => { const x = 30 + (i % 6) * 12, y = 22 + Math.floor(i / 6) * 10; return <rect key={i} x={x} y={y} width="5" height="5" rx="1" fill={i % 7 === 2 || i % 5 === 1 ? '#f2b33d' : '#8a8170'} opacity={(x - 60) ** 2 / 1300 + (y - 40) ** 2 / 700 < 1 ? 1 : 0} />; })}
-            </svg>
+            <TemplateArt />
           </div>
           <h3>ใช้โมเดลแม่แบบ</h3>
           <p>เลือกชิ้นงานพิมพ์ 3D ที่มีรูให้ปัก (พวงกุญแจ ที่คั่นหนังสือ ที่รองแก้ว) หรือนำเข้าไฟล์ STL ของคุณ</p>
