@@ -12,6 +12,10 @@ export interface DrawOpts {
   grid: boolean;
   ox?: number;
   oy?: number;
+  /** progress mask: '1' cells are drawn as finished */
+  done?: string;
+  /** palette index to highlight; other cells are faded */
+  focus?: number | null;
 }
 
 const FONT = '"IBM Plex Sans Thai", system-ui, sans-serif';
@@ -51,12 +55,16 @@ export function drawPattern(ctx: CanvasRenderingContext2D, p: Drawable, o: DrawO
       }
       const c = p.cells[i];
       const color = c >= 0 ? p.palette[c] : undefined;
-      if (view === 'color') {
+      if (view === 'color' || view === 'both') {
         ctx.fillStyle = color ? color.hex : emptyHole;
         ctx.fillRect(px, py, s, s);
         if (!color && is3d && s >= 6) {
           ctx.fillStyle = holeDark;
           ctx.fillRect(px + s * 0.3, py + s * 0.3, s * 0.4, s * 0.4);
+        }
+        if (view === 'both' && color && s >= 9) {
+          ctx.fillStyle = contrastText(color.hex);
+          ctx.fillText(color.symbol, px + s / 2, py + s / 2 + s * 0.04);
         }
       } else if (view === 'symbol') {
         ctx.fillStyle = color ? shade(color.hex, 0) + '33' : '#ffffff';
@@ -99,6 +107,26 @@ export function drawPattern(ctx: CanvasRenderingContext2D, p: Drawable, o: DrawO
             ctx.stroke();
           }
         }
+      }
+      if (o.done && color && o.done.charCodeAt(i) === 49) {
+        // finished stitch: dark wash + check mark
+        ctx.fillStyle = 'rgba(24, 32, 52, 0.58)';
+        ctx.fillRect(px, py, s, s);
+        if (s >= 10) {
+          ctx.strokeStyle = '#ffffff';
+          ctx.lineWidth = Math.max(1.5, s * 0.1);
+          ctx.lineCap = 'round';
+          ctx.lineJoin = 'round';
+          ctx.beginPath();
+          ctx.moveTo(px + s * 0.26, py + s * 0.52);
+          ctx.lineTo(px + s * 0.43, py + s * 0.69);
+          ctx.lineTo(px + s * 0.75, py + s * 0.33);
+          ctx.stroke();
+        }
+      }
+      if (o.focus != null && o.focus >= 0 && c !== o.focus) {
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.fillRect(px, py, s, s);
       }
     }
   }

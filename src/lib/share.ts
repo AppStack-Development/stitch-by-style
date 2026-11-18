@@ -20,7 +20,8 @@ async function pipe(bytes: Uint8Array, stream: CompressionStream | Decompression
 }
 
 export async function encodeShare(p: Pattern): Promise<string> {
-  const { id, createdAt, updatedAt, ...rest } = p;
+  // stitching progress is personal: never put it in a share link
+  const { id, createdAt, updatedAt, progress, ...rest } = p;
   const bytes = new TextEncoder().encode(JSON.stringify(rest));
   return toB64Url(await pipe(bytes, new CompressionStream('deflate-raw')));
 }

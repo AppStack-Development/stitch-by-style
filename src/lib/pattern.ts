@@ -70,6 +70,14 @@ export function normalizePattern(raw: any): Pattern {
     details: defaultDetails(p.details ?? {}),
     createdAt: p.createdAt || Date.now(),
     updatedAt: p.updatedAt || Date.now(),
+    progress: p.progress && typeof p.progress.done === 'string' && p.progress.done.length === n
+      ? {
+          done: p.progress.done,
+          seconds: p.progress.seconds || 0,
+          daily: p.progress.daily ?? {},
+          updatedAt: p.progress.updatedAt || Date.now(),
+        }
+      : undefined,
   };
 }
 

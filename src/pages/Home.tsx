@@ -4,6 +4,7 @@ import { deletePattern, listPatterns, savePattern } from '../lib/storage';
 import { normalizePattern } from '../lib/pattern';
 import { uid } from '../lib/threads';
 import { computeStats } from '../lib/stats';
+import { computeProgress } from '../lib/progress';
 import { Thumb } from '../components/Thumb';
 import { Icon } from '../components/Icon';
 import { navigate } from '../App';
@@ -74,6 +75,7 @@ export function Home() {
         <div className="gallery">
           {items.map((p) => {
             const st = computeStats(p);
+            const pr = p.progress ? computeProgress(p) : null;
             return (
               <article key={p.id} className="card">
                 <a className="card-thumb" href={`#/edit/${p.id}`}><Thumb pattern={p} max={150} view="stitch" /></a>
@@ -82,9 +84,17 @@ export function Home() {
                   <div className="card-meta">
                     {p.templateName ?? 'ออกแบบอิสระ'} · {p.cols}×{p.rows} · {st.colors.filter((c) => c.count).length} สี
                   </div>
+                  {pr && pr.total > 0 && (
+                    <div className="card-progress" title={`ปักแล้ว ${pr.done}/${pr.total} ฝีเข็ม`}>
+                      <div className="bar"><i style={{ width: `${pr.pct}%` }} /></div>
+                      <span>{pr.done === pr.total ? 'ปักเสร็จแล้ว ✓' : `ปักแล้ว ${Math.floor(pr.pct)}%`}</span>
+                    </div>
+                  )}
                   <div className="card-meta">แก้ไข {new Date(p.updatedAt).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' })}</div>
                 </div>
                 <div className="card-actions">
+                  <a className="btn sm stitch-btn" href={`#/stitch/${p.id}`} title="โหมดปัก"><Icon name="needle" size={15} /> {pr && pr.done > 0 ? 'ปักต่อ' : 'เริ่มปัก'}</a>
+                  <span className="spacer" />
                   <a className="icon-btn sm" href={`#/print/${p.id}`} title="พิมพ์"><Icon name="print" size={16} /></a>
                   <button className="icon-btn sm" onClick={() => duplicate(p)} title="ทำสำเนา"><Icon name="copy" size={16} /></button>
                   <button className="icon-btn sm" title="ลบ"

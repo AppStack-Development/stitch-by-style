@@ -39,6 +39,17 @@ export interface PatternDetails {
   notes: string;
 }
 
+/** Stitching progress, kept per pattern (not included in share links). */
+export interface Progress {
+  /** one '0'/'1' char per cell: '1' = stitched */
+  done: string;
+  /** time recorded with the stitching timer */
+  seconds: number;
+  /** stitches marked per local day, 'YYYY-MM-DD' -> net count */
+  daily: Record<string, number>;
+  updatedAt: number;
+}
+
 export interface Pattern {
   id: string;
   version: 1;
@@ -58,8 +69,9 @@ export interface Pattern {
   details: PatternDetails;
   createdAt: number;
   updatedAt: number;
+  progress?: Progress;
 }
 
 export type Tool = 'pencil' | 'eraser' | 'fill' | 'picker' | 'line' | 'rect' | 'hole' | 'pan';
 export type HoleBrush = '2' | '1' | '0';
-export type ViewMode = 'stitch' | 'color' | 'symbol';
+export type ViewMode = 'stitch' | 'color' | 'symbol' | 'both';

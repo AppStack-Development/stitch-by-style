@@ -12,6 +12,7 @@ import { DetailsPanel } from '../components/DetailsPanel';
 import { Preview3D } from '../components/Preview3D';
 import { Icon, type IconName } from '../components/Icon';
 import { ImageImportDialog } from '../components/ImageImportDialog';
+import { computeProgress, reconcileProgress } from '../lib/progress';
 import { navigate } from '../App';
 
 type Snap = Pick<Pattern, 'cells' | 'mask' | 'palette'>;
@@ -195,6 +196,10 @@ export function Editor({ id }: { id: string }) {
         </div>
         <button className="icon-btn" onClick={doUndo} disabled={!undo.current.length} title="เลิกทำ (Ctrl/⌘+Z)"><Icon name="undo" /></button>
         <button className="icon-btn" onClick={doRedo} disabled={!redo.current.length} title="ทำซ้ำ (Shift+Ctrl/⌘+Z)"><Icon name="redo" /></button>
+        <a className="btn sm stitch-btn" href={`#/stitch/${p.id}`} onClick={() => savePattern({ ...p, updatedAt: Date.now() })}
+          title="เปิดโหมดปัก: ติ๊กช่องที่ปักแล้ว ดูความคืบหน้าแต่ละสี">
+          <Icon name="needle" size={16} /> <span>โหมดปัก{p.progress ? ` · ${Math.floor(computeProgress(p).pct)}%` : ''}</span>
+        </a>
         <div className="menu-wrap">
           <button className="btn primary" onClick={() => setMenu(!menu)}><Icon name="download" size={16} /> ส่งออก / แชร์</button>
           {menu && (
@@ -251,7 +256,7 @@ export function Editor({ id }: { id: string }) {
             mirrorX={mirrorX}
             mirrorY={mirrorY}
             onStrokeStart={snapshot}
-            onChange={(cells, mask) => setPattern((cur) => (cur ? { ...cur, cells, mask } : cur))}
+            onChange={(cells, mask) => setPattern((cur) => (cur ? reconcileProgress({ ...cur, cells, mask }, cur.cells) : cur))}
             onPick={(i) => { setActive(i); setTool('pencil'); }}
             onHover={setHover}
           />
@@ -290,7 +295,7 @@ export function Editor({ id }: { id: string }) {
           onClose={() => setImgImport(null)}
           onApply={(cells, palette, summary) => {
             snapshot();
-            setPattern({ ...p, cells, palette });
+            setPattern(reconcileProgress({ ...p, cells, palette }, p.cells));
             setActive(0);
             setTab('palette');
             setImgImport(null);
