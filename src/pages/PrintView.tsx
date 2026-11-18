@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Pattern } from '../types';
 import { computeStats, fmtInch, fmtMm } from '../lib/stats';
 import { BASE_LABEL, DIFFICULTY_LABEL, STITCH_LABEL } from '../lib/pattern';
@@ -17,6 +17,18 @@ export function PrintView({ pattern: p, backHref = '#/', onBack }: Props) {
   const [mode, setMode] = useState<ChartMode>('both');
   const [perPage, setPerPage] = useState(40);
   const stats = useMemo(() => computeStats(p), [p]);
+
+  // A4 is 210 mm (~794 px) wide: scale the on-screen sheets down on narrow screens
+  useEffect(() => {
+    // clientWidth is the layout viewport; on phones innerWidth grows with wide content
+    const fit = () => document.documentElement.style.setProperty('--sheet-zoom', String(Math.min(1, (document.documentElement.clientWidth - 16) / 794)));
+    fit();
+    window.addEventListener('resize', fit);
+    return () => {
+      window.removeEventListener('resize', fit);
+      document.documentElement.style.removeProperty('--sheet-zoom');
+    };
+  }, []);
   const d = p.details;
   const used = stats.colors.filter((c) => c.count > 0);
   const area = stats.piece ?? { x0: 0, y0: 0, x1: p.cols - 1, y1: p.rows - 1 };

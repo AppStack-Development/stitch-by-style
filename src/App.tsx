@@ -6,6 +6,7 @@ import { PrintView } from './pages/PrintView';
 import { SharedView } from './pages/SharedView';
 import { StitchMode } from './pages/StitchMode';
 import { TransferView } from './pages/TransferView';
+import { Guide } from './pages/Guide';
 import { loadPattern } from './lib/storage';
 
 export function navigate(hash: string) {
@@ -30,6 +31,7 @@ export function App() {
   const parts = hash.replace(/^#\/?/, '').split('/');
   const [route, arg] = parts;
 
+  if (route === 'guide') return <Guide section={arg} />;
   if (route === 'new') return <NewPattern key={arg} mode={arg === 'template' ? 'template' : 'free'} />;
   if (route === 'edit' && arg) return <Editor key={arg} id={arg} />;
   if (route === 'stitch' && arg) return <StitchMode key={arg} id={arg} />;

@@ -19,6 +19,8 @@ interface Props {
   view: ViewMode;
   grid: boolean;
   mode: MarkMode;
+  /** px covered by the floating toolbar at the top (it can wrap to 2 rows on phones) */
+  insetTop?: number;
   onStrokeStart: () => void;
   onMark: (idx: number[], value: boolean) => void;
 }
@@ -84,7 +86,7 @@ export const StitchCanvas = forwardRef<StitchCanvasHandle, Props>(function Stitc
     if (!w || !h) return;
     const p = propsRef.current.pattern;
     // leave room for the floating toolbar (top) and status banner (bottom)
-    const top = 58, bottom = 58;
+    const top = (propsRef.current.insetTop ?? 48) + 10, bottom = 58;
     const s = Math.max(2, Math.min(56, Math.min((w - 32) / p.cols, (h - top - bottom) / p.rows)));
     viewRef.current = { s, ox: (w - p.cols * s) / 2, oy: top + (h - top - bottom - p.rows * s) / 2 };
     redraw();
@@ -129,6 +131,8 @@ export const StitchCanvas = forwardRef<StitchCanvasHandle, Props>(function Stitc
   useEffect(() => {
     if (!fitted.current && size.w > 0) { fitted.current = true; fit(); }
   }, [size, fit]);
+  // the toolbar height is measured after the first paint: refit once it is known
+  useEffect(() => { if (fitted.current) fit(); }, [props.insetTop]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // draw every render; cheap enough and keeps overlays in sync
   useEffect(() => {

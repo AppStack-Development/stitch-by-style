@@ -45,6 +45,8 @@ export function StitchMode({ id }: { id: string }) {
   const [, force] = useState(0);
   const undo = useRef<string[]>([]);
   const canvas = useRef<StitchCanvasHandle>(null);
+  const toolsRef = useRef<HTMLDivElement>(null);
+  const [toolsH, setToolsH] = useState(48);
   const progressRef = useRef(progress);
   progressRef.current = progress;
   const timerRef = useRef(timerSince);
@@ -163,6 +165,15 @@ export function StitchMode({ id }: { id: string }) {
 
   const stats = useMemo(() => (pattern ? computeProgress(pattern, progress) : null), [pattern, progress]);
 
+  // measure the floating toolbar so the pattern is never hidden underneath it
+  useEffect(() => {
+    const el = toolsRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setToolsH(el.offsetHeight));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   if (!pattern || !stats) {
     return (
       <div className="empty-state">
@@ -218,6 +229,7 @@ export function StitchMode({ id }: { id: string }) {
           <Icon name={timerSince != null ? 'pause' : 'play'} size={15} />
           <Clock base={progress.seconds} since={timerSince} />
         </button>
+        <a className="icon-btn" href="#/guide/stitch" onClick={flush} title="วิธีใช้โหมดปัก"><Icon name="help" /></a>
         <button className="icon-btn" onClick={() => { flush(); setTransfer(true); }} title="ส่งไปอีกเครื่อง (QR) พร้อมความคืบหน้า">
           <Icon name="phone" />
         </button>
@@ -232,7 +244,7 @@ export function StitchMode({ id }: { id: string }) {
       {transfer && <TransferDialog pattern={{ ...p, progress, updatedAt: Date.now() }} onClose={() => setTransfer(false)} />}
       <div className="editor-main stitch-main">
         <section className="stage">
-          <div className="stitch-tools">
+          <div className="stitch-tools" ref={toolsRef}>
             <div className="seg">
               {MODES.map((m) => (
                 <button key={m.id} className={mode === m.id ? 'on' : ''} onClick={() => setMode(m.id)} title={m.hint}>
@@ -241,8 +253,8 @@ export function StitchMode({ id }: { id: string }) {
               ))}
             </div>
             <button className="icon-btn sm bg" onClick={doUndo} disabled={!undo.current.length} title="เลิกทำ (Ctrl/⌘+Z)"><Icon name="undo" size={17} /></button>
-            <button className="icon-btn sm bg" onClick={() => canvas.current?.zoomBy(1.25)} title="ซูมเข้า"><Icon name="zoomIn" size={17} /></button>
-            <button className="icon-btn sm bg" onClick={() => canvas.current?.zoomBy(0.8)} title="ซูมออก"><Icon name="zoomOut" size={17} /></button>
+            <button className="icon-btn sm bg hide-xs" onClick={() => canvas.current?.zoomBy(1.25)} title="ซูมเข้า"><Icon name="zoomIn" size={17} /></button>
+            <button className="icon-btn sm bg hide-xs" onClick={() => canvas.current?.zoomBy(0.8)} title="ซูมออก"><Icon name="zoomOut" size={17} /></button>
             <button className="icon-btn sm bg" onClick={() => canvas.current?.fit()} title="พอดีจอ"><Icon name="fit" size={17} /></button>
             <button className={'icon-btn sm bg' + (grid ? ' on' : '')} onClick={() => setGrid(!grid)} title="เส้นตาราง"><Icon name="grid" size={17} /></button>
             <select className="view-select" value={view} onChange={(e) => setView(e.target.value as ViewMode)} aria-label="มุมมอง">
@@ -261,6 +273,7 @@ export function StitchMode({ id }: { id: string }) {
             view={view}
             grid={grid}
             mode={mode}
+            insetTop={toolsH}
             onStrokeStart={onStrokeStart}
             onMark={onMark}
           />

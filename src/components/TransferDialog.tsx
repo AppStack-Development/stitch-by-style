@@ -95,7 +95,7 @@ export function TransferDialog({ pattern, onClose }: Props) {
           )}
           <div className="transfer-info">
             <b>{pattern.name}</b>
-            <span className="muted">{pattern.progress ? `ความคืบหน้า ${pct < 10 ? pct.toFixed(1) : Math.floor(pct)}% จะติดไปด้วย` : 'ยังไม่มีความคืบหน้าการปัก'}</span>
+            <span className="muted">{pct > 0 ? `ความคืบหน้า ${pct < 10 ? pct.toFixed(1) : Math.floor(pct)}% จะติดไปด้วย` : 'ยังไม่มีความคืบหน้าการปัก'}</span>
             <ol>
               <li>เปิดกล้องมือถือแล้วสแกน QR นี้</li>
               <li>กด “เปิดในเครื่องนี้” บนมือถือ</li>

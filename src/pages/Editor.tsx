@@ -103,6 +103,16 @@ export function Editor({ id }: { id: string }) {
     setPattern((p) => (p ? { ...p, palette, cells: remap ? p.cells.map((c) => (c < 0 ? c : remap(c))) : p.cells } : p));
   }, [snapshot]);
 
+  // close the export menu on any tap/click outside it (touch screens never fire mouseleave)
+  useEffect(() => {
+    if (!menu) return;
+    const close = (e: PointerEvent) => {
+      if (!(e.target as HTMLElement).closest?.('.menu-wrap')) setMenu(false);
+    };
+    document.addEventListener('pointerdown', close);
+    return () => document.removeEventListener('pointerdown', close);
+  }, [menu]);
+
   // paste an image anywhere in the editor -> open the import dialog
   useEffect(() => {
     if (imgImport) return;
@@ -199,6 +209,7 @@ export function Editor({ id }: { id: string }) {
             <button key={v} className={view === v ? 'on' : ''} onClick={() => setView(v)}>{l}</button>
           ))}
         </div>
+        <a className="icon-btn" href="#/guide/editor" title="คู่มือการใช้งาน"><Icon name="help" /></a>
         <button className="icon-btn" onClick={doUndo} disabled={!undo.current.length} title="เลิกทำ (Ctrl/⌘+Z)"><Icon name="undo" /></button>
         <button className="icon-btn" onClick={doRedo} disabled={!redo.current.length} title="ทำซ้ำ (Shift+Ctrl/⌘+Z)"><Icon name="redo" /></button>
         <a className="btn sm stitch-btn" href={`#/stitch/${p.id}`} onClick={() => savePattern({ ...p, updatedAt: Date.now() })}
@@ -206,7 +217,7 @@ export function Editor({ id }: { id: string }) {
           <Icon name="needle" size={16} /> <span>โหมดปัก{p.progress ? ` · ${Math.floor(computeProgress(p).pct)}%` : ''}</span>
         </a>
         <div className="menu-wrap">
-          <button className="btn primary" onClick={() => setMenu(!menu)}><Icon name="download" size={16} /> ส่งออก / แชร์</button>
+          <button className="btn primary" onClick={() => setMenu(!menu)} title="ส่งออก / แชร์"><Icon name="download" size={16} /> <span className="hide-xs">ส่งออก / แชร์</span></button>
           {menu && (
             <div className="menu" onMouseLeave={() => setMenu(false)}>
               <button onClick={() => doExport('print')}><Icon name="print" /> <span><b>พิมพ์ / บันทึกเป็น PDF</b><small>แผนผัง + รายการด้าย + รายละเอียด</small></span></button>

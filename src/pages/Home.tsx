@@ -70,7 +70,13 @@ export function Home() {
 
   const importFile = async (f: File) => {
     try {
-      const p = normalizePattern(JSON.parse(await f.text()));
+      let raw: unknown;
+      try {
+        raw = JSON.parse(await f.text());
+      } catch {
+        throw new Error('ไฟล์นี้ไม่ใช่ไฟล์ลาย (.json) ที่ส่งออกจาก Stitch by Style');
+      }
+      const p = normalizePattern(raw);
       const copy = { ...p, id: uid(), updatedAt: Date.now() };
       savePattern(copy);
       navigate(`#/edit/${copy.id}`);
@@ -94,10 +100,11 @@ export function Home() {
         <div className="spacer" />
         {(inst.canPrompt || inst.iosManual) && (
           <button className="btn" onClick={() => (inst.canPrompt ? inst.install() : setIosHelp(!iosHelp))} title="ติดตั้งเป็นแอปบนหน้าจอโฮม ใช้งานได้แม้ออฟไลน์">
-            <Icon name="install" size={16} /> ติดตั้งแอป
+            <Icon name="install" size={16} /> <span className="hide-xs">ติดตั้งแอป</span>
           </button>
         )}
-        <button className="btn ghost" onClick={() => fileRef.current?.click()}><Icon name="upload" size={16} /> นำเข้าไฟล์ลาย</button>
+        <a className="btn ghost" href="#/guide" title="คู่มือการใช้งาน" aria-label="คู่มือการใช้งาน"><Icon name="book" size={16} /> <span className="hide-sm">คู่มือ</span></a>
+        <button className="btn ghost" onClick={() => fileRef.current?.click()} title="นำเข้าไฟล์ลาย (.json)" aria-label="นำเข้าไฟล์ลาย"><Icon name="upload" size={16} /> <span className="hide-sm">นำเข้าไฟล์ลาย</span></button>
         <input ref={fileRef} type="file" accept=".json,application/json" hidden
           onChange={(e) => { const f = e.target.files?.[0]; if (f) importFile(f); e.target.value = ''; }} />
       </header>

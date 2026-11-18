@@ -183,7 +183,7 @@ export function ImageImportDialog({ pattern, initialFile, onApply, onClose }: Pr
         )}
 
         <footer className="modal-foot">
-          <span className="hint">ปรับรายละเอียดต่อได้ด้วยเครื่องมือวาด และกดเลิกทำ (Ctrl/⌘+Z) ได้หากไม่ชอบ</span>
+          <span className="hint hide-xs">ปรับรายละเอียดต่อได้ด้วยเครื่องมือวาด และกดเลิกทำ (Ctrl/⌘+Z) ได้หากไม่ชอบ</span>
           <div className="spacer" />
           <button className="btn ghost" onClick={onClose}>ยกเลิก</button>
           <button className="btn primary" disabled={!result || !result.stitched}

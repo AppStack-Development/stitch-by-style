@@ -24,7 +24,8 @@ export function NewPattern({ mode }: { mode: 'free' | 'template' }) {
         <a className="icon-btn" href="#/" title="กลับ"><Icon name="back" /></a>
         <h2>{mode === 'free' ? 'ออกแบบอิสระ' : 'เลือกโมเดลแม่แบบ'}</h2>
         <div className="spacer" />
-        <a className="btn ghost" href={mode === 'free' ? '#/new/template' : '#/new/free'}>
+        <a className="icon-btn" href={`#/guide/${mode}`} title="วิธีใช้"><Icon name="help" /></a>
+        <a className="btn ghost hide-xs" href={mode === 'free' ? '#/new/template' : '#/new/free'}>
           {mode === 'free' ? 'ใช้โมเดลแม่แบบแทน' : 'ออกแบบอิสระแทน'}
         </a>
       </header>
@@ -107,10 +108,17 @@ function TemplatePicker() {
   const [busy, setBusy] = useState(false);
   const stlRes: StlAnalysis | null = stl && stl.sel >= 0 ? stl.analyses[stl.sel].result : null;
 
+  // on narrow screens the settings card sits below all the template cards: bring it into view
+  const revealForm = () => {
+    if (window.matchMedia('(max-width: 900px)').matches) {
+      setTimeout(() => document.querySelector('.new-layout.tpl .form-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+    }
+  };
   const pick = (t: TemplateDef) => {
     setSel(t);
     setW(t.w);
     setH(t.h);
+    revealForm();
   };
   const setWidth = (v: number) => {
     if (sel === 'stl') return;
@@ -148,6 +156,7 @@ function TemplatePicker() {
         });
         setName('');
         if (best >= 0) applyResult(analyses[best].result!, analyses[best].part.name);
+        revealForm();
       } catch (e) {
         setStl({ file: f.name, parts: [], analyses: [], sel: -1, err: (e as Error).message });
       } finally {

@@ -84,6 +84,11 @@ function hexToLab(hex: string): Lab {
 const toHex = (r: number, g: number, b: number) =>
   '#' + [r, g, b].map((v) => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join('');
 
+/** Nearest DMC colour as a hex stand-in when no pixel colours were sampled. */
+function labToHexApprox(l: Lab): string {
+  return DMC_LIBRARY[nearest(l, DMC_LAB)].hex;
+}
+
 const dist2 = (a: Lab, b: Lab) => (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2;
 
 const DMC_LAB = DMC_LIBRARY.map((d) => hexToLab(d.hex));
@@ -168,7 +173,7 @@ function subjectBox(bitmap: ImageBitmap, bg: Lab | null): SourceImage['crop'] {
     }
   }
   if (x1 < 0) return full;
-  const pad = 1;
+  const pad = 0; // crop tight: padding adds a background rim that blends into extra colours
   x0 = Math.max(0, x0 - pad); y0 = Math.max(0, y0 - pad);
   x1 = Math.min(w - 1, x1 + pad); y1 = Math.min(h - 1, y1 + pad);
   return { x: x0 / k, y: y0 / k, w: (x1 - x0 + 1) / k, h: (y1 - y0 + 1) / k };
@@ -243,7 +248,12 @@ export function convertImage(src: SourceImage, p: Pattern, o: ImportOpts): Impor
   const data = ctx.getImageData(0, 0, c.width, c.height).data;
 
   // average each cell (alpha-weighted)
-  const idx: number[] = [], labs: Lab[] = [], rgbs: Rgb[] = [];
+  const idx: number[] = [], labs: Lab[] = [];
+  // individual pixels of the included cells: the palette comes from these, because a cell
+  // that straddles an edge averages into a blend colour that is not really in the image
+  const pixLab: Lab[] = [], pixRgb: Rgb[] = [];
+  const pixStride = Math.max(1, Math.round((cols * rows * S * S) / 40000));
+  let pixN = 0;
   for (let y = 0; y < rows; y++) {
     for (let x = 0; x < cols; x++) {
       const i = y * cols + x;
@@ -260,7 +270,17 @@ export function convertImage(src: SourceImage, p: Pattern, o: ImportOpts): Impor
       const rgb: Rgb = [r / a, g / a, b / a];
       const lab = rgbToLab(...rgb);
       if (o.skipBackground && src.bg && dist2(lab, src.bg) < o.bgTolerance ** 2) continue;
-      idx.push(i); labs.push(lab); rgbs.push(rgb);
+      idx.push(i); labs.push(lab);
+      for (let sy = 0; sy < S; sy++) {
+        let off = ((y * S + sy) * c.width + x * S) * 4;
+        for (let sx = 0; sx < S; sx++, off += 4) {
+          if (data[off + 3] < 128 || pixN++ % pixStride) continue;
+          const pr: Rgb = [data[off], data[off + 1], data[off + 2]];
+          const pl = rgbToLab(...pr);
+          if (o.skipBackground && src.bg && dist2(pl, src.bg) < o.bgTolerance ** 2) continue;
+          pixLab.push(pl); pixRgb.push(pr);
+        }
+      }
     }
   }
 
@@ -273,22 +293,33 @@ export function convertImage(src: SourceImage, p: Pattern, o: ImportOpts): Impor
     assign = Int32Array.from(labs, (l) => nearest(l, pl));
     fixedGlobal = p.palette.map((_, i) => i);
   } else if (labs.length) {
-    const k = Math.max(1, Math.min(o.colors, labs.length));
-    const km = kmeans(labs, k);
+    const pts = pixLab.length ? pixLab : labs;
+    const k = Math.max(1, Math.min(o.colors, pts.length));
+    const km = kmeans(pts, k);
+    // drop clusters that hold under 1% of the pixels (anti-aliased edges, specks):
+    // with few real colours, k-means would otherwise spend the extra slots on blends
+    const sizes = km.centers.map(() => 0);
+    km.assign.forEach((a) => sizes[a]++);
+    const minSize = Math.max(1, Math.round(pts.length * 0.01));
+    let keep = km.centers.map((_, i) => i).filter((i) => sizes[i] >= minSize);
+    if (!keep.length) keep = [sizes.indexOf(Math.max(...sizes))];
+    const centers = keep.map((i) => km.centers[i]);
     if (o.paletteMode === 'exact') {
-      const acc = km.centers.map(() => [0, 0, 0, 0]);
-      rgbs.forEach((v, i) => {
-        const s = acc[km.assign[i]];
-        s[0] += v[0]; s[1] += v[1]; s[2] += v[2]; s[3]++;
+      const acc = centers.map(() => [0, 0, 0, 0]);
+      const rgbSrc = pixLab.length ? pixRgb : null;
+      pts.forEach((l, i) => {
+        const s = acc[nearest(l, centers)];
+        const v = rgbSrc ? rgbSrc[i] : null;
+        if (v) { s[0] += v[0]; s[1] += v[1]; s[2] += v[2]; s[3]++; }
       });
-      local = acc.map((s) => {
-        const hex = s[3] ? toHex(s[0] / s[3], s[1] / s[3], s[2] / s[3]) : '#000000';
+      local = acc.map((s, ci) => {
+        const hex = s[3] ? toHex(s[0] / s[3], s[1] / s[3], s[2] / s[3]) : labToHexApprox(centers[ci]);
         return { hex, name: 'สีจากรูป ' + hex };
       });
-      assign = km.assign;
+      assign = Int32Array.from(labs, (l) => nearest(l, centers));
     } else {
       // snap cluster centres to real DMC threads, then re-assign every cell to the closest chosen thread
-      const chosen = [...new Set(km.centers.map((ce) => nearest(ce, DMC_LAB)))];
+      const chosen = [...new Set(centers.map((ce) => nearest(ce, DMC_LAB)))];
       const chosenLab = chosen.map((d) => DMC_LAB[d]);
       local = chosen.map((d) => ({ hex: DMC_LIBRARY[d].hex, name: DMC_LIBRARY[d].name, code: DMC_LIBRARY[d].code, brand: 'DMC' }));
       assign = Int32Array.from(labs, (l) => nearest(l, chosenLab));
