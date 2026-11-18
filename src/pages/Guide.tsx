@@ -59,7 +59,7 @@ function useSections(): Section[] {
         <>
           <p>Stitch by Style ใช้ออกแบบลายปักแบบครอสติช (cross stitch) ทั้งบน<b>ผ้า Aida</b> และบน<b>ชิ้นงานพิมพ์ 3 มิติ</b>ที่เจาะรูไว้ให้ปัก เช่น พวงกุญแจ ที่คั่นหนังสือ หรือฝากล่อง</p>
           <ol>
-            <li>ที่หน้าแรก เลือก <b>“ออกแบบอิสระ”</b> หรือ <b>“ใช้โมเดลแม่แบบ”</b></li>
+            <li>ที่หน้าแรก กด <b>“สร้างลายจากรูป”</b> (<Go to="quick">ง่ายที่สุด</Go>) หรือเลือกโหมดขั้นสูง <b>“ออกแบบอิสระ”</b> / <b>“ใช้โมเดลแม่แบบ”</b> หรือลอง<b>ลายตัวอย่าง</b></li>
             <li>เติมสีลงในช่องด้วยเครื่องมือวาด หรือแปลงจากรูปภาพ</li>
             <li>ใส่รายละเอียด เช่น ด้าย เข็ม วัสดุ ในแท็บ “รายละเอียด”</li>
             <li>พิมพ์แผนผัง แชร์ให้เพื่อน หรือเปิด <b>โหมดปัก</b> เพื่อติ๊กช่องที่ปักแล้วระหว่างปักจริง</li>
@@ -70,13 +70,61 @@ function useSections(): Section[] {
         <>
           <p>Stitch by Style lets you design cross stitch patterns for both <b>Aida fabric</b> and <b>3D-printed pieces</b> with stitch holes, such as keychains, bookmarks or box lids.</p>
           <ol>
-            <li>On the home page, choose <b>“Free design”</b> or <b>“Use a template”</b>.</li>
+            <li>On the home page, tap <b>“Pattern from a photo”</b> (<Go to="quick">the easiest way</Go>), pick an advanced mode, <b>“Free design”</b> or <b>“Use a template”</b>, or try a <b>sample pattern</b>.</li>
             <li>Fill in the cells with the drawing tools, or convert an image.</li>
             <li>Add details such as thread, needle and materials in the “Details” tab.</li>
             <li>Print the chart, share it with a friend, or open <b>Stitch mode</b> to tick off cells as you stitch.</li>
             <li>Switch the language with the language button (globe icon, “EN” / “ไทย”) at the top of the home page.</li>
           </ol>
           <Note>All patterns are saved automatically in <b>this device’s browser</b>, not on a server. To move to another device or back up, see <Go to="data">Storing your data</Go>.</Note>
+        </>,
+      ),
+    },
+    {
+      id: 'quick', title: t('สร้างลายจากรูป (เร็วที่สุด)', 'Pattern from a photo (quickest)'), icon: 'image',
+      body: t(
+        <>
+          <p>วิธีที่ง่ายที่สุดสำหรับมือใหม่ กด <b>“สร้างลายจากรูป”</b> ที่หน้าแรก แล้วทำ 3 ขั้นตอน:</p>
+          <ol>
+            <li><b>ปักบนอะไร</b> เลือกผ้า Aida ขนาดเล็ก/กลาง/ใหญ่ หรือชิ้นงาน 3D จากแม่แบบ หรือไฟล์ STL / 3MF ของคุณ</li>
+            <li><b>เลือกรูป</b> เลือกจากเครื่อง ถ่ายรูปด้วยมือถือ ลากมาวาง หรือวางรูปที่คัดลอกไว้</li>
+            <li><b>เลือกแบบ</b> ระบบสร้างลายให้สูงสุด 3 แบบ (ง่าย / สมดุล / ละเอียด) ต่างกันที่จำนวนสี กด “ใช้แบบนี้” กับแบบที่ชอบ</li>
+          </ol>
+          <p>เปิด <b>“ใช้เฉพาะด้ายที่ฉันมี”</b> เพื่อให้ลายใช้แต่ด้ายใน <Go to="threads">ด้ายของฉัน</Go> และเลือกได้ว่าจะยอมซื้อสีเพิ่มกี่สี เมื่อได้ลายแล้วจะเห็นรายการ <b>ด้ายที่ต้องซื้อ</b> (คัดลอกไปส่งใน LINE ได้) และปุ่มเริ่มปัก พิมพ์แผนผัง ดาวน์โหลด STL หรือปรับละเอียดในหน้าออกแบบ</p>
+          <Tip>รูปการ์ตูน โลโก้ หรือรูปที่พื้นหลังเรียบจะได้ผลดีที่สุด ถ้ายังไม่พอใจ ปรับ “ขนาดรูป” หรือเปลี่ยนรูปได้ทันที</Tip>
+        </>,
+        <>
+          <p>The easiest way for beginners. Tap <b>“Pattern from a photo”</b> on the home page and follow 3 steps:</p>
+          <ol>
+            <li><b>Stitch on</b>: small, medium or large Aida fabric, a 3D-printed template, or your own STL / 3MF file.</li>
+            <li><b>Photo</b>: pick one from your device, take one with your phone, drop it in, or paste it.</li>
+            <li><b>Pick a result</b>: the app makes up to 3 patterns (Simple / Balanced / Detailed) with different numbers of colors. Tap “Use this” on the one you like.</li>
+          </ol>
+          <p>Turn on <b>“Use only threads I have”</b> to build the pattern from the threads in <Go to="threads">My threads</Go>, and choose how many new colors you’re willing to buy. When it’s ready you’ll see the <b>threads to buy</b> (copy the list into a chat) plus buttons to start stitching, print the chart, download an STL, or fine-tune it in the editor.</p>
+          <Tip>Cartoons, logos and photos with a plain background work best. Not happy? Change the “Picture size” or try another photo.</Tip>
+        </>,
+      ),
+    },
+    {
+      id: 'threads', title: t('ด้ายของฉัน', 'My threads'), icon: 'palette',
+      body: t(
+        <>
+          <p>บันทึกด้าย DMC ที่คุณมีอยู่แล้ว (แค่มีหรือไม่มี ไม่ต้องนับจำนวน) จากการ์ด <b>“ด้ายของฉัน”</b> ที่หน้าแรก</p>
+          <ul>
+            <li>ค้นหาด้วยรหัสหรือชื่อ แล้วแตะสีที่มีเพื่อติ๊ก หรือพิมพ์หลายรหัสพร้อมกัน เช่น <Kbd>310, 321, 666</Kbd></li>
+            <li>ตอนสร้างลายจากรูปหรือแปลงรูปในหน้าออกแบบ เลือก “ด้ายที่ฉันมี” ได้ ลายจะใช้ด้ายเดิมก่อน</li>
+            <li>ในหน้าออกแบบและแผนผังที่พิมพ์ ด้ายที่มีแล้วจะมีเครื่องหมาย ✓ เพื่อให้รู้ว่าต้องซื้ออะไรเพิ่ม</li>
+          </ul>
+          <Note>รายการด้ายเก็บไว้ในเบราว์เซอร์ของเครื่องนี้ เหมือนกับลายของคุณ</Note>
+        </>,
+        <>
+          <p>Record the DMC threads you already own (just have or don’t have, no counting) from the <b>“My threads”</b> card on the home page.</p>
+          <ul>
+            <li>Search by code or name and tap the colors you have, or type several codes at once, e.g. <Kbd>310, 321, 666</Kbd>.</li>
+            <li>When you make a pattern from a photo, or use Image to pattern in the editor, choose “My threads” and the pattern uses threads you already own first.</li>
+            <li>In the editor and on the printed chart, threads you own get a ✓, so you can see what’s left to buy.</li>
+          </ul>
+          <Note>Your thread list is kept in this browser, just like your patterns.</Note>
         </>,
       ),
     },

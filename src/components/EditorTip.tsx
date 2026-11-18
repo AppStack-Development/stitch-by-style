@@ -31,7 +31,7 @@ function useMedia(query: string): boolean {
 export function EditorTip({ onTarget }: { onTarget: (target: CoachTarget | null) => void }) {
   const [open, setOpen] = useState(() => !seen());
   const [step, setStep] = useState(0);
-  const phone = useMedia('(max-width: 600px)');
+  const phone = useMedia('(max-width: 900px)');
   const stacked = useMedia('(max-width: 900px)'); // side panel sits below the canvas
 
   const steps: { target: CoachTarget; title: string; body: ReactNode }[] = [

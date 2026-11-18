@@ -1,0 +1,62 @@
+/*
+ * Shared sizing and spacing, loaded last so it wins over the per-feature files.
+ * --page-x  : the one left/right page margin every section and the site header use
+ * --ctl / --ctl-sm : standard heights for buttons and icon buttons
+ * --hdr     : height of every control in a page header row (so neighbours always match)
+ */
+:root { --page-x: 28px; --page-max: 1160px; --ctl: 40px; --ctl-sm: 34px; --hdr: 40px; }
+@media (max-width: 900px) { :root { --page-x: 16px; } }
+@media (max-width: 600px) { :root { --hdr: 36px; } }
+@media (max-width: 380px) { :root { --page-x: 12px; --hdr: 34px; } }
+
+/* controls */
+.btn { min-height: var(--ctl); padding-block: 6px; line-height: 1.25; }
+.btn.sm { min-height: var(--ctl-sm); padding-block: 4px; }
+.btn.lg { min-height: 48px; }
+.icon-btn { width: var(--ctl); height: var(--ctl); }
+.icon-btn.sm { width: var(--ctl-sm); height: var(--ctl-sm); }
+.seg button { min-height: calc(var(--ctl-sm) - 2px); }
+
+/* page header: every control the same height; icon-only ones square */
+.site-head :is(.btn, .icon-btn) { height: var(--hdr); min-height: var(--hdr); padding-block: 0; }
+.site-head .icon-btn { width: var(--hdr); }
+.site-head .btn { font-size: 14px; border-radius: 10px; }
+@media (max-width: 600px) {
+  .site-head .btn { padding-inline: 9px; font-size: 14px; }
+  .site-head .btn.lang-switch { padding-inline: 10px; }
+}
+@media (max-width: 380px) {
+  .site-head .btn, .site-head .btn.lang-switch { padding-inline: 8px; }
+}
+
+/* one page margin for the header and every top-level section */
+.site-head, .hero, .quick-start, .mode-cards, .samples, .my-patterns,
+.qc-steps, .qc-body, .threads-main, .new-layout, .guide-layout, .shared-body {
+  padding-left: var(--page-x); padding-right: var(--page-x);
+}
+.advanced-head { padding-left: var(--page-x); padding-right: var(--page-x); }
+
+/* one centred content column on every page; the header lines its logo and buttons up with it */
+.home > section, .home > .advanced-head, .ios-help,
+.qc-steps, .qc-body, .threads-main, .new-layout, .guide-layout, .shared-body {
+  max-width: var(--page-max); margin-left: auto; margin-right: auto;
+}
+.site-head { padding-left: max(var(--page-x), calc((100% - var(--page-max)) / 2 + var(--page-x)));
+  padding-right: max(var(--page-x), calc((100% - var(--page-max)) / 2 + var(--page-x))); }
+
+/* editor + stitch mode top bars: buttons and icon buttons share one height */
+.editor-top :is(.btn, .icon-btn) { height: 36px; min-height: 36px; padding-block: 0; }
+.editor-top .icon-btn { width: 36px; }
+@media (max-width: 600px) {
+  .editor-top :is(.btn, .icon-btn) { height: 34px; min-height: 34px; }
+  .editor-top .icon-btn { width: 34px; }
+}
+
+/* stitch-mode floating tools: segmented modes match the 40px icon buttons */
+.stitch-tools .icon-btn.sm, .stitch-tools .view-select { height: 40px; min-height: 40px; }
+.stitch-tools .icon-btn.sm { width: 40px; }
+.stitch-tools .seg button { min-height: 38px; }
+
+/* print toolbar */
+.print-toolbar .seg button { min-height: calc(var(--ctl) - 2px); }
+.print-toolbar select { min-height: var(--ctl); }

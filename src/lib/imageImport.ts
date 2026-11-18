@@ -2,7 +2,7 @@ import type { Pattern, ThreadColor } from '../types';
 import { DMC_LIBRARY, makeThread } from './threads';
 import { t } from './i18n';
 
-export type PaletteMode = 'dmc' | 'exact' | 'current';
+export type PaletteMode = 'dmc' | 'exact' | 'current' | 'stash';
 
 export interface ImportOpts {
   /** max number of thread colours */
@@ -24,6 +24,10 @@ export interface ImportOpts {
   pruneUnused: boolean;
   /** trim empty background margins around the subject before fitting */
   autoCrop: boolean;
+  /** 'stash' mode: DMC codes the user owns */
+  stash?: string[];
+  /** 'stash' mode: how many threads outside the stash may be added for colours the stash can't match */
+  stashExtra?: number;
 }
 
 export const DEFAULT_IMPORT: ImportOpts = {
@@ -57,6 +61,8 @@ export interface ImportResult {
   palette: ThreadColor[];
   colorsUsed: number;
   stitched: number;
+  /** 'stash' mode: image colours the stash matches poorly (and that no extra thread was allowed for) */
+  poorMatches?: number;
 }
 
 type Lab = [number, number, number];
@@ -286,6 +292,9 @@ export function convertImage(src: SourceImage, p: Pattern, o: ImportOpts): Impor
   }
 
   // quantise -> local colour list + assignment
+  const stashSet = new Set(o.stash ?? []);
+  const stashIdx = o.paletteMode === 'stash' ? DMC_LIBRARY.map((d, i) => (stashSet.has(d.code) ? i : -1)).filter((i) => i >= 0) : [];
+  let poorMatches = 0;
   let local: (Partial<ThreadColor> & { hex: string })[] = [];
   let fixedGlobal: number[] | null = null; // when mapping straight onto the current palette
   let assign: Int32Array;
@@ -318,6 +327,21 @@ export function convertImage(src: SourceImage, p: Pattern, o: ImportOpts): Impor
         return { hex, name: t('สีจากรูป ', 'Image color ') + hex };
       });
       assign = Int32Array.from(labs, (l) => nearest(l, centers));
+    } else if (o.paletteMode === 'stash' && stashIdx.length) {
+      // snap each cluster centre to the closest owned thread; for the worst-matched centres,
+      // optionally allow a few new threads (closest DMC overall) instead
+      const own = stashIdx.map((d) => DMC_LAB[d]);
+      const POOR = 12 ** 2; // CIE76 distance that clearly reads as a different colour
+      const picks = centers.map((ce) => { const k = nearest(ce, own); return { d: stashIdx[k], err: dist2(ce, own[k]), ce }; });
+      let extra = o.stashExtra ?? 0;
+      for (const pk of [...picks].sort((a, b) => b.err - a.err)) {
+        if (pk.err < POOR) break;
+        if (extra > 0) { pk.d = nearest(pk.ce, DMC_LAB); pk.err = 0; extra--; } else poorMatches++;
+      }
+      const chosen = [...new Set(picks.map((pk) => pk.d))];
+      const chosenLab = chosen.map((d) => DMC_LAB[d]);
+      local = chosen.map((d) => ({ hex: DMC_LIBRARY[d].hex, name: DMC_LIBRARY[d].name, code: DMC_LIBRARY[d].code, brand: 'DMC' }));
+      assign = Int32Array.from(labs, (l) => nearest(l, chosenLab));
     } else {
       // snap cluster centres to real DMC threads, then re-assign every cell to the closest chosen thread
       const chosen = [...new Set(centers.map((ce) => nearest(ce, DMC_LAB)))];
@@ -377,5 +401,5 @@ export function convertImage(src: SourceImage, p: Pattern, o: ImportOpts): Impor
   }
 
   const usedNow = new Set(cells.filter((v, i) => v >= 0 && mask[i] === '2'));
-  return { cells, palette, colorsUsed: usedNow.size, stitched: cells.filter((v, i) => v >= 0 && mask[i] === '2').length };
+  return { cells, palette, colorsUsed: usedNow.size, stitched: cells.filter((v, i) => v >= 0 && mask[i] === '2').length, poorMatches };
 }

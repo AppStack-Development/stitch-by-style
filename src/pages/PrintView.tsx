@@ -6,6 +6,7 @@ import { contrastText } from '../lib/threads';
 import { ChartSVG, type ChartMode } from '../components/ChartSVG';
 import { Thumb } from '../components/Thumb';
 import { Icon } from '../components/Icon';
+import { ownsThread, shoppingListText, threadNeeds, useStash } from '../lib/stash';
 import { t, locale } from '../lib/i18n';
 
 interface Props {
@@ -18,6 +19,17 @@ export function PrintView({ pattern: p, backHref = '#/', onBack }: Props) {
   const [mode, setMode] = useState<ChartMode>('both');
   const [perPage, setPerPage] = useState(40);
   const stats = useMemo(() => computeStats(p), [p]);
+  const { codes } = useStash();
+  // "To buy" only means something once the user has recorded some threads
+  const buy = useMemo(() => (codes.size ? threadNeeds(p, codes).buy : []), [p, codes]);
+  const [copied, setCopied] = useState(false);
+  const copyList = async () => {
+    try {
+      await navigator.clipboard.writeText(shoppingListText(p.name, buy, t('ด้ายที่ต้องซื้อ', 'Threads to buy')));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch { /* clipboard blocked: nothing to do */ }
+  };
 
   // A4 is 210 mm (~794 px) wide: scale the on-screen sheets down on narrow screens
   useEffect(() => {
@@ -74,6 +86,11 @@ export function PrintView({ pattern: p, backHref = '#/', onBack }: Props) {
           </select>
         </label>
         <span className="muted">{t(`${pages.length + 1} หน้า (A4)`, `${pages.length + 1} pages (A4)`)}</span>
+        {buy.length > 0 && (
+          <button className="btn sm ghost" onClick={copyList} title={t('คัดลอกรายการด้ายที่ต้องซื้อ ไปวางใน LINE หรือโน้ต', 'Copy the threads to buy, to paste into a chat or notes')}>
+            <Icon name={copied ? 'check' : 'copy'} size={15} /> {copied ? t('คัดลอกแล้ว', 'Copied') : t(`รายการต้องซื้อ (${buy.length})`, `To buy (${buy.length})`)}
+          </button>
+        )}
         <div className="spacer" />
         <button className="btn primary" onClick={() => window.print()}><Icon name="print" size={16} /> {t('พิมพ์ / บันทึก PDF', 'Print / save PDF')}</button>
       </div>
@@ -104,7 +121,7 @@ export function PrintView({ pattern: p, backHref = '#/', onBack }: Props) {
               return (
                 <tr key={thr.id}>
                   <td><span className="sym" style={{ background: mode === 'symbol' ? '#fff' : thr.hex, color: mode === 'symbol' ? '#111' : contrastText(thr.hex) }}>{thr.symbol}</span></td>
-                  <td>{[thr.brand, thr.code].filter(Boolean).join(' ') || '-'}</td>
+                  <td>{[thr.brand, thr.code].filter(Boolean).join(' ') || '-'}{codes.size > 0 && ownsThread(codes, thr) && <b className="own-mark" title={t('มีแล้ว', 'Have')}> ✓</b>}</td>
                   <td>{thr.name}</td>
                   <td>{c.count.toLocaleString()}</td>
                   <td>{c.strandM.toFixed(1)} {t('ม.', 'm')}</td>
@@ -115,7 +132,22 @@ export function PrintView({ pattern: p, backHref = '#/', onBack }: Props) {
             })}
           </tbody>
         </table>
-        <p className="hint">{t(<>*ความยาวด้ายเส้นเดี่ยวรวม ({d.strands} เส้น) โดยประมาณ เผื่อเก็บปลาย 20% · 1 ไจ = 8 ม. × 6 เส้น · ▲ สีแดง = จุดกึ่งกลาง · ช่องลายเฉียง = โครงทึบ</>, <>*Approx. total single-strand length ({d.strands} strands), plus 20% for finishing ends · 1 skein = 8 m × 6 strands · red ▲ = center · hatched cells = solid frame</>)}</p>
+        {buy.length > 0 && (
+          <p className="to-buy">
+            <b>{t(`ต้องซื้อ ${buy.length} สี:`, `To buy (${buy.length}):`)}</b>{' '}
+            {buy.map((n, i) => (
+              <span key={n.thread.id}>
+                {i > 0 && ', '}
+                {[n.thread.brand, n.thread.code].filter(Boolean).join(' ') || n.thread.name} × {Math.max(1, Math.ceil(n.skeins))}
+              </span>
+            ))}
+            {' '}<small>{t('(ไจ)', '(skeins)')}</small>
+          </p>
+        )}
+        {codes.size > 0 && used.length > 0 && buy.length === 0 && (
+          <p className="to-buy all">✓ {t('มีด้ายครบทุกสีแล้ว ไม่ต้องซื้อเพิ่ม', 'You have every thread for this pattern')}</p>
+        )}
+        <p className="hint">{t(<>{codes.size > 0 && <>✓ หลังรหัส = มีด้ายนี้แล้ว · </>}*ความยาวด้ายเส้นเดี่ยวรวม ({d.strands} เส้น) โดยประมาณ เผื่อเก็บปลาย 20% · 1 ไจ = 8 ม. × 6 เส้น · ▲ สีแดง = จุดกึ่งกลาง · ช่องลายเฉียง = โครงทึบ</>, <>{codes.size > 0 && <>✓ after the code = you have this thread · </>}*Approx. total single-strand length ({d.strands} strands), plus 20% for finishing ends · 1 skein = 8 m × 6 strands · red ▲ = center · hatched cells = solid frame</>)}</p>
         {d.notes && (
           <>
             <h3>{t('บันทึก / ขั้นตอน', 'Notes / steps')}</h3>

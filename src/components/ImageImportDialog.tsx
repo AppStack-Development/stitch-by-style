@@ -6,6 +6,7 @@ import { Thumb } from './Thumb';
 import { Icon } from './Icon';
 import { t } from '../lib/i18n';
 import { DefaultTag, FieldHead } from './DefaultTag';
+import { ownsThread, useStash } from '../lib/stash';
 
 interface Props {
   pattern: Pattern;
@@ -29,6 +30,10 @@ export function ImageImportDialog({ pattern, initialFile, onApply, onClose }: Pr
   const [atTop, setAtTop] = useState(true);
   // phones: secondary sections start folded so the important ones fit; desktop shows everything as before
   const [isPhone] = useState(() => window.matchMedia('(max-width: 900px)').matches);
+  const { codes: stash } = useStash();
+  const stashMode = opts.paletteMode === 'stash';
+  /** what actually goes into convertImage: the owned codes are added in 'stash' mode */
+  const convOpts = useMemo<ImportOpts>(() => (stashMode ? { ...opts, stash: [...stash], stashExtra: opts.stashExtra ?? 0 } : opts), [opts, stashMode, stash]);
   const set = (patch: Partial<ImportOpts>) => setOpts((o) => ({ ...o, ...patch }));
   const reset = <K extends keyof ImportOpts>(k: K, v: ImportOpts[K] = DEFAULT_IMPORT[k]) => () => set({ [k]: v } as Partial<ImportOpts>);
 
@@ -58,9 +63,9 @@ export function ImageImportDialog({ pattern, initialFile, onApply, onClose }: Pr
   // live preview (debounced)
   useEffect(() => {
     if (!src) return;
-    const t = setTimeout(() => setResult(convertImage(src, pattern, opts)), 90);
+    const t = setTimeout(() => setResult(convertImage(src, pattern, convOpts)), 90);
     return () => clearTimeout(t);
-  }, [src, opts, pattern]);
+  }, [src, convOpts, pattern]);
 
   // edge fade + "more options" cue while there is more to scroll to
   useEffect(() => {
@@ -144,8 +149,8 @@ export function ImageImportDialog({ pattern, initialFile, onApply, onClose }: Pr
                     onChange={(e) => set({ colors: +e.target.value })} />
                 </label>
                 <label><FieldHead label={t('เลือกสีด้ายจาก', 'Thread colors from')}><DefaultTag value={opts.paletteMode} def={DEFAULT_IMPORT.paletteMode} onReset={reset('paletteMode')} /></FieldHead>
-                  <div className="seg full">
-                    {([['dmc', t('ด้าย DMC', 'DMC threads')], ['exact', t('สีตามรูป', 'Image colors')], ['current', t('จานสีปัจจุบัน', 'Current palette')]] as const).map(([v, l]) => (
+                  <div className="seg full seg-grid">
+                    {([['dmc', t('ด้าย DMC', 'DMC threads')], ['stash', t('ด้ายที่ฉันมี', 'My threads')], ['exact', t('สีตามรูป', 'Image colors')], ['current', t('จานสีปัจจุบัน', 'Current palette')]] as const).map(([v, l]) => (
                       <button key={v} className={opts.paletteMode === v ? 'on' : ''} onClick={() => set({ paletteMode: v })}>{l}</button>
                     ))}
                   </div>
@@ -153,8 +158,34 @@ export function ImageImportDialog({ pattern, initialFile, onApply, onClose }: Pr
                 <p className="hint">
                   {opts.paletteMode === 'dmc' && t('จับคู่กับด้าย DMC ที่ใกล้ที่สุด พร้อมรหัสสำหรับซื้อด้าย', 'Matches the closest DMC threads, with codes for buying')}
                   {opts.paletteMode === 'exact' && t('ใช้สีเฉลี่ยจากรูปตรงๆ (ต้องหาด้ายสีใกล้เคียงเอง)', 'Uses the image’s colors as they are (you find matching threads yourself)')}
+                  {stashMode && stash.size > 0 && t(`ใช้เฉพาะด้าย ${stash.size} สีที่คุณมี`, `Uses only the ${stash.size} ${stash.size === 1 ? 'thread' : 'threads'} you own`)}
                   {opts.paletteMode === 'current' && t(`ใช้เฉพาะ ${pattern.palette.length} สีที่มีในจานสีตอนนี้`, `Uses only the ${pattern.palette.length} ${pattern.palette.length === 1 ? 'color' : 'colors'} in your current palette`)}
                 </p>
+                {stashMode && stash.size === 0 && (
+                  <p className="stash-hint">
+                    {t('ยังไม่ได้บันทึกด้ายที่คุณมี ตอนนี้จึงใช้ด้าย DMC ทั้งหมดไปก่อน', 'You haven’t recorded any threads yet, so all DMC threads are used for now.')}{' '}
+                    <a href="#/threads">{t('เพิ่มด้ายที่คุณมีก่อน', 'Add the threads you own first')} →</a>
+                  </p>
+                )}
+                {stashMode && stash.size > 0 && (
+                  <div className="stash-extra" role="group" aria-label={t('จำนวนด้ายใหม่ที่ยอมให้ซื้อเพิ่ม', 'New threads allowed')}><FieldHead label={<>{t('ให้เพิ่มด้ายใหม่ที่ต้องซื้อได้:', 'Allow new threads to buy:')} <b>{t(`ไม่เกิน ${opts.stashExtra ?? 0} สี`, `up to ${opts.stashExtra ?? 0}`)}</b></>}>
+                    <DefaultTag value={opts.stashExtra ?? 0} def={0} onReset={() => set({ stashExtra: 0 })} />
+                  </FieldHead>
+                    <div className="seg full">
+                      {[0, 1, 2, 3].map((n) => (
+                        <button key={n} type="button" className={(opts.stashExtra ?? 0) === n ? 'on' : ''} onClick={() => set({ stashExtra: n })}>{n}</button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {stashMode && stash.size > 0 && !!result?.poorMatches && (
+                  <p className="stash-warn" role="status">
+                    {t(`มี ${result.poorMatches} สีในรูปที่ไม่มีด้ายใกล้เคียงในด้ายของคุณ`, `${result.poorMatches} image ${result.poorMatches === 1 ? 'color has' : 'colors have'} no close match in your threads.`)}{' '}
+                    {(opts.stashExtra ?? 0) < 3
+                      ? t('ลองให้เพิ่มด้ายใหม่ได้ 1–2 สี เพื่อให้สีใกล้รูปมากขึ้น', 'Try allowing 1–2 new threads for closer colors.')
+                      : t('สีในลายอาจต่างจากรูปบ้าง', 'Some colors may differ from the image.')}
+                  </p>
+                )}
               </section>
 
               <section className="imp-sec">
@@ -227,12 +258,17 @@ export function ImageImportDialog({ pattern, initialFile, onApply, onClose }: Pr
                 <>
                   <p className="muted">{t(<>{result.colorsUsed} สี · {result.stitched.toLocaleString()} ฝีเข็ม · ตาราง {pattern.cols}×{pattern.rows}</>, <>{result.colorsUsed} {result.colorsUsed === 1 ? 'color' : 'colors'} · {result.stitched.toLocaleString()} {result.stitched === 1 ? 'stitch' : 'stitches'} · grid {pattern.cols}×{pattern.rows}</>)}</p>
                   <div className="chips">
-                    {used.map(({ t: tc, n }) => (
-                      <span key={tc.id} className="sym-chip" title={t(`${n} ฝีเข็ม`, `${n} ${n === 1 ? 'stitch' : 'stitches'}`)}>
-                        <span className="sym sm" style={{ background: tc.hex, color: contrastText(tc.hex) }}>{tc.symbol}</span>
-                        {tc.code || tc.hex}
-                      </span>
-                    ))}
+                    {used.map(({ t: tc, n }) => {
+                      const buy = stashMode && stash.size > 0 && !ownsThread(stash, tc);
+                      return (
+                        <span key={tc.id} className={'sym-chip' + (buy ? ' to-buy' : '')}
+                          title={t(`${n} ฝีเข็ม`, `${n} ${n === 1 ? 'stitch' : 'stitches'}`) + (buy ? t(' · ต้องซื้อ', ' · to buy') : '')}>
+                          <span className="sym sm" style={{ background: tc.hex, color: contrastText(tc.hex) }}>{tc.symbol}</span>
+                          {tc.code || tc.hex}
+                          {buy && <small>{t('ต้องซื้อ', 'buy')}</small>}
+                        </span>
+                      );
+                    })}
                   </div>
                 </>
               )}

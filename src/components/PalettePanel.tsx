@@ -4,6 +4,7 @@ import { DMC_SORTED, SYMBOLS, contrastText, makeThread } from '../lib/threads';
 import { colorSortKey } from '../lib/dmc';
 import { nearestDmc } from '../lib/imageImport';
 import { computeStats } from '../lib/stats';
+import { ownsThread, useStash } from '../lib/stash';
 import { Icon } from './Icon';
 import { t } from '../lib/i18n';
 
@@ -53,6 +54,7 @@ export function PalettePanel({ pattern: p, active, setActive, onPalette }: Props
   const [family, setFamily] = useState('all');
   const [probe, setProbe] = useState('#c8507a');
   const stats = useMemo(() => computeStats(p), [p]);
+  const { codes: stash } = useStash();
 
   const update = (i: number, patch: Partial<ThreadColor>) =>
     onPalette(p.palette.map((c, j) => (j === i ? { ...c, ...patch } : c)));
@@ -93,7 +95,14 @@ export function PalettePanel({ pattern: p, active, setActive, onPalette }: Props
               {c.symbol}
             </button>
             <button className="palette-label" onClick={() => setActive(i)}>
-              <span className="pl-code">{[c.brand, c.code].filter(Boolean).join(' ') || t('กำหนดเอง', 'Custom')}</span>
+              <span className="pl-code">
+                {[c.brand, c.code].filter(Boolean).join(' ') || t('กำหนดเอง', 'Custom')}
+                {ownsThread(stash, c) && (
+                  <span className="have-badge" title={t('อยู่ใน “ด้ายของฉัน” แล้ว', 'In “My threads”')}>
+                    <Icon name="check" size={11} /><span>{t('มีแล้ว', 'Have')}</span>
+                  </span>
+                )}
+              </span>
               <span className="pl-name">{c.name}</span>
             </button>
             <span className="pl-count" title={t('จำนวนฝีเข็ม', 'Stitches')}>{stats.colors[i]?.count ?? 0}</span>
@@ -156,7 +165,8 @@ export function PalettePanel({ pattern: p, active, setActive, onPalette }: Props
           </div>
           <div className="lib-grid">
             {filtered.map((d) => (
-              <button key={d.code} className={'lib-chip' + (inPalette.has(d.code) ? ' have' : '')} title={`DMC ${d.code} ${d.name}`}
+              <button key={d.code} className={'lib-chip' + (inPalette.has(d.code) ? ' have' : '') + (stash.has(d.code) ? ' own' : '')}
+                title={`DMC ${d.code} ${d.name}` + (stash.has(d.code) ? t(' · มีแล้ว', ' · you have it') : '')}
                 onClick={() => add({ hex: d.hex, name: d.name, code: d.code, brand: 'DMC' })}>
                 <span style={{ background: d.hex }} />
                 {d.code}
@@ -164,7 +174,7 @@ export function PalettePanel({ pattern: p, active, setActive, onPalette }: Props
             ))}
             {!filtered.length && <p className="muted">{t('ไม่พบสีที่ค้นหา', 'No matching colors')}</p>}
           </div>
-          <p className="hint">{t(<>แสดง {filtered.length} จาก {DMC_SORTED.length} สี · ขีดเส้นใต้ = มีในจานสีแล้ว · สีบนจอเป็นค่าประมาณ ควรเทียบกับการ์ดสีจริงก่อนซื้อด้าย</>, <>Showing {filtered.length} of {DMC_SORTED.length} colors · underlined = already in palette · screen colors are approximate, so check a real color card before buying thread</>)}</p>
+          <p className="hint">{t(<>แสดง {filtered.length} จาก {DMC_SORTED.length} สี · ขีดเส้นใต้ = มีในจานสีแล้ว{stash.size > 0 && <> · จุดเขียว = มีด้ายนี้แล้ว</>} · สีบนจอเป็นค่าประมาณ ควรเทียบกับการ์ดสีจริงก่อนซื้อด้าย</>, <>Showing {filtered.length} of {DMC_SORTED.length} colors · underlined = already in palette{stash.size > 0 && <> · green dot = you have this thread</>} · screen colors are approximate, so check a real color card before buying thread</>)}</p>
         </div>
       )}
     </div>

@@ -14,6 +14,7 @@ import { TEMPLATES } from '../lib/templates';
 import { t, locale } from '../lib/i18n';
 import { LangSwitch } from '../components/LangSwitch';
 import { SampleGallery } from '../components/SampleGallery';
+import { useStash } from '../lib/stash';
 
 /**
  * Card art drawn from the real heart-keychain template, so every hole sits exactly
@@ -69,6 +70,7 @@ export function Home() {
   const [items, setItems] = useState<Pattern[]>(() => listPatterns());
   const fileRef = useRef<HTMLInputElement>(null);
   const inst = useInstall();
+  const stash = useStash();
   const [iosHelp, setIosHelp] = useState(false);
   const refresh = () => setItems(listPatterns());
 
@@ -115,10 +117,35 @@ export function Home() {
         </div>
       )}
       <section className="hero">
-        <h1>{t(<>ออกแบบลายปัก<br />สำหรับผ้าและชิ้นงานพิมพ์ 3 มิติ</>, <>Design stitch patterns<br />for fabric and 3D prints</>)}</h1>
+        <h1>{t(<>ออกแบบลายปัก<br />สำหรับผ้าและชิ้นงานพิมพ์&nbsp;3&nbsp;มิติ</>, <>Design stitch patterns<br />for fabric and 3D prints</>)}</h1>
         <p>{t('เติมสีลงในช่อง วางแผนด้าย เข็ม และขนาดชิ้นงาน แล้วพิมพ์แผนผังหรือแชร์ให้เพื่อนได้ในคลิกเดียว', 'Fill in the cells, plan your threads, needle and finished size, then print the chart or share it with a friend in one click.')}</p>
       </section>
 
+      <section className="quick-start">
+        <a className="quick-card" href="#/quick">
+          <div className="quick-art" aria-hidden="true">
+            <span className="qa-photo"><Icon name="image" size={30} /></span>
+            <span className="qa-arrow">→</span>
+            <span className="qa-grid">{Array.from({ length: 25 }, (_, i) => <i key={i} style={{ background: [6, 7, 8, 11, 12, 13, 16, 17, 18, 2, 22].includes(i) ? (i === 12 ? '#f2b33d' : '#c72b3b') : undefined }} />)}</span>
+          </div>
+          <div className="quick-text">
+            <span className="quick-badge">{t('แนะนำสำหรับมือใหม่', 'Best for beginners')}</span>
+            <h3>{t('สร้างลายจากรูป', 'Pattern from a photo')}</h3>
+            <p>{t('เลือกผ้าหรือโมเดล ใส่รูป แล้วเลือกแบบที่ชอบ ได้ลายพร้อมปักใน 3 ขั้นตอน', 'Pick fabric or a model, add a photo, choose the result you like: a ready-to-stitch pattern in 3 steps.')}</p>
+            <span className="btn primary">{t('เริ่มเลย →', 'Start →')}</span>
+          </div>
+        </a>
+        <a className="threads-card" href="#/threads">
+          <span className="tc-swatches" aria-hidden="true">{['#c72b3b', '#f2b33d', '#47a72f', '#466a8e', '#1f2a44'].map((c) => <i key={c} style={{ background: c }} />)}</span>
+          <span className="tc-text">
+            <b>{t('ด้ายของฉัน', 'My threads')}</b>
+            <small>{stash.codes.size ? t(`มี ${stash.codes.size} สี · ใช้สร้างลายจากด้ายที่มี`, `${stash.codes.size} owned · used when creating patterns`) : t('บันทึกด้ายที่มี เพื่อใช้ด้ายเดิมและรู้ว่าต้องซื้ออะไร', 'Record the threads you own to reuse them and see what to buy')}</small>
+          </span>
+          <span className="tc-go">→</span>
+        </a>
+      </section>
+
+      <h2 className="advanced-head">{t('โหมดขั้นสูง', 'Advanced')} <small>{t('ออกแบบเองทุกช่อง', 'design every cell yourself')}</small></h2>
       <section className="mode-cards">
         <a className="mode-card" href="#/new/free">
           <div className="mode-art free" aria-hidden="true">

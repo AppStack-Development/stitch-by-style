@@ -5,6 +5,9 @@ import './styles.css';
 import './styles/editor-mobile.css';
 import './styles/defaults.css';
 import './styles/samples.css';
+import './styles/threads.css';
+import './styles/quick.css';
+import './styles/consistency.css';
 
 createRoot(document.getElementById('root')!).render(<App />);
 registerServiceWorker();
