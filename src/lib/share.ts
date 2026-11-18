@@ -1,6 +1,7 @@
 import type { Pattern } from '../types';
 import { defaultDetails, normalizePattern } from './pattern';
 import { uid } from './threads';
+import { t } from './i18n';
 
 function toB64Url(bytes: Uint8Array): string {
   let s = '';
@@ -87,7 +88,7 @@ export async function encodeTransfer(p: Pattern): Promise<string> {
 
 export async function decodeTransfer(data: string): Promise<Pattern> {
   const raw = await inflateJson(data);
-  if (!raw.id) throw new Error('ลิงก์ไม่ครบ');
+  if (!raw.id) throw new Error(t('ลิงก์ไม่ครบ', 'The link is incomplete'));
   return normalizePattern(raw);
 }
 

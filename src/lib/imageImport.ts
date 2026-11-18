@@ -1,5 +1,6 @@
 import type { Pattern, ThreadColor } from '../types';
 import { DMC_LIBRARY, makeThread } from './threads';
+import { t } from './i18n';
 
 export type PaletteMode = 'dmc' | 'exact' | 'current';
 
@@ -115,7 +116,7 @@ export async function loadSourceImage(file: Blob): Promise<SourceImage> {
   try {
     bitmap = await createImageBitmap(file);
   } catch {
-    throw new Error('เปิดไฟล์รูปนี้ไม่ได้ (รองรับ PNG, JPG, WebP, GIF)');
+    throw new Error(t('เปิดไฟล์รูปนี้ไม่ได้ (รองรับ PNG, JPG, WebP, GIF)', 'Could not open this image (PNG, JPG, WebP and GIF are supported)'));
   }
   // look at the image border to find a plain background colour
   const n = 48;
@@ -314,7 +315,7 @@ export function convertImage(src: SourceImage, p: Pattern, o: ImportOpts): Impor
       });
       local = acc.map((s, ci) => {
         const hex = s[3] ? toHex(s[0] / s[3], s[1] / s[3], s[2] / s[3]) : labToHexApprox(centers[ci]);
-        return { hex, name: 'สีจากรูป ' + hex };
+        return { hex, name: t('สีจากรูป ', 'Image color ') + hex };
       });
       assign = Int32Array.from(labs, (l) => nearest(l, centers));
     } else {

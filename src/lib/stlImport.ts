@@ -1,6 +1,7 @@
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
 import { strFromU8, unzipSync } from 'fflate';
 import type { CellKind } from '../types';
+import { t } from './i18n';
 
 export interface StlAnalysis {
   cols: number;
@@ -31,7 +32,7 @@ interface Raster {
 
 /** Project the model along its thinnest axis and rasterise its footprint. */
 function rasterise(pos: ArrayLike<number>): Raster {
-  if (pos.length < 9) throw new Error('ไฟล์โมเดลว่างเปล่า');
+  if (pos.length < 9) throw new Error(t('ไฟล์โมเดลว่างเปล่า', 'The model file is empty'));
   const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
   for (let i = 0; i < pos.length; i += 3) {
     for (let k = 0; k < 3; k++) {
@@ -125,7 +126,7 @@ function stlPositions(buffer: ArrayBuffer): ArrayLike<number> {
 export function analyzePositions(pos: ArrayLike<number>, pitchOverrideMm?: number): StlAnalysis {
   const r = rasterise(pos);
   const all = findHoles(r).filter((b) => b.area >= 4);
-  if (all.length < 2) throw new Error('ไม่พบรูสำหรับปักในโมเดลนี้ (ต้องเป็นแผ่นที่มีรูเรียงเป็นตาราง)');
+  if (all.length < 2) throw new Error(t('ไม่พบรูสำหรับปักในโมเดลนี้ (ต้องเป็นแผ่นที่มีรูเรียงเป็นตาราง)', 'No stitch holes found in this model (it needs to be a plate with holes in a grid)'));
   const areas = all.map((b) => b.area).sort((a, b) => a - b);
   const median = areas[Math.floor(areas.length / 2)];
   const holes = all.filter((b) => b.area >= median * 0.35 && b.area <= median * 2.5);
@@ -179,7 +180,7 @@ export function analyzePositions(pos: ArrayLike<number>, pitchOverrideMm?: numbe
   const iLo = Math.ceil((1 - h0.cx) / pitchPx - 0.2), iHi = Math.floor((r.W - 2 - h0.cx) / pitchPx + 0.2);
   const jLo = Math.ceil((1 - h0.cy) / pitchPx - 0.2), jHi = Math.floor((r.H - 2 - h0.cy) / pitchPx + 0.2);
   const cols = iHi - iLo + 1, rows = jHi - jLo + 1;
-  if (cols < 1 || rows < 1 || cols * rows > 250 * 250) throw new Error('ขนาดตารางที่ตรวจพบไม่สมเหตุสมผล ลองกำหนดระยะห่างรูเอง');
+  if (cols < 1 || rows < 1 || cols * rows > 250 * 250) throw new Error(t('ขนาดตารางที่ตรวจพบไม่สมเหตุสมผล ลองกำหนดระยะห่างรูเอง', 'The detected grid size looks wrong. Try setting the hole pitch yourself.'));
 
   const mask: CellKind[] = new Array(cols * rows).fill('0');
   for (const h of holes) {
@@ -307,13 +308,13 @@ function read3mf(buffer: ArrayBuffer, base: string): ModelPart[] {
   try {
     files = unzipSync(new Uint8Array(buffer), { filter: (f) => f.name.endsWith('.model') || f.name.endsWith('.rels') || f.name.endsWith('model_settings.config') });
   } catch {
-    throw new Error('เปิดไฟล์ 3MF ไม่ได้ (ไฟล์อาจเสียหาย)');
+    throw new Error(t('เปิดไฟล์ 3MF ไม่ได้ (ไฟล์อาจเสียหาย)', 'Could not open this 3MF file (it may be damaged)'));
   }
   const text = (name: string) => (files[name] ? strFromU8(files[name]) : '');
   const norm = (p: string) => p.replace(/^\//, '');
   const rels = text('_rels/.rels');
   const main = norm(/Target="([^"]+\.model)"/i.exec(rels)?.[1] ?? '3D/3dmodel.model');
-  if (!files[main]) throw new Error('ไม่พบข้อมูลโมเดลในไฟล์ 3MF');
+  if (!files[main]) throw new Error(t('ไม่พบข้อมูลโมเดลในไฟล์ 3MF', 'No model data found in this 3MF file'));
 
   const objects = new Map<string, Obj3mf>();
   let unitScale = 1;
@@ -388,8 +389,8 @@ function read3mf(buffer: ArrayBuffer, base: string): ModelPart[] {
   roots.forEach((it, n) => {
     const out: number[] = [];
     emit(`${main}#${it.id}`, it.m ? [it.m] : [], out);
-    if (out.length >= 9) parts.push({ name: names.get(it.id) ?? (roots.length > 1 ? `${base} (ชิ้นที่ ${n + 1})` : base), positions: Float32Array.from(out) });
+    if (out.length >= 9) parts.push({ name: names.get(it.id) ?? (roots.length > 1 ? t(`${base} (ชิ้นที่ ${n + 1})`, `${base} (part ${n + 1})`) : base), positions: Float32Array.from(out) });
   });
-  if (!parts.length) throw new Error('ไม่พบชิ้นงานที่มีรูปทรงในไฟล์ 3MF');
+  if (!parts.length) throw new Error(t('ไม่พบชิ้นงานที่มีรูปทรงในไฟล์ 3MF', 'No solid parts found in this 3MF file'));
   return parts;
 }

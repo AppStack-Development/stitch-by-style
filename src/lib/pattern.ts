@@ -1,5 +1,6 @@
 import type { Pattern, PatternDetails } from '../types';
 import { defaultPalette, uid } from './threads';
+import { t } from './i18n';
 
 export function defaultDetails(over: Partial<PatternDetails> = {}): PatternDetails {
   return {
@@ -11,7 +12,7 @@ export function defaultDetails(over: Partial<PatternDetails> = {}): PatternDetai
     stitchType: 'cross',
     threadBrand: 'DMC',
     strands: 2,
-    needleType: 'เข็มปลายมน (Tapestry)',
+    needleType: t('เข็มปลายมน (Tapestry)', 'Tapestry (blunt tip)'),
     needleSize: '#24',
     baseType: 'print3d',
     aidaCount: 14,
@@ -59,13 +60,13 @@ export function createPattern(init: {
 export function normalizePattern(raw: any): Pattern {
   const p = raw as Pattern;
   const n = p.cols * p.rows;
-  if (!Array.isArray(p.cells) || p.cells.length !== n) throw new Error('ข้อมูลลายไม่ถูกต้อง');
-  if (typeof p.mask !== 'string' || p.mask.length !== n) throw new Error('ข้อมูลช่องปักไม่ถูกต้อง');
+  if (!Array.isArray(p.cells) || p.cells.length !== n) throw new Error(t('ข้อมูลลายไม่ถูกต้อง', 'Invalid pattern data'));
+  if (typeof p.mask !== 'string' || p.mask.length !== n) throw new Error(t('ข้อมูลช่องปักไม่ถูกต้อง', 'Invalid stitch-cell data'));
   return {
     ...p,
     version: 1,
     id: p.id || uid(),
-    name: p.name || 'ลายไม่มีชื่อ',
+    name: p.name || t('ลายไม่มีชื่อ', 'Untitled pattern'),
     palette: Array.isArray(p.palette) ? p.palette : [],
     details: defaultDetails(p.details ?? {}),
     createdAt: p.createdAt || Date.now(),
@@ -82,21 +83,21 @@ export function normalizePattern(raw: any): Pattern {
 }
 
 export const STITCH_LABEL: Record<PatternDetails['stitchType'], string> = {
-  cross: 'ครอสติช (Cross stitch)',
-  half: 'ครึ่งฝีเข็ม (Half stitch)',
-  tent: 'เต็นท์สติช (Tent stitch)',
-  fill: 'ปักเติมเต็มช่อง (Fill)',
+  cross: t('ครอสติช (Cross stitch)', 'Cross stitch'),
+  half: t('ครึ่งฝีเข็ม (Half stitch)', 'Half stitch'),
+  tent: t('เต็นท์สติช (Tent stitch)', 'Tent stitch'),
+  fill: t('ปักเติมเต็มช่อง (Fill)', 'Fill (solid cells)'),
 };
 
 export const BASE_LABEL: Record<PatternDetails['baseType'], string> = {
-  print3d: 'ชิ้นงานพิมพ์ 3 มิติ',
-  aida: 'ผ้า Aida',
-  'plastic-canvas': 'แผ่น Plastic canvas',
-  other: 'อื่นๆ',
+  print3d: t('ชิ้นงานพิมพ์ 3 มิติ', '3D-printed piece'),
+  aida: t('ผ้า Aida', 'Aida fabric'),
+  'plastic-canvas': t('แผ่น Plastic canvas', 'Plastic canvas'),
+  other: t('อื่นๆ', 'Other'),
 };
 
 export const DIFFICULTY_LABEL: Record<PatternDetails['difficulty'], string> = {
-  easy: 'ง่าย',
-  medium: 'ปานกลาง',
-  hard: 'ยาก',
+  easy: t('ง่าย', 'Easy'),
+  medium: t('ปานกลาง', 'Medium'),
+  hard: t('ยาก', 'Hard'),
 };

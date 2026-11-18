@@ -7,10 +7,12 @@ import { uid } from '../lib/threads';
 import { Thumb } from '../components/Thumb';
 import { Icon } from '../components/Icon';
 import { LogoMark } from '../components/LogoMark';
+import { LangSwitch } from '../components/LangSwitch';
 import { navigate } from '../App';
+import { t, locale } from '../lib/i18n';
 
-const fmtWhen = (t: number) =>
-  new Date(t).toLocaleString('th-TH', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+const fmtWhen = (ts: number) =>
+  new Date(ts).toLocaleString(locale, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
 /** Receives your own pattern sent from another device (QR / link), merging stitching progress. */
 export function TransferView({ data }: { data: string }) {
@@ -18,11 +20,11 @@ export function TransferView({ data }: { data: string }) {
   const [err, setErr] = useState('');
 
   useEffect(() => {
-    decodeTransfer(data).then(setIncoming).catch(() => setErr('ลิงก์นี้ไม่ถูกต้องหรือข้อมูลไม่ครบ'));
+    decodeTransfer(data).then(setIncoming).catch(() => setErr(t('ลิงก์นี้ไม่ถูกต้องหรือข้อมูลไม่ครบ', 'This link is invalid or incomplete')));
   }, [data]);
 
-  if (err) return <div className="empty-state"><h2>{err}</h2><a className="btn primary" href="#/">ไปหน้าแรก</a></div>;
-  if (!incoming) return <div className="empty-state"><p>กำลังเปิดลาย…</p></div>;
+  if (err) return <div className="empty-state"><h2>{err}</h2><a className="btn primary" href="#/">{t('ไปหน้าแรก', 'Go to home')}</a></div>;
+  if (!incoming) return <div className="empty-state"><p>{t('กำลังเปิดลาย…', 'Opening pattern…')}</p></div>;
 
   const local = loadPattern(incoming.id);
   const same = local ? sameDesign(local, incoming) : false;
@@ -34,39 +36,40 @@ export function TransferView({ data }: { data: string }) {
 
   const open = (p: Pattern, where: 'stitch' | 'edit') => {
     if (!savePattern(p)) {
-      alert('บันทึกไม่สำเร็จ พื้นที่ในเบราว์เซอร์อาจเต็ม');
+      alert(t('บันทึกไม่สำเร็จ พื้นที่ในเบราว์เซอร์อาจเต็ม', "Couldn't save. Your browser storage may be full."));
       return;
     }
     navigate(`#/${where}/${p.id}`);
   };
   const replace = (where: 'stitch' | 'edit') => {
     if (local && local.updatedAt > incoming.updatedAt &&
-      !confirm('ลายในเครื่องนี้แก้ไขล่าสุดหลังจากลิงก์นี้ ต้องการแทนที่ด้วยเวอร์ชันจากลิงก์หรือไม่?')) return;
+      !confirm(t('ลายในเครื่องนี้แก้ไขล่าสุดหลังจากลิงก์นี้ ต้องการแทนที่ด้วยเวอร์ชันจากลิงก์หรือไม่?', 'The pattern on this device was edited after this link was made. Replace it with the version from the link?'))) return;
     open({ ...incoming, updatedAt: Date.now() }, where);
   };
-  const keepBoth = () => open({ ...incoming, id: uid(), name: `${incoming.name} (จากอีกเครื่อง)`, createdAt: Date.now(), updatedAt: Date.now() }, 'edit');
+  const keepBoth = () => open({ ...incoming, id: uid(), name: t(`${incoming.name} (จากอีกเครื่อง)`, `${incoming.name} (from another device)`), createdAt: Date.now(), updatedAt: Date.now() }, 'edit');
 
   return (
     <div className="shared">
       <header className="site-head">
-        <a className="brand" href="#/" aria-label="Stitch by Style หน้าแรก"><LogoMark size={36} /><span className="wordmark">Stitch by Style</span></a>
+        <a className="brand" href="#/" aria-label={t('Stitch by Style หน้าแรก', 'Stitch by Style home')}><LogoMark size={36} /><span className="wordmark">Stitch by Style</span></a>
+        <div className="spacer" /><LangSwitch />
       </header>
       <div className="shared-body">
         <div className="preview-card"><Thumb pattern={incoming} max={400} view="stitch" /></div>
         <div className="form-card">
-          <p className="muted"><Icon name="phone" size={15} /> ลายที่ส่งมาจากอีกเครื่อง</p>
+          <p className="muted"><Icon name="phone" size={15} /> {t('ลายที่ส่งมาจากอีกเครื่อง', 'Pattern sent from another device')}</p>
           <h1>{incoming.name}</h1>
           <p className="hint">
-            {incoming.cols}×{incoming.rows} ช่อง · ส่งมาเมื่อ {fmtWhen(incoming.updatedAt)}
-            {incoming.progress ? ` · ปักแล้ว ${pctLabel(inPct)}` : ''}
+            {incoming.cols}×{incoming.rows} {t('ช่อง', 'cells')} · {t('ส่งมาเมื่อ', 'sent')} {fmtWhen(incoming.updatedAt)}
+            {incoming.progress ? t(` · ปักแล้ว ${pctLabel(inPct)}`, ` · ${pctLabel(inPct)} stitched`) : ''}
           </p>
 
           {!local && (
             <>
-              <p className="ok">ลายนี้ยังไม่มีในเครื่องนี้ จะบันทึกไว้พร้อมความคืบหน้า</p>
+              <p className="ok">{t('ลายนี้ยังไม่มีในเครื่องนี้ จะบันทึกไว้พร้อมความคืบหน้า', "This pattern isn't on this device yet. It will be saved with its progress.")}</p>
               <div className="btn-row">
-                <button className="btn primary" onClick={() => open(incoming, 'stitch')}><Icon name="needle" size={16} /> เปิดในโหมดปัก</button>
-                <button className="btn" onClick={() => open(incoming, 'edit')}><Icon name="edit" size={16} /> เปิดในตัวแก้ไข</button>
+                <button className="btn primary" onClick={() => open(incoming, 'stitch')}><Icon name="needle" size={16} /> {t('เปิดในโหมดปัก', 'Open in Stitch mode')}</button>
+                <button className="btn" onClick={() => open(incoming, 'edit')}><Icon name="edit" size={16} /> {t('เปิดในตัวแก้ไข', 'Open in editor')}</button>
               </div>
             </>
           )}
@@ -74,15 +77,15 @@ export function TransferView({ data }: { data: string }) {
           {local && same && merged && (
             <>
               <div className="merge-box">
-                <div><span>เครื่องนี้</span><b>{pctLabel(localPct)}</b></div>
-                <div><span>จากลิงก์</span><b>{pctLabel(inPct)}</b></div>
+                <div><span>{t('เครื่องนี้', 'This device')}</span><b>{pctLabel(localPct)}</b></div>
+                <div><span>{t('จากลิงก์', 'From link')}</span><b>{pctLabel(inPct)}</b></div>
                 <div className="arrow">→</div>
-                <div className="result"><span>รวมกัน</span><b>{pctLabel(mergedPct)}</b></div>
+                <div className="result"><span>{t('รวมกัน', 'Combined')}</span><b>{pctLabel(mergedPct)}</b></div>
               </div>
-              <p className="hint">มีลายนี้ในเครื่องอยู่แล้ว ช่องที่ทำเครื่องหมายว่าปักแล้วในเครื่องใดเครื่องหนึ่งจะนับว่าปักแล้ว</p>
+              <p className="hint">{t('มีลายนี้ในเครื่องอยู่แล้ว ช่องที่ทำเครื่องหมายว่าปักแล้วในเครื่องใดเครื่องหนึ่งจะนับว่าปักแล้ว', 'This pattern is already on this device. A cell marked stitched on either device counts as stitched.')}</p>
               <div className="btn-row">
-                <button className="btn primary" onClick={() => open(merged, 'stitch')}><Icon name="needle" size={16} /> รวมความคืบหน้าแล้วปักต่อ</button>
-                <button className="btn" onClick={() => open(merged, 'edit')}>รวมแล้วเปิดตัวแก้ไข</button>
+                <button className="btn primary" onClick={() => open(merged, 'stitch')}><Icon name="needle" size={16} /> {t('รวมความคืบหน้าแล้วปักต่อ', 'Merge and continue stitching')}</button>
+                <button className="btn" onClick={() => open(merged, 'edit')}>{t('รวมแล้วเปิดตัวแก้ไข', 'Merge and open editor')}</button>
               </div>
             </>
           )}
@@ -90,12 +93,12 @@ export function TransferView({ data }: { data: string }) {
           {local && !same && (
             <>
               <p className="error">
-                ลายในเครื่องนี้ถูกแก้ไขต่างจากลิงก์ (ในเครื่องนี้แก้ล่าสุด {fmtWhen(local.updatedAt)})
+                {t(<>ลายในเครื่องนี้ถูกแก้ไขต่างจากลิงก์ (ในเครื่องนี้แก้ล่าสุด {fmtWhen(local.updatedAt)})</>, <>The pattern on this device differs from the link (last edited here {fmtWhen(local.updatedAt)}).</>)}
               </p>
               <div className="btn-row">
-                <button className="btn primary" onClick={() => replace('stitch')}>ใช้เวอร์ชันจากลิงก์</button>
-                <button className="btn" onClick={keepBoth}><Icon name="copy" size={16} /> เก็บไว้ทั้งสองแบบ</button>
-                <a className="btn ghost" href={`#/edit/${local.id}`}>ใช้ของเครื่องนี้</a>
+                <button className="btn primary" onClick={() => replace('stitch')}>{t('ใช้เวอร์ชันจากลิงก์', 'Use link version')}</button>
+                <button className="btn" onClick={keepBoth}><Icon name="copy" size={16} /> {t('เก็บไว้ทั้งสองแบบ', 'Keep both')}</button>
+                <a className="btn ghost" href={`#/edit/${local.id}`}>{t('ใช้ของเครื่องนี้', "Keep this device's")}</a>
               </div>
             </>
           )}

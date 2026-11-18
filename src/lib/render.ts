@@ -1,6 +1,7 @@
 import type { Pattern, ViewMode } from '../types';
 import { contrastText, shade } from './threads';
 import { computeStats } from './stats';
+import { t as tr } from './i18n';
 
 export type Drawable = Pick<Pattern, 'cols' | 'rows' | 'mask' | 'cells' | 'palette'> & {
   details?: Pick<Pattern['details'], 'filamentColor' | 'baseType'>;
@@ -187,11 +188,11 @@ export function exportPng(p: Pattern, view: ViewMode): Promise<Blob> {
   ctx.font = `400 16px ${FONT}`;
   ctx.fillStyle = '#5b6478';
   const meta = [
-    `${p.cols}×${p.rows} ช่อง`,
-    `${stats.widthMm.toFixed(0)}×${stats.heightMm.toFixed(0)} มม.`,
-    `${stats.total.toLocaleString()} ฝีเข็ม`,
-    `${used.length} สี`,
-    p.details.author ? `โดย ${p.details.author}` : '',
+    tr(`${p.cols}×${p.rows} ช่อง`, `${p.cols}×${p.rows} cells`),
+    `${stats.widthMm.toFixed(0)}×${stats.heightMm.toFixed(0)} ${tr('มม.', 'mm')}`,
+    tr(`${stats.total.toLocaleString()} ฝีเข็ม`, `${stats.total.toLocaleString()} stitches`),
+    tr(`${used.length} สี`, `${used.length} ${used.length === 1 ? 'color' : 'colors'}`),
+    p.details.author ? tr(`โดย ${p.details.author}`, `by ${p.details.author}`) : '',
   ].filter(Boolean).join('  ·  ');
   ctx.fillText(meta, 40, 82);
   const ox = Math.round((W - chartW) / 2), oy = 110;
@@ -199,7 +200,7 @@ export function exportPng(p: Pattern, view: ViewMode): Promise<Blob> {
   let y = oy + chartH + 50;
   ctx.fillStyle = '#1f2a44';
   ctx.font = `700 18px ${FONT}`;
-  ctx.fillText('ด้ายที่ใช้', 40, y);
+  ctx.fillText(tr('ด้ายที่ใช้', 'Threads used'), 40, y);
   y += 20;
   used.forEach((u, idx) => {
     const t = p.palette[u.index];
@@ -225,6 +226,6 @@ export function exportPng(p: Pattern, view: ViewMode): Promise<Blob> {
   });
   ctx.fillStyle = '#9aa0ad';
   ctx.font = `400 13px ${FONT}`;
-  ctx.fillText('สร้างด้วย Stitch by Style', 40, H - 16);
+  ctx.fillText(tr('สร้างด้วย Stitch by Style', 'Made with Stitch by Style'), 40, H - 16);
   return new Promise((res, rej) => c.toBlob((b) => (b ? res(b) : rej(new Error('PNG failed'))), 'image/png'));
 }

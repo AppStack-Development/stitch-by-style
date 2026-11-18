@@ -11,6 +11,7 @@ import { needleHint } from '../lib/stats';
 import { Thumb } from '../components/Thumb';
 import { Icon } from '../components/Icon';
 import { navigate } from '../App';
+import { t } from '../lib/i18n';
 
 const blank = (cols: number, rows: number, mask: string, baseType: BaseType = 'print3d') => ({
   cols, rows, mask, cells: new Array(cols * rows).fill(-1), palette: [],
@@ -21,12 +22,12 @@ export function NewPattern({ mode }: { mode: 'free' | 'template' }) {
   return (
     <div className="newp">
       <header className="site-head">
-        <a className="icon-btn" href="#/" title="กลับ"><Icon name="back" /></a>
-        <h2>{mode === 'free' ? 'ออกแบบอิสระ' : 'เลือกโมเดลแม่แบบ'}</h2>
+        <a className="icon-btn" href="#/" title={t('กลับ', 'Back')}><Icon name="back" /></a>
+        <h2>{mode === 'free' ? t('ออกแบบอิสระ', 'Free design') : t('เลือกโมเดลแม่แบบ', 'Choose a template')}</h2>
         <div className="spacer" />
-        <a className="icon-btn" href={`#/guide/${mode}`} title="วิธีใช้"><Icon name="help" /></a>
+        <a className="icon-btn" href={`#/guide/${mode}`} title={t('วิธีใช้', 'Help')}><Icon name="help" /></a>
         <a className="btn ghost hide-xs" href={mode === 'free' ? '#/new/template' : '#/new/free'}>
-          {mode === 'free' ? 'ใช้โมเดลแม่แบบแทน' : 'ออกแบบอิสระแทน'}
+          {mode === 'free' ? t('ใช้โมเดลแม่แบบแทน', 'Use a template instead') : t('ออกแบบอิสระแทน', 'Free design instead')}
         </a>
       </header>
       {mode === 'free' ? <FreeForm /> : <TemplatePicker />}
@@ -35,7 +36,7 @@ export function NewPattern({ mode }: { mode: 'free' | 'template' }) {
 }
 
 function FreeForm() {
-  const [name, setName] = useState('ลายใหม่');
+  const [name, setName] = useState(t('ลายใหม่', 'New pattern'));
   const [cols, setCols] = useState(40);
   const [rows, setRows] = useState(40);
   const [base, setBase] = useState<BaseType>('aida');
@@ -56,36 +57,36 @@ function FreeForm() {
   return (
     <div className="new-layout">
       <div className="form-card">
-        <label>ชื่อลาย<input value={name} onChange={(e) => setName(e.target.value)} /></label>
+        <label>{t('ชื่อลาย', 'Pattern name')}<input value={name} onChange={(e) => setName(e.target.value)} /></label>
         <div className="presets">
           {[[20, 20], [30, 30], [40, 40], [60, 60], [80, 60], [100, 100]].map(([c, r]) => (
             <button key={c + 'x' + r} className={'chip' + (c === cols && r === rows ? ' on' : '')} onClick={() => { setCols(c); setRows(r); }}>{c}×{r}</button>
           ))}
         </div>
         <div className="row2">
-          <label>กว้าง (ช่อง)<input type="number" value={cols} min={4} max={200} onChange={(e) => setCols(clamp(+e.target.value))} /></label>
-          <label>สูง (ช่อง)<input type="number" value={rows} min={4} max={200} onChange={(e) => setRows(clamp(+e.target.value))} /></label>
+          <label>{t('กว้าง (ช่อง)', 'Width (cells)')}<input type="number" value={cols} min={4} max={200} onChange={(e) => setCols(clamp(+e.target.value))} /></label>
+          <label>{t('สูง (ช่อง)', 'Height (cells)')}<input type="number" value={rows} min={4} max={200} onChange={(e) => setRows(clamp(+e.target.value))} /></label>
         </div>
-        <label>พื้นที่จะใช้ปัก
+        <label>{t('พื้นที่จะใช้ปัก', 'Stitch on')}
           <select value={base} onChange={(e) => setBase(e.target.value as BaseType)}>
-            <option value="aida">ผ้า Aida</option>
-            <option value="plastic-canvas">แผ่น Plastic canvas (7 ct)</option>
-            <option value="print3d">ชิ้นงานพิมพ์ 3 มิติ</option>
-            <option value="other">อื่นๆ (กำหนดระยะเอง)</option>
+            <option value="aida">{t('ผ้า Aida', 'Aida fabric')}</option>
+            <option value="plastic-canvas">{t('แผ่น Plastic canvas (7 ct)', 'Plastic canvas (7 ct)')}</option>
+            <option value="print3d">{t('ชิ้นงานพิมพ์ 3 มิติ', '3D-printed piece')}</option>
+            <option value="other">{t('อื่นๆ (กำหนดระยะเอง)', 'Other (custom spacing)')}</option>
           </select>
         </label>
         {base === 'aida' && (
-          <label>ความถี่ผ้า
+          <label>{t('ความถี่ผ้า', 'Fabric count')}
             <select value={count} onChange={(e) => setCount(+e.target.value)}>
               {[11, 14, 16, 18, 20].map((c) => <option key={c} value={c}>{c} ct</option>)}
             </select>
           </label>
         )}
         {(base === 'print3d' || base === 'other') && (
-          <label>ระยะห่างระหว่างช่อง (มม.)<input type="number" step={0.1} min={0.8} value={pitch} onChange={(e) => setPitch(+e.target.value || 3)} /></label>
+          <label>{t('ระยะห่างระหว่างช่อง (มม.)', 'Cell spacing (mm)')}<input type="number" step={0.1} min={0.8} value={pitch} onChange={(e) => setPitch(+e.target.value || 3)} /></label>
         )}
-        <p className="hint">ขนาดชิ้นงานจริง ≈ {(cols * pitchMm).toFixed(0)} × {(rows * pitchMm).toFixed(0)} มม. · {needleHint(pitchMm)}</p>
-        <button className="btn primary lg" onClick={create}>สร้างลาย <Icon name="check" size={16} /></button>
+        <p className="hint">{t(<>ขนาดชิ้นงานจริง ≈ {(cols * pitchMm).toFixed(0)} × {(rows * pitchMm).toFixed(0)} มม.</>, <>Finished size ≈ {(cols * pitchMm).toFixed(0)} × {(rows * pitchMm).toFixed(0)} mm</>)} · {needleHint(pitchMm)}</p>
+        <button className="btn primary lg" onClick={create}>{t('สร้างลาย', 'Create pattern')} <Icon name="check" size={16} /></button>
       </div>
       <div className="preview-card">
         <Thumb pattern={blank(cols, rows, freeMask(cols, rows), base)} max={420} view="color" grid />
@@ -114,10 +115,10 @@ function TemplatePicker() {
       setTimeout(() => document.querySelector('.new-layout.tpl .form-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
     }
   };
-  const pick = (t: TemplateDef) => {
-    setSel(t);
-    setW(t.w);
-    setH(t.h);
+  const pick = (tp: TemplateDef) => {
+    setSel(tp);
+    setW(tp.w);
+    setH(tp.h);
     revealForm();
   };
   const setWidth = (v: number) => {
@@ -152,7 +153,7 @@ function TemplatePicker() {
         const best = bestPart(analyses);
         setStl({
           file: f.name, parts, analyses, sel: best,
-          err: best < 0 ? (parts.length > 1 ? `ไม่พบรูสำหรับปักในทั้ง ${parts.length} ชิ้นของไฟล์นี้` : analyses[0].error) : '',
+          err: best < 0 ? (parts.length > 1 ? t(`ไม่พบรูสำหรับปักในทั้ง ${parts.length} ชิ้นของไฟล์นี้`, `No stitch holes found in any of the ${parts.length} parts in this file`) : analyses[0].error) : '',
         });
         setName('');
         if (best >= 0) applyResult(analyses[best].result!, analyses[best].part.name);
@@ -187,7 +188,7 @@ function TemplatePicker() {
       ? `${stl?.file ?? ''}${part && stl!.parts.length > 1 ? ` · ${part.name}` : ''}`
       : sel.name;
     const p = createPattern({
-      name: name || (sel === 'stl' ? 'ลายจากโมเดล' : `ลาย${sel.name}`),
+      name: name || (sel === 'stl' ? t('ลายจากโมเดล', 'Pattern from model') : t(`ลาย${sel.name}`, `${sel.name} pattern`)),
       mode: 'template',
       templateId: sel === 'stl' ? 'stl' : sel.id,
       templateName: tname,
@@ -203,20 +204,20 @@ function TemplatePicker() {
   return (
     <div className="new-layout tpl">
       <div className="tpl-grid">
-        {TEMPLATES.map((t) => {
-          const r = t.build(t.w, t.h);
+        {TEMPLATES.map((tp) => {
+          const r = tp.build(tp.w, tp.h);
           return (
-            <button key={t.id} className={'tpl-card' + (sel !== 'stl' && sel.id === t.id ? ' on' : '')} onClick={() => pick(t)}>
+            <button key={tp.id} className={'tpl-card' + (sel !== 'stl' && sel.id === tp.id ? ' on' : '')} onClick={() => pick(tp)}>
               <div className="tpl-thumb"><Thumb pattern={blank(r.cols, r.rows, r.mask)} max={96} view="stitch" /></div>
-              <b>{t.name}</b>
-              <small>{t.description}</small>
+              <b>{tp.name}</b>
+              <small>{tp.description}</small>
             </button>
           );
         })}
         <label className={'tpl-card stl' + (sel === 'stl' ? ' on' : '')} onClick={() => setSel('stl')}>
           <div className="tpl-thumb"><Icon name="upload" size={34} /></div>
-          <b>นำเข้าไฟล์ STL / 3MF</b>
-          <small>ตรวจหารูปักจากโมเดลของคุณอัตโนมัติ (รองรับไฟล์จาก MakerWorld)</small>
+          <b>{t('นำเข้าไฟล์ STL / 3MF', 'Import STL / 3MF file')}</b>
+          <small>{t('ตรวจหารูปักจากโมเดลของคุณอัตโนมัติ (รองรับไฟล์จาก MakerWorld)', 'Finds the stitch holes in your model automatically (works with MakerWorld files)')}</small>
           <input type="file" accept=".stl,.3mf" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) { setSel('stl'); loadStl(f); } e.target.value = ''; }} />
         </label>
       </div>
@@ -224,66 +225,66 @@ function TemplatePicker() {
       <div className="form-card">
         {sel === 'stl' ? (
           <>
-            <h3>นำเข้าโมเดล STL / 3MF</h3>
-            {!stl && !busy && <p className="muted">เลือกไฟล์ .stl หรือ .3mf ของชิ้นงานที่มีรูเรียงเป็นตาราง เช่น ฝากล่อง ที่คั่นหนังสือ พวงกุญแจ ระบบจะหาชิ้นที่มีรูและแปลงเป็นช่องสำหรับเติมสี</p>}
-            {busy && <p className="muted">กำลังวิเคราะห์โมเดล…</p>}
+            <h3>{t('นำเข้าโมเดล STL / 3MF', 'Import STL / 3MF model')}</h3>
+            {!stl && !busy && <p className="muted">{t('เลือกไฟล์ .stl หรือ .3mf ของชิ้นงานที่มีรูเรียงเป็นตาราง เช่น ฝากล่อง ที่คั่นหนังสือ พวงกุญแจ ระบบจะหาชิ้นที่มีรูและแปลงเป็นช่องสำหรับเติมสี', 'Choose an .stl or .3mf file of a piece with holes in a grid, like a box lid, bookmark or keychain. We’ll find the part with holes and turn them into cells you can color.')}</p>}
+            {busy && <p className="muted">{t('กำลังวิเคราะห์โมเดล…', 'Analyzing model…')}</p>}
             {stl && stl.parts.length > 1 && (
               <div className="part-pick">
-                <span className="muted">ไฟล์นี้มี {stl.parts.length} ชิ้น เลือกชิ้นที่จะปัก:</span>
+                <span className="muted">{t(<>ไฟล์นี้มี {stl.parts.length} ชิ้น เลือกชิ้นที่จะปัก:</>, <>This file has {stl.parts.length} parts. Choose one to stitch:</>)}</span>
                 {stl.analyses.map((a, i) => (
                   <button key={i} className={'part-chip' + (i === stl.sel ? ' on' : '')} disabled={!a.result} onClick={() => choosePart(i)}
-                    title={`${a.part.name} · ${a.result ? `${a.result.holeCount} รู` : 'ไม่พบรูสำหรับปัก'}`}>
+                    title={`${a.part.name} · ${a.result ? t(`${a.result.holeCount} รู`, `${a.result.holeCount} ${a.result.holeCount === 1 ? 'hole' : 'holes'}`) : t('ไม่พบรูสำหรับปัก', 'No stitch holes found')}`}>
                     <b>{a.part.name}</b>
-                    <small>{a.result ? `${a.result.holeCount.toLocaleString()} รู` : 'ไม่มีรู'}</small>
+                    <small>{a.result ? t(`${a.result.holeCount.toLocaleString()} รู`, `${a.result.holeCount.toLocaleString()} ${a.result.holeCount === 1 ? 'hole' : 'holes'}`) : t('ไม่มีรู', 'No holes')}</small>
                   </button>
                 ))}
               </div>
             )}
             {stl?.err && <p className="error">{stl.err}</p>}
             {stlRes && (
-              <p className="ok">พบ {stlRes.holeCount.toLocaleString()} รู · ตาราง {stlRes.cols}×{stlRes.rows} · ชิ้นงาน {stlRes.widthMm.toFixed(1)}×{stlRes.heightMm.toFixed(1)} มม. · แผ่นหนา {stlRes.thicknessMm} มม.</p>
+              <p className="ok">{t(<>พบ {stlRes.holeCount.toLocaleString()} รู · ตาราง {stlRes.cols}×{stlRes.rows} · ชิ้นงาน {stlRes.widthMm.toFixed(1)}×{stlRes.heightMm.toFixed(1)} มม. · แผ่นหนา {stlRes.thicknessMm} มม.</>, <>Found {stlRes.holeCount.toLocaleString()} holes · grid {stlRes.cols}×{stlRes.rows} · piece {stlRes.widthMm.toFixed(1)}×{stlRes.heightMm.toFixed(1)} mm · {stlRes.thicknessMm} mm thick</>)}</p>
             )}
             {stlRes && (
               <div className="row2 end">
-                <label>ระยะห่างรู (มม.)<input value={stlPitch} onChange={(e) => setStlPitch(e.target.value)} /></label>
-                <button className="btn" onClick={() => reanalyse(+stlPitch || undefined)}>วิเคราะห์ใหม่</button>
+                <label>{t('ระยะห่างรู (มม.)', 'Hole pitch (mm)')}<input value={stlPitch} onChange={(e) => setStlPitch(e.target.value)} /></label>
+                <button className="btn" onClick={() => reanalyse(+stlPitch || undefined)}>{t('วิเคราะห์ใหม่', 'Re-analyze')}</button>
               </div>
             )}
             <label className="btn ghost file-btn">
-              <Icon name="upload" size={16} /> {stl ? 'เลือกไฟล์อื่น' : 'เลือกไฟล์ STL / 3MF'}
+              <Icon name="upload" size={16} /> {stl ? t('เลือกไฟล์อื่น', 'Choose another file') : t('เลือกไฟล์ STL / 3MF', 'Choose STL / 3MF file')}
               <input type="file" accept=".stl,.3mf" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) loadStl(f); e.target.value = ''; }} />
             </label>
           </>
         ) : (
           <>
             <h3>{sel.name}</h3>
-            <label>ความกว้าง: {w} ช่อง
+            <label>{t(<>ความกว้าง: {w} ช่อง</>, <>Width: {w} cells</>)}
               <input type="range" min={sel.min} max={sel.max} value={w} onChange={(e) => setWidth(+e.target.value)} />
             </label>
             {!sel.lockAspect && (
-              <label>ความสูง: {h} ช่อง
+              <label>{t(<>ความสูง: {h} ช่อง</>, <>Height: {h} cells</>)}
                 <input type="range" min={sel.min} max={sel.max * 2} value={h} onChange={(e) => setH(+e.target.value)} />
               </label>
             )}
             <div className="row2">
-              <label>ระยะห่างรู (มม.)<input type="number" step={0.1} min={1} max={8} value={pitch} onChange={(e) => setPitch(+e.target.value || 3)} /></label>
-              <label>ความหนา (มม.)<input type="number" step={0.2} min={0.6} max={8} value={thick} onChange={(e) => setThick(+e.target.value || 2)} /></label>
+              <label>{t('ระยะห่างรู (มม.)', 'Hole pitch (mm)')}<input type="number" step={0.1} min={1} max={8} value={pitch} onChange={(e) => setPitch(+e.target.value || 3)} /></label>
+              <label>{t('ความหนา (มม.)', 'Thickness (mm)')}<input type="number" step={0.2} min={0.6} max={8} value={thick} onChange={(e) => setThick(+e.target.value || 2)} /></label>
             </div>
           </>
         )}
-        <label>ชื่อลาย<input value={name} onChange={(e) => setName(e.target.value)} placeholder="ตั้งชื่อภายหลังได้" /></label>
+        <label>{t('ชื่อลาย', 'Pattern name')}<input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('ตั้งชื่อภายหลังได้', 'You can name it later')} /></label>
         {built && (
           <p className="hint">
-            ขนาด ≈ {(built.cols * pitch).toFixed(1)} × {(built.rows * pitch).toFixed(1)} มม. · {holes} ช่องปัก · {needleHint(pitch)}
+            {t(<>ขนาด ≈ {(built.cols * pitch).toFixed(1)} × {(built.rows * pitch).toFixed(1)} มม. · {holes} ช่องปัก</>, <>Size ≈ {(built.cols * pitch).toFixed(1)} × {(built.rows * pitch).toFixed(1)} mm · {holes} stitch cells</>)} · {needleHint(pitch)}
           </p>
         )}
-        <button className="btn primary lg" disabled={!built} onClick={create}>เริ่มออกแบบบนแม่แบบนี้ <Icon name="check" size={16} /></button>
+        <button className="btn primary lg" disabled={!built} onClick={create}>{t('เริ่มออกแบบบนแม่แบบนี้', 'Use this template')} <Icon name="check" size={16} /></button>
       </div>
 
       <div className="preview-card">
-        {built ? <Thumb pattern={blank(built.cols, built.rows, built.mask)} max={360} view="stitch" grid /> : <p className="muted">ยังไม่มีตัวอย่าง</p>}
+        {built ? <Thumb pattern={blank(built.cols, built.rows, built.mask)} max={360} view="stitch" grid /> : <p className="muted">{t('ยังไม่มีตัวอย่าง', 'No preview yet')}</p>}
         <div className="legend-mini">
-          <span><i className="k2" /> ช่องปัก</span><span><i className="k1" /> โครงทึบ</span><span><i className="k0" /> นอกชิ้นงาน</span>
+          <span><i className="k2" /> {t('ช่องปัก', 'Stitch cell')}</span><span><i className="k1" /> {t('โครงทึบ', 'Solid frame')}</span><span><i className="k0" /> {t('นอกชิ้นงาน', 'Outside piece')}</span>
         </div>
       </div>
     </div>

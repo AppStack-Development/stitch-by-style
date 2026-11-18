@@ -1,4 +1,5 @@
 import type { Pattern } from '../types';
+import { t } from './i18n';
 
 /** Single-strand metres in one standard 6-strand 8 m skein. */
 const SKEIN_STRAND_M = 48;
@@ -76,7 +77,7 @@ export function computeStats(p: Pattern): PatternStats {
 }
 
 export function fmtMm(mm: number): string {
-  return mm >= 100 ? `${(mm / 10).toFixed(1)} ซม.` : `${mm.toFixed(1)} มม.`;
+  return mm >= 100 ? `${(mm / 10).toFixed(1)} ${t('ซม.', 'cm')}` : `${mm.toFixed(1)} ${t('มม.', 'mm')}`;
 }
 
 export function fmtInch(mm: number): string {
@@ -85,9 +86,9 @@ export function fmtInch(mm: number): string {
 
 /** Practical needle / strand suggestion for a given hole pitch. */
 export function needleHint(pitchMm: number): string {
-  if (pitchMm >= 3.2) return 'แนะนำ: เข็ม Tapestry #18–20 หรือเข็มพลาสติก, ด้าย 6 เส้น/ไหมพรมเส้นเล็ก';
-  if (pitchMm >= 2.4) return 'แนะนำ: เข็ม Tapestry #22, ด้าย 4–6 เส้น';
-  if (pitchMm >= 1.75) return 'แนะนำ: เข็ม Tapestry #24, ด้าย 2–3 เส้น (เทียบ Aida 14ct)';
-  if (pitchMm >= 1.5) return 'แนะนำ: เข็ม Tapestry #26, ด้าย 2 เส้น (เทียบ Aida 16ct)';
-  return 'แนะนำ: เข็ม Tapestry #26–28, ด้าย 1–2 เส้น (เทียบ Aida 18ct ขึ้นไป)';
+  if (pitchMm >= 3.2) return t('แนะนำ: เข็ม Tapestry #18–20 หรือเข็มพลาสติก, ด้าย 6 เส้น/ไหมพรมเส้นเล็ก', 'Suggested: Tapestry needle #18–20 or a plastic needle, 6 strands or fine yarn');
+  if (pitchMm >= 2.4) return t('แนะนำ: เข็ม Tapestry #22, ด้าย 4–6 เส้น', 'Suggested: Tapestry needle #22, 4–6 strands');
+  if (pitchMm >= 1.75) return t('แนะนำ: เข็ม Tapestry #24, ด้าย 2–3 เส้น (เทียบ Aida 14ct)', 'Suggested: Tapestry needle #24, 2–3 strands (like Aida 14ct)');
+  if (pitchMm >= 1.5) return t('แนะนำ: เข็ม Tapestry #26, ด้าย 2 เส้น (เทียบ Aida 16ct)', 'Suggested: Tapestry needle #26, 2 strands (like Aida 16ct)');
+  return t('แนะนำ: เข็ม Tapestry #26–28, ด้าย 1–2 เส้น (เทียบ Aida 18ct ขึ้นไป)', 'Suggested: Tapestry needle #26–28, 1–2 strands (like Aida 18ct or finer)');
 }

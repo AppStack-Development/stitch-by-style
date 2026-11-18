@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import type { Pattern } from '../types';
 import { buildPlate } from '../lib/plate';
+import { t } from '../lib/i18n';
 
 interface Ctx {
   renderer: THREE.WebGLRenderer;
@@ -145,7 +146,7 @@ export function Preview3D({ pattern }: { pattern: Pattern }) {
   return (
     <div className="preview3d">
       <div ref={wrap} className="preview3d-canvas" />
-      <p className="hint">ลากเพื่อหมุน · scroll เพื่อซูม · คลิกขวาลากเพื่อเลื่อน — ภาพจำลองนี้สร้างจากตารางช่อง ใช้ดูภาพรวมก่อนปักจริง</p>
+      <p className="hint">{t('ลากเพื่อหมุน · scroll เพื่อซูม · คลิกขวาลากเพื่อเลื่อน — ภาพจำลองนี้สร้างจากตารางช่อง ใช้ดูภาพรวมก่อนปักจริง', 'Drag to rotate · scroll to zoom · right-drag to pan — a rough preview built from the grid, for an overview before you stitch')}</p>
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { StitchMode } from './pages/StitchMode';
 import { TransferView } from './pages/TransferView';
 import { Guide } from './pages/Guide';
 import { loadPattern } from './lib/storage';
+import { t } from './lib/i18n';
 
 export function navigate(hash: string) {
   location.hash = hash;
@@ -37,7 +38,7 @@ export function App() {
   if (route === 'stitch' && arg) return <StitchMode key={arg} id={arg} />;
   if (route === 'print' && arg) {
     const p = loadPattern(arg);
-    if (!p) return <div className="empty-state"><h2>ไม่พบลายนี้</h2><a className="btn primary" href="#/">กลับหน้าแรก</a></div>;
+    if (!p) return <div className="empty-state"><h2>{t('ไม่พบลายนี้', 'Pattern not found')}</h2><a className="btn primary" href="#/">{t('กลับหน้าแรก', 'Back to home')}</a></div>;
     return <PrintView key={arg} pattern={p} backHref={`#/edit/${arg}`} />;
   }
   if (route === 's' && arg) return <SharedView key={arg} data={parts.slice(1).join('/')} />;

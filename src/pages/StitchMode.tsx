@@ -8,11 +8,12 @@ import { contrastText } from '../lib/threads';
 import { StitchCanvas, type MarkMode, type StitchCanvasHandle } from '../components/StitchCanvas';
 import { Icon, type IconName } from '../components/Icon';
 import { TransferDialog } from '../components/TransferDialog';
+import { t } from '../lib/i18n';
 
 const MODES: { id: MarkMode; icon: IconName; label: string; hint: string }[] = [
-  { id: 'tap', icon: 'tap', label: 'แตะ', hint: 'แตะช่องเพื่อทำเครื่องหมาย · ลากเพื่อเลื่อน' },
-  { id: 'paint', icon: 'pencil', label: 'ระบาย', hint: 'ลากผ่านหลายช่องเพื่อทำเครื่องหมาย · ใช้ 2 นิ้วเพื่อเลื่อน/ซูม' },
-  { id: 'region', icon: 'fill', label: 'ทั้งกลุ่ม', hint: 'แตะครั้งเดียว ทำเครื่องหมายช่องสีเดียวกันที่ติดกันทั้งกลุ่ม' },
+  { id: 'tap', icon: 'tap', label: t('แตะ', 'Tap'), hint: t('แตะช่องเพื่อทำเครื่องหมาย · ลากเพื่อเลื่อน', 'Tap a cell to mark it · drag to pan') },
+  { id: 'paint', icon: 'pencil', label: t('ระบาย', 'Paint'), hint: t('ลากผ่านหลายช่องเพื่อทำเครื่องหมาย · ใช้ 2 นิ้วเพื่อเลื่อน/ซูม', 'Drag across cells to mark them · use 2 fingers to pan/zoom') },
+  { id: 'region', icon: 'fill', label: t('ทั้งกลุ่ม', 'Area'), hint: t('แตะครั้งเดียว ทำเครื่องหมายช่องสีเดียวกันที่ติดกันทั้งกลุ่ม', 'One tap marks a whole connected area of the same color') },
 ];
 
 const ones = (s: string) => {
@@ -26,8 +27,8 @@ function Clock({ base, since }: { base: number; since: number | null }) {
   const [, tick] = useState(0);
   useEffect(() => {
     if (since == null) return;
-    const t = setInterval(() => tick((n) => n + 1), 1000);
-    return () => clearInterval(t);
+    const iv = setInterval(() => tick((n) => n + 1), 1000);
+    return () => clearInterval(iv);
   }, [since]);
   return <>{fmtClock(base + (since == null ? 0 : (Date.now() - since) / 1000))}</>;
 }
@@ -64,8 +65,8 @@ export function StitchMode({ id }: { id: string }) {
     if (!pattern) return;
     if (progress === pattern.progress) return;
     dirty.current = true;
-    const t = setTimeout(flush, 400);
-    return () => clearTimeout(t);
+    const tm = setTimeout(flush, 400);
+    return () => clearTimeout(tm);
   }, [progress, pattern, flush]);
 
   // fold the running timer into the stored seconds
@@ -177,8 +178,8 @@ export function StitchMode({ id }: { id: string }) {
   if (!pattern || !stats) {
     return (
       <div className="empty-state">
-        <h2>ไม่พบลายนี้</h2>
-        <a className="btn primary" href="#/">กลับหน้าแรก</a>
+        <h2>{t('ไม่พบลายนี้', 'Pattern not found')}</h2>
+        <a className="btn primary" href="#/">{t('กลับหน้าแรก', 'Back to home')}</a>
       </div>
     );
   }
@@ -192,13 +193,13 @@ export function StitchMode({ id }: { id: string }) {
   const markColor = (value: boolean) => {
     if (focus == null || !focusThread) return;
     const label = [focusThread.brand, focusThread.code].filter(Boolean).join(' ') || focusThread.name;
-    if (!confirm(value ? `ทำเครื่องหมายว่าปัก ${label} ครบทุกช่องแล้ว?` : `ล้างเครื่องหมายของ ${label} ทั้งหมด?`)) return;
+    if (!confirm(value ? t(`ทำเครื่องหมายว่าปัก ${label} ครบทุกช่องแล้ว?`, `Mark every ${label} cell as stitched?`) : t(`ล้างเครื่องหมายของ ${label} ทั้งหมด?`, `Clear all marks for ${label}?`))) return;
     onStrokeStart();
     onMark(cellsOfColor(p, focus), value);
   };
 
   const resetAll = () => {
-    if (!confirm('ล้างความคืบหน้าทั้งหมดของลายนี้? (เวลาที่จับไว้และสถิติรายวันจะถูกล้างด้วย)')) return;
+    if (!confirm(t('ล้างความคืบหน้าทั้งหมดของลายนี้? (เวลาที่จับไว้และสถิติรายวันจะถูกล้างด้วย)', 'Clear all progress for this pattern? (Tracked time and daily stats will be cleared too.)'))) return;
     onStrokeStart();
     setTimerSince(null);
     setProgress(emptyProgress(p.cols * p.rows));
@@ -213,29 +214,29 @@ export function StitchMode({ id }: { id: string }) {
   return (
     <div className="editor stitch-page">
       <header className="editor-top">
-        <a className="icon-btn" href={`#/edit/${p.id}`} title="กลับไปแก้ไขลาย"><Icon name="back" /></a>
+        <a className="icon-btn" href={`#/edit/${p.id}`} title={t('กลับไปแก้ไขลาย', 'Back to editor')}><Icon name="back" /></a>
         <div className="stitch-title">
           <b>{p.name}</b>
-          <small>โหมดปัก</small>
+          <small>{t('โหมดปัก', 'Stitch mode')}</small>
         </div>
-        <div className="progress-pill" title={`${stats.done.toLocaleString()} / ${stats.total.toLocaleString()} ฝีเข็ม`}>
+        <div className="progress-pill" title={t(`${stats.done.toLocaleString()} / ${stats.total.toLocaleString()} ฝีเข็ม`, `${stats.done.toLocaleString()} / ${stats.total.toLocaleString()} stitches`)}>
           <div className="bar"><i style={{ width: `${stats.pct}%` }} /></div>
           <span>{stats.pct < 10 && stats.pct > 0 ? stats.pct.toFixed(1) : Math.floor(stats.pct)}%</span>
         </div>
         <div className="spacer" />
         <button className={'btn sm timer' + (timerSince != null ? ' on' : '')}
           onClick={() => (timerSince != null ? stopTimer() : setTimerSince(Date.now()))}
-          title={timerSince != null ? 'หยุดจับเวลา' : 'เริ่มจับเวลาการปัก'}>
+          title={timerSince != null ? t('หยุดจับเวลา', 'Stop timer') : t('เริ่มจับเวลาการปัก', 'Start stitching timer')}>
           <Icon name={timerSince != null ? 'pause' : 'play'} size={15} />
           <Clock base={progress.seconds} since={timerSince} />
         </button>
-        <a className="icon-btn" href="#/guide/stitch" onClick={flush} title="วิธีใช้โหมดปัก"><Icon name="help" /></a>
-        <button className="icon-btn" onClick={() => { flush(); setTransfer(true); }} title="ส่งไปอีกเครื่อง (QR) พร้อมความคืบหน้า">
+        <a className="icon-btn" href="#/guide/stitch" onClick={flush} title={t('วิธีใช้โหมดปัก', 'Stitch mode help')}><Icon name="help" /></a>
+        <button className="icon-btn" onClick={() => { flush(); setTransfer(true); }} title={t('ส่งไปอีกเครื่อง (QR) พร้อมความคืบหน้า', 'Send to another device (QR) with progress')}>
           <Icon name="phone" />
         </button>
         {wakeSupported && (
           <button className={'icon-btn' + (awake ? ' on' : '')} onClick={() => setAwake(!awake)}
-            title={awake ? 'ปิด: ให้หน้าจอดับตามปกติ' : 'เปิดหน้าจอค้างไว้ระหว่างปัก'}>
+            title={awake ? t('ปิด: ให้หน้าจอดับตามปกติ', 'Off: let the screen sleep as usual') : t('เปิดหน้าจอค้างไว้ระหว่างปัก', 'Keep the screen on while stitching')}>
             <Icon name="sun" />
           </button>
         )}
@@ -252,16 +253,16 @@ export function StitchMode({ id }: { id: string }) {
                 </button>
               ))}
             </div>
-            <button className="icon-btn sm bg" onClick={doUndo} disabled={!undo.current.length} title="เลิกทำ (Ctrl/⌘+Z)"><Icon name="undo" size={17} /></button>
-            <button className="icon-btn sm bg hide-xs" onClick={() => canvas.current?.zoomBy(1.25)} title="ซูมเข้า"><Icon name="zoomIn" size={17} /></button>
-            <button className="icon-btn sm bg hide-xs" onClick={() => canvas.current?.zoomBy(0.8)} title="ซูมออก"><Icon name="zoomOut" size={17} /></button>
-            <button className="icon-btn sm bg" onClick={() => canvas.current?.fit()} title="พอดีจอ"><Icon name="fit" size={17} /></button>
-            <button className={'icon-btn sm bg' + (grid ? ' on' : '')} onClick={() => setGrid(!grid)} title="เส้นตาราง"><Icon name="grid" size={17} /></button>
-            <select className="view-select" value={view} onChange={(e) => setView(e.target.value as ViewMode)} aria-label="มุมมอง">
-              <option value="both">สี + สัญลักษณ์</option>
-              <option value="color">สี</option>
-              <option value="symbol">สัญลักษณ์</option>
-              <option value="stitch">ฝีเข็ม</option>
+            <button className="icon-btn sm bg" onClick={doUndo} disabled={!undo.current.length} title={t('เลิกทำ (Ctrl/⌘+Z)', 'Undo (Ctrl/⌘+Z)')}><Icon name="undo" size={17} /></button>
+            <button className="icon-btn sm bg hide-xs" onClick={() => canvas.current?.zoomBy(1.25)} title={t('ซูมเข้า', 'Zoom in')}><Icon name="zoomIn" size={17} /></button>
+            <button className="icon-btn sm bg hide-xs" onClick={() => canvas.current?.zoomBy(0.8)} title={t('ซูมออก', 'Zoom out')}><Icon name="zoomOut" size={17} /></button>
+            <button className="icon-btn sm bg" onClick={() => canvas.current?.fit()} title={t('พอดีจอ', 'Fit to screen')}><Icon name="fit" size={17} /></button>
+            <button className={'icon-btn sm bg' + (grid ? ' on' : '')} onClick={() => setGrid(!grid)} title={t('เส้นตาราง', 'Grid lines')}><Icon name="grid" size={17} /></button>
+            <select className="view-select" value={view} onChange={(e) => setView(e.target.value as ViewMode)} aria-label={t('มุมมอง', 'View')}>
+              <option value="both">{t('สี + สัญลักษณ์', 'Color + symbol')}</option>
+              <option value="color">{t('สี', 'Color')}</option>
+              <option value="symbol">{t('สัญลักษณ์', 'Symbol')}</option>
+              <option value="stitch">{t('ฝีเข็ม', 'Stitches')}</option>
             </select>
           </div>
 
@@ -280,14 +281,14 @@ export function StitchMode({ id }: { id: string }) {
 
           {complete ? (
             <div className="stitch-banner done">
-              <span>🎉 ปักครบทุกช่องแล้ว! {progress.seconds > 0 && `ใช้เวลา ${fmtDuration(progress.seconds)}`}</span>
+              <span>🎉 {t('ปักครบทุกช่องแล้ว!', 'All stitched!')} {progress.seconds > 0 && t(`ใช้เวลา ${fmtDuration(progress.seconds)}`, `Time spent: ${fmtDuration(progress.seconds)}`)}</span>
             </div>
           ) : focused && focusThread ? (
             <div className="stitch-banner">
               <span className="sym" style={{ background: focusThread.hex, color: contrastText(focusThread.hex) }}>{focusThread.symbol}</span>
               <span className="grow"><b>{[focusThread.brand, focusThread.code].filter(Boolean).join(' ') || focusThread.name}</b> {focused.done}/{focused.total}</span>
-              <button className="btn sm" onClick={showRemaining}><Icon name="target" size={15} /> ช่องที่เหลือ</button>
-              <button className="icon-btn sm" onClick={() => setFocus(null)} title="ดูทุกสี (Esc)"><Icon name="close" size={16} /></button>
+              <button className="btn sm" onClick={showRemaining}><Icon name="target" size={15} /> {t('ช่องที่เหลือ', 'Remaining')}</button>
+              <button className="icon-btn sm" onClick={() => setFocus(null)} title={t('ดูทุกสี (Esc)', 'Show all colors (Esc)')}><Icon name="close" size={16} /></button>
             </div>
           ) : (
             <div className="stitch-banner hint-only">{MODES.find((m) => m.id === mode)!.hint}</div>
@@ -300,29 +301,29 @@ export function StitchMode({ id }: { id: string }) {
               <div className="big-pct">{stats.pct.toFixed(stats.pct > 0 && stats.pct < 10 ? 1 : 0)}<small>%</small></div>
               <div className="bar lg"><i style={{ width: `${stats.pct}%` }} /></div>
               <div className="stat-grid">
-                <div><b>{stats.done.toLocaleString()}</b><span>จาก {stats.total.toLocaleString()} ฝีเข็ม</span></div>
-                <div><b>{stats.today.toLocaleString()}</b><span>ฝีเข็มวันนี้</span></div>
-                <div><b>{progress.seconds >= 60 ? fmtDuration(progress.seconds) : '—'}</b><span>เวลาที่จับไว้</span></div>
+                <div><b>{stats.done.toLocaleString()}</b><span>{t(`จาก ${stats.total.toLocaleString()} ฝีเข็ม`, `of ${stats.total.toLocaleString()} stitches`)}</span></div>
+                <div><b>{stats.today.toLocaleString()}</b><span>{t('ฝีเข็มวันนี้', 'stitches today')}</span></div>
+                <div><b>{progress.seconds >= 60 ? fmtDuration(progress.seconds) : '—'}</b><span>{t('เวลาที่จับไว้', 'time tracked')}</span></div>
                 <div>
                   <b>{stats.etaSeconds != null ? fmtDuration(stats.etaSeconds) : '—'}</b>
-                  <span>{stats.rate != null ? `เหลือโดยประมาณ (${Math.round(stats.rate)} ฝีเข็ม/ชม.)` : 'จับเวลา 5 นาทีขึ้นไปเพื่อประมาณเวลา'}</span>
+                  <span>{stats.rate != null ? t(`เหลือโดยประมาณ (${Math.round(stats.rate)} ฝีเข็ม/ชม.)`, `est. remaining (${Math.round(stats.rate)} stitches/hr)`) : t('จับเวลา 5 นาทีขึ้นไปเพื่อประมาณเวลา', 'Track 5+ min for an estimate')}</span>
                 </div>
               </div>
             </section>
 
-            <h4>แต่ละสี <small>แตะเพื่อปักทีละสี</small></h4>
+            <h4>{t(<>แต่ละสี <small>แตะเพื่อปักทีละสี</small></>, <>By color <small>tap to stitch one color at a time</small></>)}</h4>
             <div className="color-progress">
               {colors.map((c) => {
-                const t = p.palette[c.index];
+                const thr = p.palette[c.index];
                 const pct = (c.done / c.total) * 100;
                 return (
-                  <button key={t.id} className={'cp-row' + (focus === c.index ? ' active' : '') + (c.done === c.total ? ' finished' : '')}
+                  <button key={thr.id} className={'cp-row' + (focus === c.index ? ' active' : '') + (c.done === c.total ? ' finished' : '')}
                     onClick={() => setFocus(focus === c.index ? null : c.index)}>
-                    <span className="sym" style={{ background: t.hex, color: contrastText(t.hex) }}>{c.done === c.total ? '✓' : t.symbol}</span>
+                    <span className="sym" style={{ background: thr.hex, color: contrastText(thr.hex) }}>{c.done === c.total ? '✓' : thr.symbol}</span>
                     <span className="cp-label">
-                      <b>{[t.brand, t.code].filter(Boolean).join(' ') || t.name}</b>
-                      <small>{t.name}</small>
-                      <span className="bar"><i style={{ width: `${pct}%`, background: t.hex }} /></span>
+                      <b>{[thr.brand, thr.code].filter(Boolean).join(' ') || thr.name}</b>
+                      <small>{thr.name}</small>
+                      <span className="bar"><i style={{ width: `${pct}%`, background: thr.hex }} /></span>
                     </span>
                     <span className="cp-count">{c.done}/{c.total}</span>
                   </button>
@@ -332,13 +333,13 @@ export function StitchMode({ id }: { id: string }) {
 
             {focus != null && (
               <div className="btn-row">
-                <button className="btn sm" onClick={() => markColor(true)}><Icon name="check" size={15} /> สีนี้ปักครบแล้ว</button>
-                <button className="btn sm ghost" onClick={() => markColor(false)}>ล้างสีนี้</button>
+                <button className="btn sm" onClick={() => markColor(true)}><Icon name="check" size={15} /> {t('สีนี้ปักครบแล้ว', 'Color done')}</button>
+                <button className="btn sm ghost" onClick={() => markColor(false)}>{t('ล้างสีนี้', 'Clear color')}</button>
               </div>
             )}
 
-            <button className="btn sm danger reset-btn" onClick={resetAll}><Icon name="trash" size={15} /> ล้างความคืบหน้าทั้งหมด</button>
-            <p className="hint">ความคืบหน้าบันทึกอัตโนมัติในเบราว์เซอร์นี้ และไม่ถูกส่งไปกับลิงก์แชร์ · กด 1–9 เพื่อเลือกสี, Esc เพื่อดูทุกสี</p>
+            <button className="btn sm danger reset-btn" onClick={resetAll}><Icon name="trash" size={15} /> {t('ล้างความคืบหน้าทั้งหมด', 'Clear all progress')}</button>
+            <p className="hint">{t('ความคืบหน้าบันทึกอัตโนมัติในเบราว์เซอร์นี้ และไม่ถูกส่งไปกับลิงก์แชร์ · กด 1–9 เพื่อเลือกสี, Esc เพื่อดูทุกสี', 'Progress saves automatically in this browser and is not included in share links · press 1–9 to pick a color, Esc to show all')}</p>
           </div>
         </aside>
       </div>

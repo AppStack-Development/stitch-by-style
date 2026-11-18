@@ -4,6 +4,7 @@ import type { Pattern } from '../types';
 import { transferUrl } from '../lib/share';
 import { computeProgress } from '../lib/progress';
 import { Icon } from './Icon';
+import { t } from '../lib/i18n';
 
 interface Props {
   pattern: Pattern;
@@ -72,44 +73,44 @@ export function TransferDialog({ pattern, onClose }: Props) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      prompt('คัดลอกลิงก์นี้', url);
+      prompt(t('คัดลอกลิงก์นี้', 'Copy this link'), url);
     }
   };
   const canShare = typeof navigator.share === 'function';
-  const share = () => navigator.share({ title: pattern.name, text: `ลายปัก "${pattern.name}" (สำหรับเปิดในอีกเครื่อง)`, url }).catch(() => {});
+  const share = () => navigator.share({ title: pattern.name, text: t(`ลายปัก "${pattern.name}" (สำหรับเปิดในอีกเครื่อง)`, `Pattern "${pattern.name}" (to open on another device)`), url }).catch(() => {});
 
   return (
     <div className="modal-back" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="modal transfer" role="dialog" aria-label="ส่งไปอีกเครื่อง">
+      <div className="modal transfer" role="dialog" aria-label={t('ส่งไปอีกเครื่อง', 'Send to another device')}>
         <header className="modal-head">
-          <h3><Icon name="phone" /> ส่งไปมือถือ / อีกเครื่อง</h3>
-          <button className="icon-btn" onClick={onClose} title="ปิด (Esc)"><Icon name="close" /></button>
+          <h3><Icon name="phone" /> {t('ส่งไปมือถือ / อีกเครื่อง', 'Send to phone / another device')}</h3>
+          <button className="icon-btn" onClick={onClose} title={t('ปิด (Esc)', 'Close (Esc)')}><Icon name="close" /></button>
         </header>
         <div className="transfer-body">
           {tooBig ? (
-            <p className="error">ลายนี้ใหญ่เกินกว่าจะใส่ใน QR ได้ ใช้ “คัดลอกลิงก์” แล้วส่งให้ตัวเองทาง LINE/อีเมล หรือส่งออกเป็นไฟล์ .json แทน</p>
+            <p className="error">{t('ลายนี้ใหญ่เกินกว่าจะใส่ใน QR ได้ ใช้ “คัดลอกลิงก์” แล้วส่งให้ตัวเองทาง LINE/อีเมล หรือส่งออกเป็นไฟล์ .json แทน', 'This pattern is too big for a QR code. Use “Copy link” and send it to yourself by LINE or email, or export it as a .json file instead.')}</p>
           ) : (
-            <button className={'qr-box' + (big ? ' big' : '')} onClick={() => setBig(!big)} title={big ? 'ย่อ' : 'ขยาย QR ให้สแกนง่ายขึ้น'}>
+            <button className={'qr-box' + (big ? ' big' : '')} onClick={() => setBig(!big)} title={big ? t('ย่อ', 'Shrink') : t('ขยาย QR ให้สแกนง่ายขึ้น', 'Enlarge QR for easier scanning')}>
               <canvas ref={canvasRef} />
             </button>
           )}
           <div className="transfer-info">
             <b>{pattern.name}</b>
-            <span className="muted">{pct > 0 ? `ความคืบหน้า ${pct < 10 ? pct.toFixed(1) : Math.floor(pct)}% จะติดไปด้วย` : 'ยังไม่มีความคืบหน้าการปัก'}</span>
+            <span className="muted">{pct > 0 ? t(`ความคืบหน้า ${pct < 10 ? pct.toFixed(1) : Math.floor(pct)}% จะติดไปด้วย`, `Your ${pct < 10 ? pct.toFixed(1) : Math.floor(pct)}% progress goes with it`) : t('ยังไม่มีความคืบหน้าการปัก', 'No stitching progress yet')}</span>
             <ol>
-              <li>เปิดกล้องมือถือแล้วสแกน QR นี้</li>
-              <li>กด “เปิดในเครื่องนี้” บนมือถือ</li>
-              <li>ปักเสร็จแล้วส่งกลับมาด้วยวิธีเดียวกัน ระบบจะรวมความคืบหน้าให้</li>
+              <li>{t('เปิดกล้องมือถือแล้วสแกน QR นี้', 'Scan this QR code with your phone camera')}</li>
+              <li>{t('บนมือถือ กด “เปิดในโหมดปัก” หรือ “เปิดในตัวแก้ไข”', 'On the phone, tap “Open in Stitch mode” or “Open in editor”')}</li>
+              <li>{t('ปักเสร็จแล้วส่งกลับมาด้วยวิธีเดียวกัน ระบบจะรวมความคืบหน้าให้', 'When you’re done, send it back the same way and your progress will be merged')}</li>
             </ol>
-            {modules > 105 && <p className="hint">QR ค่อนข้างละเอียด กด QR เพื่อขยายเต็มจอจะสแกนง่ายขึ้น</p>}
-            {isLocalHost() && <p className="error small">ตอนนี้เปิดจาก {location.host} ซึ่งมือถือเข้าไม่ได้ ใช้จากเว็บจริง stitch-by-style.vercel.app</p>}
+            {modules > 105 && <p className="hint">{t('QR ค่อนข้างละเอียด กด QR เพื่อขยายเต็มจอจะสแกนง่ายขึ้น', 'This QR code is quite dense. Tap it to go full screen for easier scanning.')}</p>}
+            {isLocalHost() && <p className="error small">{t(<>ตอนนี้เปิดจาก {location.host} ซึ่งมือถือเข้าไม่ได้ ใช้จากเว็บจริง stitch-by-style.vercel.app</>, <>You’re on {location.host}, which a phone can’t reach. Use the live site stitch-by-style.vercel.app</>)}</p>}
           </div>
         </div>
         <footer className="modal-foot">
-          <span className="hint">ลิงก์นี้มีความคืบหน้าของคุณ ใช้ส่งให้ตัวเอง · ถ้าจะแชร์ให้เพื่อนใช้ “คัดลอกลิงก์แชร์”</span>
+          <span className="hint">{t('ลิงก์นี้มีความคืบหน้าของคุณ ใช้ส่งให้ตัวเอง · ถ้าจะแชร์ให้เพื่อนใช้ “คัดลอกลิงก์แชร์”', 'This link includes your progress, so send it only to yourself · To share with a friend, use “Copy share link”')}</span>
           <div className="spacer" />
-          {canShare && <button className="btn" onClick={share} disabled={!url}><Icon name="share" size={16} /> แชร์…</button>}
-          <button className="btn primary" onClick={copy} disabled={!url}><Icon name={copied ? 'check' : 'link'} size={16} /> {copied ? 'คัดลอกแล้ว' : 'คัดลอกลิงก์'}</button>
+          {canShare && <button className="btn" onClick={share} disabled={!url}><Icon name="share" size={16} /> {t('แชร์…', 'Share…')}</button>}
+          <button className="btn primary" onClick={copy} disabled={!url}><Icon name={copied ? 'check' : 'link'} size={16} /> {copied ? t('คัดลอกแล้ว', 'Copied') : t('คัดลอกลิงก์', 'Copy link')}</button>
         </footer>
       </div>
     </div>

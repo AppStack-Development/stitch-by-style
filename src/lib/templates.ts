@@ -1,4 +1,5 @@
 import type { CellKind } from '../types';
+import { t } from './i18n';
 
 export interface TemplateResult {
   cols: number;
@@ -170,8 +171,8 @@ const tabFor = (w: number) => {
 export const TEMPLATES: TemplateDef[] = [
   {
     id: 'bookmark',
-    name: 'ที่คั่นหนังสือ',
-    description: 'แผ่นยาว มีรูร้อยพู่ด้านบน',
+    name: t('ที่คั่นหนังสือ', 'Bookmark'),
+    description: t('แผ่นยาว มีรูร้อยพู่ด้านบน', 'Long strip with a tassel hole at the top'),
     w: 12, h: 40, min: 8, max: 30, lockAspect: false,
     build: (w, h) =>
       shapeGrid(w, h, roundRect(1, 1, 0.25), {
@@ -181,22 +182,22 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     id: 'coaster-round',
-    name: 'ที่รองแก้วกลม',
-    description: 'วงกลม ขอบหนา 1 ช่อง',
+    name: t('ที่รองแก้วกลม', 'Round coaster'),
+    description: t('วงกลม ขอบหนา 1 ช่อง', 'Circle with a 1-cell rim'),
     w: 30, h: 30, min: 12, max: 70, lockAspect: true,
     build: (w, h) => shapeGrid(w, h, circle),
   },
   {
     id: 'coaster-square',
-    name: 'ที่รองแก้วสี่เหลี่ยม',
-    description: 'สี่เหลี่ยมมุมมน',
+    name: t('ที่รองแก้วสี่เหลี่ยม', 'Square coaster'),
+    description: t('สี่เหลี่ยมมุมมน', 'Rounded square'),
     w: 30, h: 30, min: 10, max: 70, lockAspect: false,
     build: (w, h) => shapeGrid(w, h, roundRect(1, 1, 0.2)),
   },
   {
     id: 'keychain-heart',
-    name: 'พวงกุญแจหัวใจ',
-    description: 'หัวใจ พร้อมห่วงร้อยพวงกุญแจ',
+    name: t('พวงกุญแจหัวใจ', 'Heart keychain'),
+    description: t('หัวใจ พร้อมห่วงร้อยพวงกุญแจ', 'Heart with a keyring loop'),
     w: 22, h: 24, min: 12, max: 50, lockAspect: true,
     build: (w, h) => {
       const tab = tabFor(w);
@@ -205,8 +206,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     id: 'keychain-round',
-    name: 'พวงกุญแจกลม',
-    description: 'วงกลม พร้อมห่วงด้านบน',
+    name: t('พวงกุญแจกลม', 'Round keychain'),
+    description: t('วงกลม พร้อมห่วงด้านบน', 'Circle with a loop on top'),
     w: 20, h: 23, min: 10, max: 50, lockAspect: true,
     build: (w, h) => {
       const tab = tabFor(w);
@@ -215,8 +216,8 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     id: 'ornament-star',
-    name: 'ดาวแขวนตกแต่ง',
-    description: 'ดาว 5 แฉก พร้อมห่วงแขวน',
+    name: t('ดาวแขวนตกแต่ง', 'Star ornament'),
+    description: t('ดาว 5 แฉก พร้อมห่วงแขวน', '5-point star with a hanging loop'),
     w: 28, h: 31, min: 16, max: 60, lockAspect: true,
     build: (w, h) => {
       const tab = tabFor(w);
@@ -225,15 +226,15 @@ export const TEMPLATES: TemplateDef[] = [
   },
   {
     id: 'badge-hex',
-    name: 'เข็มกลัดหกเหลี่ยม',
-    description: 'หกเหลี่ยม ใช้ทำเข็มกลัด/แม่เหล็ก',
+    name: t('เข็มกลัดหกเหลี่ยม', 'Hexagon badge'),
+    description: t('หกเหลี่ยม ใช้ทำเข็มกลัด/แม่เหล็ก', 'Hexagon for a pin or magnet'),
     w: 24, h: 22, min: 10, max: 60, lockAspect: true,
     build: (w, h) => shapeGrid(w, h, hexagon),
   },
   {
     id: 'patch-card',
-    name: 'การ์ด / แพตช์',
-    description: 'สี่เหลี่ยมผืนผ้า ขอบ 2 ช่อง',
+    name: t('การ์ด / แพตช์', 'Card / patch'),
+    description: t('สี่เหลี่ยมผืนผ้า ขอบ 2 ช่อง', 'Rectangle with a 2-cell rim'),
     w: 24, h: 32, min: 8, max: 80, lockAspect: false,
     build: (w, h) => shapeGrid(w, h, roundRect(1, 1, 0.08), { border: 2 }),
   },

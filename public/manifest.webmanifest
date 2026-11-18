@@ -1,7 +1,7 @@
 {
-  "name": "Stitch by Style — ออกแบบลายปัก",
+  "name": "Stitch by Style",
   "short_name": "Stitch by Style",
-  "description": "ออกแบบและติดตามการปักลายบนผ้าและชิ้นงานพิมพ์ 3 มิติ",
+  "description": "ออกแบบและติดตามการปักลายบนผ้าและชิ้นงานพิมพ์ 3 มิติ · Design and track cross-stitch patterns for fabric and 3D prints",
   "id": "./",
   "start_url": "./",
   "scope": "./",

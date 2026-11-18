@@ -11,6 +11,8 @@ import { LogoMark } from '../components/LogoMark';
 import { navigate } from '../App';
 import { useInstall } from '../lib/pwa';
 import { TEMPLATES } from '../lib/templates';
+import { t, locale } from '../lib/i18n';
+import { LangSwitch } from '../components/LangSwitch';
 
 /**
  * Card art drawn from the real heart-keychain template, so every hole sits exactly
@@ -75,47 +77,45 @@ export function Home() {
       try {
         raw = JSON.parse(await f.text());
       } catch {
-        throw new Error('ไฟล์นี้ไม่ใช่ไฟล์ลาย (.json) ที่ส่งออกจาก Stitch by Style');
+        throw new Error(t('ไฟล์นี้ไม่ใช่ไฟล์ลาย (.json) ที่ส่งออกจาก Stitch by Style', 'This is not a pattern file (.json) exported from Stitch by Style'));
       }
       const p = normalizePattern(raw);
       const copy = { ...p, id: uid(), updatedAt: Date.now() };
       savePattern(copy);
       navigate(`#/edit/${copy.id}`);
     } catch (e) {
-      alert('นำเข้าไม่สำเร็จ: ' + (e as Error).message);
+      alert(t('นำเข้าไม่สำเร็จ: ', 'Import failed: ') + (e as Error).message);
     }
   };
 
   const duplicate = (p: Pattern) => {
-    savePattern({ ...p, id: uid(), name: p.name + ' (สำเนา)', createdAt: Date.now(), updatedAt: Date.now() });
+    savePattern({ ...p, id: uid(), name: p.name + t(' (สำเนา)', ' (copy)'), createdAt: Date.now(), updatedAt: Date.now() });
     refresh();
   };
 
   return (
     <div className="home">
       <header className="site-head">
-        <a className="brand" href="#/" aria-label="Stitch by Style หน้าแรก"><LogoMark size={36} /><span className="wordmark">Stitch by Style</span></a>
+        <a className="brand" href="#/" aria-label={t('Stitch by Style หน้าแรก', 'Stitch by Style home')}><LogoMark size={36} /><span className="wordmark">Stitch by Style</span></a>
         <div className="spacer" />
         {(inst.canPrompt || inst.iosManual) && (
-          <button className="btn" onClick={() => (inst.canPrompt ? inst.install() : setIosHelp(!iosHelp))} title="ติดตั้งเป็นแอปบนหน้าจอโฮม ใช้งานได้แม้ออฟไลน์">
-            <Icon name="install" size={16} /> <span className="hide-xs">ติดตั้งแอป</span>
+          <button className="btn" onClick={() => (inst.canPrompt ? inst.install() : setIosHelp(!iosHelp))} title={t('ติดตั้งเป็นแอปบนหน้าจอโฮม ใช้งานได้แม้ออฟไลน์', 'Install as an app on your home screen; works offline')}>
+            <Icon name="install" size={16} /> <span className="hide-xs">{t('ติดตั้งแอป', 'Install app')}</span>
           </button>
         )}
-        <a className="btn ghost" href="#/guide" title="คู่มือการใช้งาน" aria-label="คู่มือการใช้งาน"><Icon name="book" size={16} /> <span className="hide-sm">คู่มือ</span></a>
-        <button className="btn ghost" onClick={() => fileRef.current?.click()} title="นำเข้าไฟล์ลาย (.json)" aria-label="นำเข้าไฟล์ลาย"><Icon name="upload" size={16} /> <span className="hide-sm">นำเข้าไฟล์ลาย</span></button>
-        <input ref={fileRef} type="file" accept=".json,application/json" hidden
-          onChange={(e) => { const f = e.target.files?.[0]; if (f) importFile(f); e.target.value = ''; }} />
+        <a className="btn ghost" href="#/guide" title={t('คู่มือการใช้งาน', 'User guide')} aria-label={t('คู่มือการใช้งาน', 'User guide')}><Icon name="book" size={16} /> <span className="hide-sm">{t('คู่มือ', 'Guide')}</span></a>
+        <LangSwitch />
       </header>
 
       {iosHelp && (
         <div className="ios-help">
-          <span>บน iPhone/iPad: กดปุ่ม <b>แชร์</b> (สี่เหลี่ยมมีลูกศรชี้ขึ้น) ใน Safari แล้วเลือก <b>“เพิ่มไปยังหน้าจอโฮม”</b></span>
-          <button className="icon-btn sm" onClick={() => setIosHelp(false)} title="ปิด"><Icon name="close" size={16} /></button>
+          <span>{t(<>บน iPhone/iPad: กดปุ่ม <b>แชร์</b> (สี่เหลี่ยมมีลูกศรชี้ขึ้น) ใน Safari แล้วเลือก <b>“เพิ่มไปยังหน้าจอโฮม”</b></>, <>On iPhone/iPad: tap <b>Share</b> (the square with an up arrow) in Safari, then choose <b>“Add to Home Screen”</b></>)}</span>
+          <button className="icon-btn sm" onClick={() => setIosHelp(false)} title={t('ปิด', 'Close')}><Icon name="close" size={16} /></button>
         </div>
       )}
       <section className="hero">
-        <h1>ออกแบบลายปัก<br />สำหรับผ้าและชิ้นงานพิมพ์ 3 มิติ</h1>
-        <p>เติมสีลงในช่อง วางแผนด้าย เข็ม และขนาดชิ้นงาน แล้วพิมพ์แผนผังหรือแชร์ให้เพื่อนได้ในคลิกเดียว</p>
+        <h1>{t(<>ออกแบบลายปัก<br />สำหรับผ้าและชิ้นงานพิมพ์ 3 มิติ</>, <>Design stitch patterns<br />for fabric and 3D prints</>)}</h1>
+        <p>{t('เติมสีลงในช่อง วางแผนด้าย เข็ม และขนาดชิ้นงาน แล้วพิมพ์แผนผังหรือแชร์ให้เพื่อนได้ในคลิกเดียว', 'Fill in the cells, plan your threads, needle and finished size, then print the chart or share it with a friend in one click.')}</p>
       </section>
 
       <section className="mode-cards">
@@ -123,23 +123,28 @@ export function Home() {
           <div className="mode-art free" aria-hidden="true">
             {Array.from({ length: 48 }, (_, i) => <i key={i} style={{ background: [3, 4, 10, 11, 12, 13, 17, 18, 19, 20, 21, 22, 25, 26, 27, 28, 29, 30, 34, 35, 36, 37, 43, 44].includes(i) ? '#c72b3b' : undefined }} />)}
           </div>
-          <h3>ออกแบบอิสระ</h3>
-          <p>กำหนดขนาดตารางเอง เหมาะกับผ้า Aida หรือวางแผนลายก่อนเลือกชิ้นงาน</p>
-          <span className="go">เริ่มออกแบบ →</span>
+          <h3>{t('ออกแบบอิสระ', 'Free design')}</h3>
+          <p>{t('กำหนดขนาดตารางเอง เหมาะกับผ้า Aida หรือวางแผนลายก่อนเลือกชิ้นงาน', 'Set your own grid size. Great for Aida fabric, or for planning a pattern before you pick a piece.')}</p>
+          <span className="go">{t('เริ่มออกแบบ →', 'Start designing →')}</span>
         </a>
         <a className="mode-card" href="#/new/template">
           <div className="mode-art tpl" aria-hidden="true">
             <TemplateArt />
           </div>
-          <h3>ใช้โมเดลแม่แบบ</h3>
-          <p>เลือกชิ้นงานพิมพ์ 3D ที่มีรูให้ปัก (พวงกุญแจ ที่คั่นหนังสือ ที่รองแก้ว) หรือนำเข้าไฟล์ STL ของคุณ</p>
-          <span className="go">เลือกแม่แบบ →</span>
+          <h3>{t('ใช้โมเดลแม่แบบ', 'Use a template')}</h3>
+          <p>{t('เลือกชิ้นงานพิมพ์ 3D ที่มีรูให้ปัก (พวงกุญแจ ที่คั่นหนังสือ ที่รองแก้ว) หรือนำเข้าไฟล์ STL ของคุณ', 'Pick a 3D-printed piece with stitch holes (keychain, bookmark, coaster) or import your own STL file.')}</p>
+          <span className="go">{t('เลือกแม่แบบ →', 'Choose a template →')}</span>
         </a>
       </section>
 
       <section className="my-patterns">
-        <h2>ลายของฉัน <small>{items.length ? `${items.length} ลาย · บันทึกไว้ในเบราว์เซอร์นี้` : ''}</small></h2>
-        {!items.length && <p className="muted">ยังไม่มีลาย เริ่มจากเลือกรูปแบบการทำงานด้านบน</p>}
+        <div className="section-head">
+          <h2>{t('ลายของฉัน', 'My patterns')} <small>{items.length ? t(`${items.length} ลาย · บันทึกไว้ในเบราว์เซอร์นี้`, `${items.length} pattern${items.length === 1 ? '' : 's'} · saved in this browser`) : ''}</small></h2>
+          <button className="btn sm ghost" onClick={() => fileRef.current?.click()} title={t('นำเข้าไฟล์ลาย (.json)', 'Import a pattern file (.json)')}><Icon name="upload" size={15} /> {t('นำเข้าไฟล์ลาย', 'Import pattern')}</button>
+          <input ref={fileRef} type="file" accept=".json,application/json" hidden
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) importFile(f); e.target.value = ''; }} />
+        </div>
+        {!items.length && <p className="muted">{t('ยังไม่มีลาย เริ่มจากเลือกรูปแบบการทำงานด้านบน', 'No patterns yet. Start by choosing a mode above.')}</p>}
         <div className="gallery">
           {items.map((p) => {
             const st = computeStats(p);
@@ -150,23 +155,23 @@ export function Home() {
                 <div className="card-body">
                   <a className="card-title" href={`#/edit/${p.id}`}>{p.name}</a>
                   <div className="card-meta">
-                    {p.templateName ?? 'ออกแบบอิสระ'} · {p.cols}×{p.rows} · {st.colors.filter((c) => c.count).length} สี
+                    {p.templateName ?? t('ออกแบบอิสระ', 'Free design')} · {p.cols}×{p.rows} · {t(`${st.colors.filter((c) => c.count).length} สี`, `${st.colors.filter((c) => c.count).length} colors`)}
                   </div>
                   {pr && pr.total > 0 && (
-                    <div className="card-progress" title={`ปักแล้ว ${pr.done}/${pr.total} ฝีเข็ม`}>
+                    <div className="card-progress" title={t(`ปักแล้ว ${pr.done}/${pr.total} ฝีเข็ม`, `${pr.done}/${pr.total} stitches done`)}>
                       <div className="bar"><i style={{ width: `${pr.pct}%` }} /></div>
-                      <span>{pr.done === pr.total ? 'ปักเสร็จแล้ว ✓' : `ปักแล้ว ${Math.floor(pr.pct)}%`}</span>
+                      <span>{pr.done === pr.total ? t('ปักเสร็จแล้ว ✓', 'Finished ✓') : t(`ปักแล้ว ${Math.floor(pr.pct)}%`, `${Math.floor(pr.pct)}% stitched`)}</span>
                     </div>
                   )}
-                  <div className="card-meta">แก้ไข {new Date(p.updatedAt).toLocaleDateString('th-TH', { day: 'numeric', month: 'short', year: '2-digit' })}</div>
+                  <div className="card-meta">{t('แก้ไข', 'Edited')} {new Date(p.updatedAt).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: '2-digit' })}</div>
                 </div>
                 <div className="card-actions">
-                  <a className="btn sm stitch-btn" href={`#/stitch/${p.id}`} title="โหมดปัก"><Icon name="needle" size={15} /> {pr && pr.done > 0 ? 'ปักต่อ' : 'เริ่มปัก'}</a>
+                  <a className="btn sm stitch-btn" href={`#/stitch/${p.id}`} title={t('โหมดปัก', 'Stitch mode')}><Icon name="needle" size={15} /> {pr && pr.done > 0 ? t('ปักต่อ', 'Continue') : t('เริ่มปัก', 'Stitch')}</a>
                   <span className="spacer" />
-                  <a className="icon-btn sm" href={`#/print/${p.id}`} title="พิมพ์"><Icon name="print" size={16} /></a>
-                  <button className="icon-btn sm" onClick={() => duplicate(p)} title="ทำสำเนา"><Icon name="copy" size={16} /></button>
-                  <button className="icon-btn sm" title="ลบ"
-                    onClick={() => { if (confirm(`ลบ "${p.name}" ถาวร?`)) { deletePattern(p.id); refresh(); } }}>
+                  <a className="icon-btn sm" href={`#/print/${p.id}`} title={t('พิมพ์', 'Print')}><Icon name="print" size={16} /></a>
+                  <button className="icon-btn sm" onClick={() => duplicate(p)} title={t('ทำสำเนา', 'Duplicate')}><Icon name="copy" size={16} /></button>
+                  <button className="icon-btn sm" title={t('ลบ', 'Delete')}
+                    onClick={() => { if (confirm(t(`ลบ "${p.name}" ถาวร?`, `Delete "${p.name}" permanently?`))) { deletePattern(p.id); refresh(); } }}>
                     <Icon name="trash" size={16} />
                   </button>
                 </div>

@@ -1,4 +1,5 @@
 import type { Pattern, Progress } from '../types';
+import { t } from './i18n';
 
 export function emptyProgress(n: number): Progress {
   return { done: '0'.repeat(n), seconds: 0, daily: {}, updatedAt: Date.now() };
@@ -120,9 +121,9 @@ export function reconcileProgress(p: Pattern, prevCells: number[]): Pattern {
 export function fmtDuration(sec: number): string {
   const s = Math.max(0, Math.round(sec));
   const h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
-  if (h) return `${h} ชม. ${m} นาที`;
-  if (m) return `${m} นาที`;
-  return `${s} วินาที`;
+  if (h) return t(`${h} ชม. ${m} นาที`, `${h} h ${m} min`);
+  if (m) return t(`${m} นาที`, `${m} min`);
+  return t(`${s} วินาที`, `${s} s`);
 }
 
 export function fmtClock(sec: number): string {

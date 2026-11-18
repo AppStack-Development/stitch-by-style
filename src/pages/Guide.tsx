@@ -2,6 +2,8 @@ import { useEffect, useMemo, type ReactNode } from 'react';
 import { Icon, type IconName } from '../components/Icon';
 import { Thumb } from '../components/Thumb';
 import { TEMPLATES } from '../lib/templates';
+import { t } from '../lib/i18n';
+import { LangSwitch } from '../components/LangSwitch';
 import { navigate } from '../App';
 
 interface Section {
@@ -11,49 +13,49 @@ interface Section {
   body: ReactNode;
 }
 
-const Tip = ({ children }: { children: ReactNode }) => <p className="guide-tip"><b>เคล็ดลับ</b> {children}</p>;
-const Note = ({ children }: { children: ReactNode }) => <p className="guide-note"><b>ข้อควรรู้</b> {children}</p>;
+const Tip = ({ children }: { children: ReactNode }) => <p className="guide-tip"><b>{t('เคล็ดลับ', 'Tip')}</b> {children}</p>;
+const Note = ({ children }: { children: ReactNode }) => <p className="guide-note"><b>{t('ข้อควรรู้', 'Good to know')}</b> {children}</p>;
 const Kbd = ({ children }: { children: ReactNode }) => <kbd>{children}</kbd>;
 const Go = ({ to, children }: { to: string; children: ReactNode }) => (
   <button className="guide-link" onClick={() => navigate(`#/guide/${to}`)}>{children}</button>
 );
 
 const TOOLS: { icon: IconName; name: string; key: string; desc: string }[] = [
-  { icon: 'pencil', name: 'ดินสอ', key: 'B', desc: 'คลิกหรือลากเพื่อเติมสีที่เลือกลงในช่องปัก' },
-  { icon: 'eraser', name: 'ยางลบ', key: 'E', desc: 'ลบสีออกจากช่อง (คลิกขวาด้วยเครื่องมือใดก็ได้ = ลบ)' },
-  { icon: 'fill', name: 'เทสี', key: 'G', desc: 'เติมสีทั้งบริเวณที่ติดกันและเป็นสีเดียวกัน' },
-  { icon: 'picker', name: 'ดูดสี', key: 'I', desc: 'คลิกช่องที่มีสี เพื่อเลือกสีนั้นมาใช้ต่อ' },
-  { icon: 'line', name: 'เส้นตรง', key: 'L', desc: 'ลากจากจุดเริ่มถึงจุดสิ้นสุดเพื่อวาดเส้นตรง' },
-  { icon: 'rect', name: 'กรอบสี่เหลี่ยม', key: 'R', desc: 'ลากเพื่อวาดกรอบสี่เหลี่ยม' },
-  { icon: 'pan', name: 'เลื่อนมุมมอง', key: 'H', desc: 'ลากเพื่อเลื่อนลาย (หรือกด Space ค้างแล้วลาก)' },
-  { icon: 'hole', name: 'แก้ไขช่องปัก/โครง', key: 'K', desc: 'เปลี่ยนช่องเป็น “ช่องปัก” “โครงทึบ” หรือ “ตัดออก” เพื่อปรับรูปทรงชิ้นงาน' },
-  { icon: 'text', name: 'ใส่ชื่อ / ข้อความ', key: 'T', desc: 'พิมพ์ชื่อหรือข้อความ เลือกฟอนต์พิกเซล (A–Z) หรือฟอนต์ทั่วไป (รองรับภาษาไทย) ดูตัวอย่างบนชิ้นงาน เลื่อนตำแหน่ง แล้ววางด้วยสีที่เลือก' },
+  { icon: 'pencil', name: t('ดินสอ', 'Pencil'), key: 'B', desc: t('คลิกหรือลากเพื่อเติมสีที่เลือกลงในช่องปัก', 'Click or drag to fill stitch cells with the selected color') },
+  { icon: 'eraser', name: t('ยางลบ', 'Eraser'), key: 'E', desc: t('ลบสีออกจากช่อง (คลิกขวาด้วยเครื่องมือใดก็ได้ = ลบ)', 'Clear the color from a cell (right-click with any tool also erases)') },
+  { icon: 'fill', name: t('เทสี', 'Fill'), key: 'G', desc: t('เติมสีทั้งบริเวณที่ติดกันและเป็นสีเดียวกัน', 'Fill a whole connected area of the same color') },
+  { icon: 'picker', name: t('ดูดสี', 'Eyedropper'), key: 'I', desc: t('คลิกช่องที่มีสี เพื่อเลือกสีนั้นมาใช้ต่อ', 'Click a colored cell to pick up that color') },
+  { icon: 'line', name: t('เส้นตรง', 'Line'), key: 'L', desc: t('ลากจากจุดเริ่มถึงจุดสิ้นสุดเพื่อวาดเส้นตรง', 'Drag from start to end to draw a straight line') },
+  { icon: 'rect', name: t('กรอบสี่เหลี่ยม', 'Rectangle'), key: 'R', desc: t('ลากเพื่อวาดกรอบสี่เหลี่ยม', 'Drag to draw a rectangle') },
+  { icon: 'pan', name: t('เลื่อนมุมมอง', 'Pan'), key: 'H', desc: t('ลากเพื่อเลื่อนลาย (หรือกด Space ค้างแล้วลาก)', 'Drag to move the pattern around (or hold Space and drag)') },
+  { icon: 'hole', name: t('แก้ไขช่องปัก/โครง', 'Edit cells/frame'), key: 'K', desc: t('เปลี่ยนช่องเป็น “ช่องปัก” “โครงทึบ” หรือ “ตัดออก” เพื่อปรับรูปทรงชิ้นงาน', 'Turn cells into “stitch cell”, “solid frame” or “cut out” to reshape the piece') },
+  { icon: 'text', name: t('ใส่ชื่อ / ข้อความ', 'Name / text'), key: 'T', desc: t('พิมพ์ชื่อหรือข้อความ เลือกฟอนต์พิกเซล (A–Z) หรือฟอนต์ทั่วไป (รองรับภาษาไทย) ดูตัวอย่างบนชิ้นงาน เลื่อนตำแหน่ง แล้ววางด้วยสีที่เลือก', 'Type a name or text, pick a pixel font (A–Z) or a regular font (supports Thai), preview it on the piece, move it into place, then stamp it in the selected color') },
 ];
 
 const SHORTCUTS: [string, string][] = [
-  ['B / E / G / I / L / R / H / K', 'เลือกเครื่องมือ (ดินสอ ยางลบ เทสี ดูดสี เส้น กรอบ เลื่อน แก้ช่อง)'],
-  ['T', 'ใส่ชื่อ / ข้อความ (ในหน้าต่างข้อความ ใช้ปุ่มลูกศรเลื่อนตำแหน่ง)'],
-  ['1 – 9', 'เลือกสีลำดับที่ 1–9 ในจานสี (ในโหมดปัก = โฟกัสสีนั้น)'],
-  ['X / Y', 'เปิด/ปิดสมมาตรซ้าย-ขวา / บน-ล่าง'],
-  ['Ctrl/⌘ + Z', 'เลิกทำ'],
-  ['Shift + Ctrl/⌘ + Z หรือ Ctrl + Y', 'ทำซ้ำ'],
-  ['+ / − / 0', 'ซูมเข้า / ซูมออก / พอดีจอ'],
-  ['Space ค้าง + ลาก', 'เลื่อนมุมมอง'],
-  ['คลิกขวา', 'ลบสีในช่อง'],
-  ['Ctrl/⌘ + V', 'วางรูปภาพเพื่อแปลงเป็นลายปัก (ในหน้าออกแบบ)'],
-  ['Esc', 'ปิดหน้าต่าง / เลิกโฟกัสสีในโหมดปัก'],
+  ['B / E / G / I / L / R / H / K', t('เลือกเครื่องมือ (ดินสอ ยางลบ เทสี ดูดสี เส้น กรอบ เลื่อน แก้ช่อง)', 'Choose a tool (Pencil, Eraser, Fill, Eyedropper, Line, Rectangle, Pan, Edit cells)')],
+  ['T', t('ใส่ชื่อ / ข้อความ (ในหน้าต่างข้อความ ใช้ปุ่มลูกศรเลื่อนตำแหน่ง)', 'Name / text (in the text window, use the arrow keys to move it)')],
+  ['1 – 9', t('เลือกสีลำดับที่ 1–9 ในจานสี (ในโหมดปัก = โฟกัสสีนั้น)', 'Pick color 1–9 in the palette (in Stitch mode: focus on that color)')],
+  ['X / Y', t('เปิด/ปิดสมมาตรซ้าย-ขวา / บน-ล่าง', 'Toggle left-right / top-bottom mirror')],
+  ['Ctrl/⌘ + Z', t('เลิกทำ', 'Undo')],
+  [t('Shift + Ctrl/⌘ + Z หรือ Ctrl + Y', 'Shift + Ctrl/⌘ + Z or Ctrl + Y'), t('ทำซ้ำ', 'Redo')],
+  ['+ / − / 0', t('ซูมเข้า / ซูมออก / พอดีจอ', 'Zoom in / zoom out / fit to screen')],
+  [t('Space ค้าง + ลาก', 'Hold Space + drag'), t('เลื่อนมุมมอง', 'Pan')],
+  [t('คลิกขวา', 'Right-click'), t('ลบสีในช่อง', 'Clear a cell')],
+  ['Ctrl/⌘ + V', t('วางรูปภาพเพื่อแปลงเป็นลายปัก (ในหน้าออกแบบ)', 'Paste an image to turn it into a pattern (in the editor)')],
+  ['Esc', t('ปิดหน้าต่าง / เลิกโฟกัสสีในโหมดปัก', 'Close a window / stop focusing on a color in Stitch mode')],
 ];
 
 function useSections(): Section[] {
   const heart = useMemo(() => {
-    const t = TEMPLATES.find((x) => x.id === 'keychain-heart')!;
-    const r = t.build(t.w, t.h);
+    const tpl = TEMPLATES.find((x) => x.id === 'keychain-heart')!;
+    const r = tpl.build(tpl.w, tpl.h);
     return { ...r, cells: new Array(r.cols * r.rows).fill(-1), palette: [], details: { filamentColor: '#f4f1ea', baseType: 'print3d' as const } };
   }, []);
   return [
     {
-      id: 'start', title: 'เริ่มต้นใช้งาน', icon: 'info',
-      body: (
+      id: 'start', title: t('เริ่มต้นใช้งาน', 'Getting started'), icon: 'info',
+      body: t(
         <>
           <p>Stitch by Style ใช้ออกแบบลายปักแบบครอสติช (cross stitch) ทั้งบน<b>ผ้า Aida</b> และบน<b>ชิ้นงานพิมพ์ 3 มิติ</b>ที่เจาะรูไว้ให้ปัก เช่น พวงกุญแจ ที่คั่นหนังสือ หรือฝากล่อง</p>
           <ol>
@@ -61,14 +63,26 @@ function useSections(): Section[] {
             <li>เติมสีลงในช่องด้วยเครื่องมือวาด หรือแปลงจากรูปภาพ</li>
             <li>ใส่รายละเอียด เช่น ด้าย เข็ม วัสดุ ในแท็บ “รายละเอียด”</li>
             <li>พิมพ์แผนผัง แชร์ให้เพื่อน หรือเปิด <b>โหมดปัก</b> เพื่อติ๊กช่องที่ปักแล้วระหว่างปักจริง</li>
+            <li>เปลี่ยนภาษาได้ด้วยปุ่มภาษา (ไอคอนลูกโลก “EN” / “ไทย”) ด้านบนของหน้าแรก</li>
           </ol>
           <Note>ลายทั้งหมดบันทึกอัตโนมัติไว้ใน<b>เบราว์เซอร์ของเครื่องนี้</b> ไม่ได้อยู่บนเซิร์ฟเวอร์ ดูวิธีย้ายเครื่องและสำรองข้อมูลได้ที่ <Go to="data">การเก็บข้อมูล</Go></Note>
-        </>
+        </>,
+        <>
+          <p>Stitch by Style lets you design cross stitch patterns for both <b>Aida fabric</b> and <b>3D-printed pieces</b> with stitch holes, such as keychains, bookmarks or box lids.</p>
+          <ol>
+            <li>On the home page, choose <b>“Free design”</b> or <b>“Use a template”</b>.</li>
+            <li>Fill in the cells with the drawing tools, or convert an image.</li>
+            <li>Add details such as thread, needle and materials in the “Details” tab.</li>
+            <li>Print the chart, share it with a friend, or open <b>Stitch mode</b> to tick off cells as you stitch.</li>
+            <li>Switch the language with the language button (globe icon, “EN” / “ไทย”) at the top of the home page.</li>
+          </ol>
+          <Note>All patterns are saved automatically in <b>this device’s browser</b>, not on a server. To move to another device or back up, see <Go to="data">Storing your data</Go>.</Note>
+        </>,
       ),
     },
     {
-      id: 'free', title: 'ออกแบบอิสระ', icon: 'grid',
-      body: (
+      id: 'free', title: t('ออกแบบอิสระ', 'Free design'), icon: 'grid',
+      body: t(
         <>
           <p>เหมาะกับการปักบนผ้า หรือวางแผนลายก่อนเลือกชิ้นงาน</p>
           <ol>
@@ -78,12 +92,22 @@ function useSections(): Section[] {
             <li>กด <b>สร้างลาย</b> เพื่อเข้าหน้าออกแบบ</li>
           </ol>
           <Tip>“ct” คือจำนวนช่องต่อนิ้ว ตัวเลขยิ่งมาก ช่องยิ่งเล็ก ลายยิ่งละเอียด แต่ปักยากขึ้น</Tip>
-        </>
+        </>,
+        <>
+          <p>Great for stitching on fabric, or for planning a pattern before you pick a piece.</p>
+          <ol>
+            <li>Name your pattern, then choose a grid size (presets from 20×20 to 100×100, or a custom size up to 200×200 cells).</li>
+            <li>Choose what you’ll stitch on: <b>Aida fabric</b> (11–20 ct), <b>Plastic canvas</b> (7 ct), a <b>3D-printed piece</b>, or a custom spacing.</li>
+            <li>The app works out the finished size (mm) and suggests a needle size and number of thread strands.</li>
+            <li>Press <b>Create pattern</b> to open the editor.</li>
+          </ol>
+          <Tip>“ct” (count) is the number of cells per inch. The higher the number, the smaller the cells and the finer the pattern, but the harder it is to stitch.</Tip>
+        </>,
       ),
     },
     {
-      id: 'template', title: 'ใช้โมเดลแม่แบบ และนำเข้าไฟล์ STL / 3MF', icon: 'cube',
-      body: (
+      id: 'template', title: t('ใช้โมเดลแม่แบบ และนำเข้าไฟล์ STL / 3MF', 'Templates and importing STL / 3MF files'), icon: 'cube',
+      body: t(
         <>
           <div className="guide-figure">
             <Thumb pattern={heart} max={120} view="stitch" />
@@ -97,37 +121,65 @@ function useSections(): Section[] {
             <li>ระบบวัดระยะห่างรู ขนาดรู และความหนาแผ่นให้ ถ้าตารางที่ได้ไม่ตรง ให้พิมพ์ระยะห่างรู (มม.) แล้วกด “วิเคราะห์ใหม่”</li>
           </ul>
           <Note>ชิ้นงานควรเป็นแผ่นที่มีรูเรียงเป็นตารางมุมฉาก ถ้าไฟล์ STL เดียวมีหลายชิ้นรวมกัน จะเลือกชิ้นไม่ได้เหมือนไฟล์ 3MF</Note>
-        </>
+        </>,
+        <>
+          <div className="guide-figure">
+            <Thumb pattern={heart} max={120} view="stitch" />
+            <p>The heart keychain template: dark cells are the stitch holes, light cells are the plastic frame.</p>
+          </div>
+          <p><b>8 ready-made templates:</b> bookmark, round/square coaster, heart/round keychain, hanging star, hexagon pin and card. Pick one, then adjust its size (number of cells), hole pitch and thickness.</p>
+          <p><b>Import your own model:</b> tap the “Import STL / 3MF file” card and choose a file. The app finds holes laid out in a grid and turns them into cells you can color.</p>
+          <ul>
+            <li>Supports <b>.stl</b> and <b>.3mf</b> files (including files from MakerWorld / Bambu Studio).</li>
+            <li>If the file has several parts (such as a box lid and base), the app picks <b>the part with the most holes</b> for you, and you can switch parts. Parts without holes can’t be selected.</li>
+            <li>The app measures the hole pitch, hole size and plate thickness. If the grid doesn’t line up, type the hole pitch (mm) and press “Re-analyze”.</li>
+          </ul>
+          <Note>The piece should be a flat plate with holes in a square grid. If a single STL file has several parts merged together, you can’t pick a part the way you can with a 3MF file.</Note>
+        </>,
       ),
     },
     {
-      id: 'editor', title: 'เครื่องมือในหน้าออกแบบ', icon: 'pencil',
+      id: 'editor', title: t('เครื่องมือในหน้าออกแบบ', 'Editor tools'), icon: 'pencil',
       body: (
         <>
-          <p>แถบเครื่องมืออยู่ด้านซ้าย (บนมือถืออยู่ด้านซ้ายเช่นกัน ส่วนแผงสีและรายละเอียดอยู่ด้านล่าง)</p>
+          <p>{t('แถบเครื่องมืออยู่ด้านซ้าย (บนมือถืออยู่ด้านซ้ายเช่นกัน ส่วนแผงสีและรายละเอียดอยู่ด้านล่าง)', 'The toolbar is on the left (on phones too; the color and details panels move to the bottom).')}</p>
           <div className="guide-table">
-            {TOOLS.map((t) => (
-              <div key={t.key} className="guide-row">
-                <span className="guide-ico"><Icon name={t.icon} size={18} /></span>
-                <b>{t.name} <Kbd>{t.key}</Kbd></b>
-                <span>{t.desc}</span>
+            {TOOLS.map((tool) => (
+              <div key={tool.key} className="guide-row">
+                <span className="guide-ico"><Icon name={tool.icon} size={18} /></span>
+                <b>{tool.name} <Kbd>{tool.key}</Kbd></b>
+                <span>{tool.desc}</span>
               </div>
             ))}
           </div>
-          <ul>
-            <li><b>สมมาตร</b> <Icon name="mirrorX" size={15} /> <Icon name="mirrorY" size={15} /> วาดข้างหนึ่ง อีกข้างจะสะท้อนตามอัตโนมัติ</li>
-            <li><b>มุมมอง</b> “ฝีเข็ม” (ดูเหมือนปักจริง) “สี” (สีเรียบ) และ “สัญลักษณ์” (สำหรับพิมพ์ขาวดำ)</li>
-            <li><b>ซูม</b> ใช้ปุ่มด้านซ้าย ล้อเมาส์ หรือหยิกนิ้วบนทัชแพด · <b>สามเหลี่ยมสีแดง</b>ที่ขอบบอกจุดกึ่งกลางของลาย</li>
-            <li><b>เลิกทำ/ทำซ้ำ</b> ด้วยปุ่มลูกศรด้านบน หรือ <Kbd>Ctrl/⌘ + Z</Kbd></li>
-          </ul>
-          <Tip>ชื่อสั้นๆ บนพวงกุญแจ ใช้ “ฟอนต์พิกเซล” ขนาด ×1 (สูง 7 ช่อง) จะคมชัดที่สุด ส่วนภาษาไทยใช้ “ฟอนต์ทั่วไป” สูงอย่างน้อย 12 ช่อง</Tip>
-          <Tip>ใช้เครื่องมือ “แก้ไขช่องปัก/โครง” เพื่อปรับรูปทรงชิ้นงานก่อนส่งออกเป็นไฟล์ STL ไปพิมพ์</Tip>
+          {t(
+            <>
+              <ul>
+                <li><b>สมมาตร</b> <Icon name="mirrorX" size={15} /> <Icon name="mirrorY" size={15} /> วาดข้างหนึ่ง อีกข้างจะสะท้อนตามอัตโนมัติ</li>
+                <li><b>มุมมอง</b> “ฝีเข็ม” (ดูเหมือนปักจริง) “สี” (สีเรียบ) และ “สัญลักษณ์” (สำหรับพิมพ์ขาวดำ)</li>
+                <li><b>ซูม</b> ใช้ปุ่มด้านซ้าย ล้อเมาส์ หรือหยิกนิ้วบนทัชแพด · <b>สามเหลี่ยมสีแดง</b>ที่ขอบบอกจุดกึ่งกลางของลาย</li>
+                <li><b>เลิกทำ/ทำซ้ำ</b> ด้วยปุ่มลูกศรด้านบน หรือ <Kbd>Ctrl/⌘ + Z</Kbd></li>
+              </ul>
+              <Tip>ชื่อสั้นๆ บนพวงกุญแจ ใช้ “ฟอนต์พิกเซล” ขนาด ×1 (สูง 7 ช่อง) จะคมชัดที่สุด ส่วนภาษาไทยใช้ “ฟอนต์ทั่วไป” สูงอย่างน้อย 12 ช่อง</Tip>
+              <Tip>ใช้เครื่องมือ “แก้ไขช่องปัก/โครง” เพื่อปรับรูปทรงชิ้นงานก่อนส่งออกเป็นไฟล์ STL ไปพิมพ์</Tip>
+            </>,
+            <>
+              <ul>
+                <li><b>Mirror</b> <Icon name="mirrorX" size={15} /> <Icon name="mirrorY" size={15} /> Draw on one side and the other side mirrors it automatically.</li>
+                <li><b>Views</b> “Stitches” (looks like real stitching), “Color” (flat color) and “Symbols” (for black-and-white printing).</li>
+                <li><b>Zoom</b> with the buttons on the left, the mouse wheel, or a pinch on the touchpad · the <b>red triangles</b> on the edges mark the center of the pattern.</li>
+                <li><b>Undo/Redo</b> with the arrow buttons at the top, or <Kbd>Ctrl/⌘ + Z</Kbd>.</li>
+              </ul>
+              <Tip>For a short name on a keychain, the “Pixel A–Z” at ×1 (7 cells tall) is the sharpest. For Thai text, use the “Regular font (Thai OK)” at least 12 cells tall.</Tip>
+              <Tip>Use the “Edit cells/frame” tool to reshape the piece before exporting it as an STL file for printing.</Tip>
+            </>,
+          )}
         </>
       ),
     },
     {
-      id: 'colors', title: 'สีด้ายและคลังสี DMC', icon: 'palette',
-      body: (
+      id: 'colors', title: t('สีด้ายและคลังสี DMC', 'Thread colors and the DMC library'), icon: 'palette',
+      body: t(
         <>
           <p>แท็บ <b>“สีด้าย”</b> ทางขวาแสดงจานสีของลาย พร้อมจำนวนฝีเข็มของแต่ละสี คลิกสีเพื่อเลือกใช้ หรือกดตัวเลข <Kbd>1</Kbd>–<Kbd>9</Kbd></p>
           <ul>
@@ -136,12 +188,21 @@ function useSections(): Section[] {
             <li><b>สีกำหนดเอง</b> เลือกสีใดก็ได้ แล้วกดไอคอนดินสอเพื่อแก้ชื่อ ยี่ห้อ รหัส และสัญลักษณ์ในแผนผัง ถ้ายังไม่ใช่ด้าย DMC จะมีปุ่ม “ใช้สีนี้” เพื่อเปลี่ยนเป็นด้ายที่ใกล้ที่สุด</li>
           </ul>
           <Note>สีบนจอเป็นค่าประมาณ ควรเทียบกับการ์ดสีด้ายจริงก่อนซื้อ</Note>
-        </>
+        </>,
+        <>
+          <p>The <b>“Threads”</b> tab on the right shows the pattern’s palette and the stitch count for each color. Click a color to use it, or press <Kbd>1</Kbd>–<Kbd>9</Kbd>.</p>
+          <ul>
+            <li><b>Pick DMC thread</b> A library of 437 DMC colors. Search by code or name (e.g. 310, red) and filter by hue. Colors already in your palette are underlined.</li>
+            <li><b>Find the closest thread</b> Pick any color and the app shows the 6 closest DMC threads.</li>
+            <li><b>Custom color</b> Pick any color, then tap the pencil icon to edit its name, brand, code and chart symbol. If it isn’t a DMC thread yet, a “Use this” button swaps it for the closest one.</li>
+          </ul>
+          <Note>On-screen colors are approximate. Compare with a real thread color card before you buy.</Note>
+        </>,
       ),
     },
     {
-      id: 'image', title: 'แปลงรูปภาพเป็นลายปัก', icon: 'image',
-      body: (
+      id: 'image', title: t('แปลงรูปภาพเป็นลายปัก', 'Image to pattern'), icon: 'image',
+      body: t(
         <>
           <p>กดปุ่ม <b>“รูปภาพ → ลาย”</b> ด้านบนหน้าออกแบบ หรือลากรูปมาวางบนลาย หรือกด <Kbd>Ctrl/⌘ + V</Kbd> เพื่อวางรูปที่คัดลอกไว้</p>
           <ul>
@@ -152,12 +213,23 @@ function useSections(): Section[] {
             <li><b>ลดจุดเดี่ยวๆ</b> แทนที่ฝีเข็มที่อยู่โดดเดี่ยวด้วยสีรอบข้าง ทำให้ปักง่ายขึ้น</li>
           </ul>
           <Tip>รูปการ์ตูน โลโก้ หรือรูปที่พื้นหลังเรียบ/โปร่งใส จะได้ผลดีที่สุด ถ้าไม่ชอบผลลัพธ์ กดเลิกทำได้ทันที</Tip>
-        </>
+        </>,
+        <>
+          <p>Press the <b>“Image → pattern”</b> button at the top of the editor, drag an image onto the pattern, or press <Kbd>Ctrl/⌘ + V</Kbd> to paste a copied image.</p>
+          <ul>
+            <li><b>Max colors</b> 2–24. Fewer colors are easier to stitch, but small details may be lost.</li>
+            <li><b>Thread colors from</b> DMC threads (recommended) · the image’s own colors · or only the colors in your current palette.</li>
+            <li><b>Size and position</b> Resize the image and move it to fit the piece.</li>
+            <li><b>Trim empty edges</b> and <b>Skip the background</b> make the pattern fill the space so you don’t have to stitch the background.</li>
+            <li><b>Remove stray single stitches</b> Replaces isolated single stitches with the surrounding color, making it easier to stitch.</li>
+          </ul>
+          <Tip>Cartoons, logos and images with a plain or transparent background work best. Don’t like the result? Just press Undo.</Tip>
+        </>,
       ),
     },
     {
-      id: 'details', title: 'รายละเอียดลาย', icon: 'info',
-      body: (
+      id: 'details', title: t('รายละเอียดลาย', 'Pattern details'), icon: 'info',
+      body: t(
         <>
           <p>แท็บ <b>“รายละเอียด”</b> ใช้บันทึกข้อมูลที่จะไปปรากฏในแผนผังที่พิมพ์:</p>
           <ul>
@@ -168,20 +240,34 @@ function useSections(): Section[] {
           </ul>
           <p>ระบบคำนวณให้อัตโนมัติ: ขนาดชิ้นงานจริง จำนวนฝีเข็ม และ<b>ปริมาณด้ายโดยประมาณ</b>ของแต่ละสี (เป็นเมตรและจำนวนไจ)</p>
           <Note>ถ้าตั้งระยะห่างรูน้อยจนขอบระหว่างรูบางกว่า 0.8 มม. ระบบจะเตือน เพราะหัวพิมพ์ 0.4 มม. อาจพิมพ์ไม่ได้</Note>
-        </>
+        </>,
+        <>
+          <p>The <b>“Details”</b> tab holds the information that appears on the printed chart:</p>
+          <ul>
+            <li><b>Pattern info</b> Name, description, designer, tags, difficulty and time spent.</li>
+            <li><b>Base material</b> Aida fabric (count in ct) or a 3D-printed piece (hole pitch, thickness, hole size, filament type and color).</li>
+            <li><b>Thread and needle</b> Stitch type, thread brand, number of strands, needle type and size (with suggestions based on hole size).</li>
+            <li><b>Notes / steps</b> Write down the stitching order or things to watch out for.</li>
+          </ul>
+          <p>Calculated automatically: finished size, stitch count and <b>estimated thread needed</b> for each color (in meters and skeins).</p>
+          <Note>If the hole pitch is so small that the walls between holes are thinner than 0.8 mm, you’ll get a warning, because a 0.4 mm nozzle may not be able to print them.</Note>
+        </>,
       ),
     },
     {
-      id: 'preview3d', title: 'ภาพตัวอย่าง 3 มิติ', icon: 'cube',
-      body: (
+      id: 'preview3d', title: t('ภาพตัวอย่าง 3 มิติ', '3D preview'), icon: 'cube',
+      body: t(
         <>
           <p>แท็บ <b>“3D”</b> แสดงชิ้นงานพร้อมฝีเข็มแบบ 3 มิติ ลากเพื่อหมุน scroll เพื่อซูม คลิกขวาลากเพื่อเลื่อน ภาพนี้สร้างจากตารางช่อง ใช้ดูภาพรวมก่อนปักจริง</p>
-        </>
+        </>,
+        <>
+          <p>The <b>“3D”</b> tab shows the piece with its stitches in 3D. Drag to rotate, scroll to zoom, and right-drag to pan. The preview is built from the cell grid, so use it to get a feel for the result before you stitch.</p>
+        </>,
       ),
     },
     {
-      id: 'export', title: 'พิมพ์ ส่งออก และแชร์', icon: 'download',
-      body: (
+      id: 'export', title: t('พิมพ์ ส่งออก และแชร์', 'Print, export and share'), icon: 'download',
+      body: t(
         <>
           <p>กดปุ่ม <b>“ส่งออก / แชร์”</b> มุมขวาบนของหน้าออกแบบ:</p>
           <ul>
@@ -192,12 +278,23 @@ function useSections(): Section[] {
             <li><b>ไฟล์ลาย (.json)</b> สำรองข้อมูล หรือนำเข้าในเครื่องอื่นด้วยปุ่ม “นำเข้าไฟล์ลาย” ที่หน้าแรก</li>
             <li><b>โมเดล 3D (.stl)</b> แผ่นเจาะรูตามรูปทรงของลาย สำหรับเปิดในโปรแกรม slicer แล้วพิมพ์</li>
           </ul>
-        </>
+        </>,
+        <>
+          <p>Press the <b>“Export / Share”</b> button at the top right of the editor:</p>
+          <ul>
+            <li><b>Print / Save as PDF</b> A cover page (details + thread list with checkboxes) and the chart split across A4 pages. Choose color + symbols, symbols only (black and white) or color only, and set how many cells fit on each page. Choose “Save as PDF” in the print window to get a PDF file.</li>
+            <li><b>PNG image</b> The pattern with its thread list, for sending over LINE or social media.</li>
+            <li><b>Send to phone / another device</b> See <Go to="transfer">Send to your phone</Go>.</li>
+            <li><b>Copy share link</b> Friends can view the pattern and press “Save as my pattern” to keep a copy they can edit (your stitching progress isn’t included).</li>
+            <li><b>Pattern file (.json)</b> For backups, or to bring into another device with the “Import pattern” button on the home page.</li>
+            <li><b>3D model (.stl)</b> A plate with holes in the shape of your pattern, to open in a slicer and print.</li>
+          </ul>
+        </>,
       ),
     },
     {
-      id: 'stitch', title: 'โหมดปัก (ติดตามความคืบหน้า)', icon: 'needle',
-      body: (
+      id: 'stitch', title: t('โหมดปัก (ติดตามความคืบหน้า)', 'Stitch mode (track your progress)'), icon: 'needle',
+      body: t(
         <>
           <p>เปิดจากปุ่ม <b>“โหมดปัก”</b> ในหน้าออกแบบ หรือ <b>“เริ่มปัก / ปักต่อ”</b> บนการ์ดลายที่หน้าแรก ใช้ระหว่างปักจริง โดยเฉพาะบนมือถือหรือแท็บเล็ต</p>
           <ul>
@@ -210,12 +307,25 @@ function useSections(): Section[] {
             <li><b>เปิดหน้าจอค้างไว้</b> ปุ่ม ☀ กันหน้าจอดับระหว่างปัก (ในเบราว์เซอร์ที่รองรับ)</li>
           </ul>
           <Tip>ถ้าแก้สีของช่องที่ติ๊กแล้วในหน้าออกแบบ ช่องนั้นจะกลับเป็น “ยังไม่ได้ปัก” อัตโนมัติ</Tip>
-        </>
+        </>,
+        <>
+          <p>Open it with the <b>“Stitch mode”</b> button in the editor, or <b>“Stitch” / “Continue”</b> on a pattern card on the home page. Use it while you stitch, especially on a phone or tablet.</p>
+          <ul>
+            <li><b>Tap</b> Tap a cell you’ve stitched to tick it (tap again to undo). Drag with one finger to pan, pinch with two fingers to zoom.</li>
+            <li><b>Paint</b> Drag across several cells to tick them all at once (use two fingers to pan/zoom).</li>
+            <li><b>Area</b> One tap ticks every connected cell of the same color.</li>
+            <li><b>One color at a time</b> Tap a color in the list on the right (or at the bottom on phones). Other colors fade and only that color can be ticked. The “Remaining” button zooms to cells you haven’t stitched yet.</li>
+            <li><b>Stats</b> Overall percentage, stitches today and progress for each color.</li>
+            <li><b>Timer</b> Press ▶ to start. After more than 5 minutes, the app estimates your speed and the time left. The timer pauses on its own when you switch apps or the screen turns off.</li>
+            <li><b>Keep screen on</b> The ☀ button stops the screen from going dark while you stitch (in supported browsers).</li>
+          </ul>
+          <Tip>If you change the color of a ticked cell in the editor, that cell goes back to “not stitched” automatically.</Tip>
+        </>,
       ),
     },
     {
-      id: 'transfer', title: 'ส่งไปมือถือ / อีกเครื่อง', icon: 'phone',
-      body: (
+      id: 'transfer', title: t('ส่งไปมือถือ / อีกเครื่อง', 'Send to your phone / another device'), icon: 'phone',
+      body: t(
         <>
           <p>ใช้ย้ายลาย<b>พร้อมความคืบหน้า</b>ระหว่างเครื่องของคุณเอง เช่น ออกแบบในคอม แล้วไปปักต่อในมือถือ</p>
           <ol>
@@ -228,24 +338,44 @@ function useSections(): Section[] {
             <li>ถ้าลายถูกแก้ไขต่างกันในสองเครื่อง จะให้เลือก: ใช้เวอร์ชันจากลิงก์ เก็บไว้ทั้งสองแบบ หรือใช้ของเครื่องนี้</li>
           </ul>
           <Note>ลิงก์นี้มีความคืบหน้าของคุณ ใช้ส่งให้ตัวเอง ถ้าจะแชร์ให้เพื่อน ใช้ “คัดลอกลิงก์แชร์” แทน</Note>
-        </>
+        </>,
+        <>
+          <p>Move a pattern <b>with its progress</b> between your own devices, for example design on a computer and keep stitching on your phone.</p>
+          <ol>
+            <li>In the editor: “Export / Share” → <b>“Send to phone / another device”</b>, or in Stitch mode tap the <Icon name="phone" size={15} /> icon.</li>
+            <li>Scan the QR code with your phone’s camera (tap the QR to make it full screen if it’s hard to scan), or tap “Copy link / Share…” to send it to yourself over LINE.</li>
+            <li>Open the link on the other device and tap “Open in Stitch mode”.</li>
+          </ol>
+          <ul>
+            <li>If the other device <b>already has the same pattern</b>, the app <b>merges the progress</b> (a cell ticked on either device counts as stitched).</li>
+            <li>If the pattern was edited differently on the two devices, you can choose: use the version from the link, keep both, or keep this device’s version.</li>
+          </ul>
+          <Note>This link includes your progress and is meant for sending to yourself. To share with a friend, use “Copy share link” instead.</Note>
+        </>,
       ),
     },
     {
-      id: 'app', title: 'ติดตั้งเป็นแอปและใช้แบบออฟไลน์', icon: 'install',
-      body: (
+      id: 'app', title: t('ติดตั้งเป็นแอปและใช้แบบออฟไลน์', 'Install as an app and use offline'), icon: 'install',
+      body: t(
         <>
           <ul>
             <li><b>Android / Chrome / Edge:</b> กดปุ่ม <b>“ติดตั้งแอป”</b> ที่หน้าแรก (หรือเมนูเบราว์เซอร์ → ติดตั้งแอป)</li>
             <li><b>iPhone / iPad:</b> เปิดใน Safari กดปุ่ม <b>แชร์</b> แล้วเลือก <b>“เพิ่มไปยังหน้าจอโฮม”</b></li>
           </ul>
           <p>หลังเปิดเว็บครั้งแรกขณะมีอินเทอร์เน็ต เว็บจะเก็บไฟล์ไว้ในเครื่อง ทำให้เปิดใช้งานได้แม้ไม่มีสัญญาณ และเมื่อกลับมาออนไลน์จะอัปเดตเป็นเวอร์ชันล่าสุดเอง</p>
-        </>
+        </>,
+        <>
+          <ul>
+            <li><b>Android / Chrome / Edge:</b> Press the <b>“Install app”</b> button on the home page (or browser menu → Install app).</li>
+            <li><b>iPhone / iPad:</b> Open the site in Safari, tap <b>Share</b>, then choose <b>“Add to Home Screen”</b>.</li>
+          </ul>
+          <p>After you open the site once while online, it keeps its files on your device, so it works even without a connection. When you’re back online it updates itself to the latest version.</p>
+        </>,
       ),
     },
     {
-      id: 'data', title: 'การเก็บข้อมูลและสำรองข้อมูล', icon: 'file',
-      body: (
+      id: 'data', title: t('การเก็บข้อมูลและสำรองข้อมูล', 'Storing and backing up your data'), icon: 'file',
+      body: t(
         <>
           <ul>
             <li>ลายและความคืบหน้าบันทึกอัตโนมัติใน<b>เบราว์เซอร์ของเครื่องนั้น</b> (เห็นสถานะ “บันทึกแล้ว” ด้านบนหน้าออกแบบ)</li>
@@ -253,11 +383,19 @@ function useSections(): Section[] {
             <li><b>สำรองข้อมูล:</b> ส่งออกเป็นไฟล์ .json แล้วเก็บไว้ ถ้าล้างข้อมูลเบราว์เซอร์ ลายที่ไม่ได้สำรองจะหายไป</li>
             <li>ที่หน้าแรก การ์ดลายมีปุ่มพิมพ์ ทำสำเนา และลบ</li>
           </ul>
-        </>
+        </>,
+        <>
+          <ul>
+            <li>Patterns and progress are saved automatically in <b>that device’s browser</b> (you’ll see “Saved” at the top of the editor).</li>
+            <li>Each browser and each device keeps its own data. Use <Go to="transfer">Send to your phone</Go> to move a pattern.</li>
+            <li><b>Back up:</b> Export a .json file and keep it somewhere safe. If you clear your browser data, any pattern you haven’t backed up is lost.</li>
+            <li>On the home page, each pattern card has Print, Duplicate and Delete buttons.</li>
+          </ul>
+        </>,
       ),
     },
     {
-      id: 'shortcuts', title: 'คีย์ลัด', icon: 'grid',
+      id: 'shortcuts', title: t('คีย์ลัด', 'Keyboard shortcuts'), icon: 'grid',
       body: (
         <div className="guide-table keys">
           {SHORTCUTS.map(([k, d]) => (
@@ -267,8 +405,8 @@ function useSections(): Section[] {
       ),
     },
     {
-      id: 'faq', title: 'คำถามที่พบบ่อย', icon: 'info',
-      body: (
+      id: 'faq', title: t('คำถามที่พบบ่อย', 'FAQ'), icon: 'info',
+      body: t(
         <dl className="guide-faq">
           <dt>เปิดเว็บในมือถือแล้วไม่เห็นลายที่ทำในคอม</dt>
           <dd>ข้อมูลเก็บแยกในแต่ละเครื่อง ใช้ “ส่งไปมือถือ / อีกเครื่อง” เพื่อย้ายลาย</dd>
@@ -280,7 +418,19 @@ function useSections(): Section[] {
           <dd>สีบนจอเป็นค่าประมาณ ใช้รหัสด้าย (เช่น DMC 321) เป็นหลักในการซื้อด้าย</dd>
           <dt>ต้องการพิมพ์เป็น PDF</dt>
           <dd>“ส่งออก / แชร์” → “พิมพ์ / บันทึกเป็น PDF” แล้วเลือกปลายทางเป็น “บันทึกเป็น PDF” ในหน้าต่างพิมพ์</dd>
-        </dl>
+        </dl>,
+        <dl className="guide-faq">
+          <dt>I opened the site on my phone and can’t see the patterns I made on my computer</dt>
+          <dd>Each device stores its data separately. Use “Send to phone / another device” to move a pattern.</dd>
+          <dt>I imported an STL and the grid doesn’t match the piece</dt>
+          <dd>Enter the correct hole pitch (mm) and press “Re-analyze”. If that doesn’t help, check that the piece is a plate with holes in a grid.</dd>
+          <dt>The QR code won’t scan</dt>
+          <dd>Tap the QR to make it full screen, turn up the screen brightness, or use “Copy link” to send it to yourself instead.</dd>
+          <dt>On-screen colors don’t match the real thread</dt>
+          <dd>On-screen colors are approximate. Go by the thread code (e.g. DMC 321) when buying thread.</dd>
+          <dt>How do I print to PDF?</dt>
+          <dd>“Export / Share” → “Print / Save as PDF”, then choose “Save as PDF” as the destination in the print window.</dd>
+        </dl>,
       ),
     },
   ];
@@ -299,13 +449,14 @@ export function Guide({ section }: { section?: string }) {
   return (
     <div className="guide">
       <header className="site-head">
-        <a className="icon-btn" href="#/" title="กลับหน้าแรก"><Icon name="back" /></a>
-        <h2><Icon name="book" size={18} /> คู่มือการใช้งาน</h2>
+        <a className="icon-btn" href="#/" title={t('กลับหน้าแรก', 'Back to home')} aria-label={t('กลับหน้าแรก', 'Back to home')}><Icon name="back" /></a>
+        <h2><Icon name="book" size={18} /> {t('คู่มือการใช้งาน', 'User guide')}</h2>
         <div className="spacer" />
-        <a className="btn primary sm" href="#/new/template">เริ่มออกแบบ</a>
+        <LangSwitch />
+        <a className="btn primary sm" href="#/new/template">{t('เริ่มออกแบบ', 'Start designing')}</a>
       </header>
       <div className="guide-layout">
-        <nav className="guide-toc" aria-label="สารบัญ">
+        <nav className="guide-toc" aria-label={t('สารบัญ', 'Contents')}>
           {sections.map((s) => (
             <button key={s.id} className={section === s.id ? 'on' : ''} onClick={() => navigate(`#/guide/${s.id}`)}>
               <Icon name={s.icon} size={15} /> {s.title}
@@ -319,7 +470,7 @@ export function Guide({ section }: { section?: string }) {
               {s.body}
             </section>
           ))}
-          <p className="hint guide-end">มีคำถามหรือพบปัญหา? ใช้ปุ่มย้อนกลับเพื่อกลับไปหน้าที่ใช้งานอยู่</p>
+          <p className="hint guide-end">{t('มีคำถามหรือพบปัญหา? ใช้ปุ่มย้อนกลับเพื่อกลับไปหน้าที่ใช้งานอยู่', 'Have a question or found a problem? Use the back button to return to the page you were on.')}</p>
         </main>
       </div>
     </div>
