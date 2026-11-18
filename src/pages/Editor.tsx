@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { HoleBrush, Pattern, ThreadColor, Tool, ViewMode } from '../types';
 import { loadPattern, savePattern } from '../lib/storage';
 import { computeStats } from '../lib/stats';
@@ -9,7 +9,10 @@ import { contrastText } from '../lib/threads';
 import { PatternCanvas, type CanvasHandle } from '../components/PatternCanvas';
 import { PalettePanel } from '../components/PalettePanel';
 import { DetailsPanel } from '../components/DetailsPanel';
-import { Preview3D } from '../components/Preview3D';
+import { TransferDialog } from '../components/TransferDialog';
+
+// three.js is large: load the 3D preview only when its tab is opened
+const Preview3D = lazy(() => import('../components/Preview3D').then((m) => ({ default: m.Preview3D })));
 import { Icon, type IconName } from '../components/Icon';
 import { ImageImportDialog } from '../components/ImageImportDialog';
 import { computeProgress, reconcileProgress } from '../lib/progress';
@@ -44,6 +47,7 @@ export function Editor({ id }: { id: string }) {
   const [toast, setToast] = useState('');
   /** image import dialog: closed (null), open empty, or open with a file */
   const [imgImport, setImgImport] = useState<{ file: File | null } | null>(null);
+  const [transfer, setTransfer] = useState(false);
   const undo = useRef<Snap[]>([]);
   const redo = useRef<Snap[]>([]);
   const [, force] = useState(0);
@@ -154,11 +158,12 @@ export function Editor({ id }: { id: string }) {
   const hoverKind = hover ? p.mask[hover.y * p.cols + hover.x] : null;
   const hoverColor = hover ? p.palette[p.cells[hover.y * p.cols + hover.x]] : undefined;
 
-  const doExport = async (kind: 'print' | 'png' | 'json' | 'stl' | 'share') => {
+  const doExport = async (kind: 'print' | 'png' | 'json' | 'stl' | 'share' | 'transfer') => {
     setMenu(false);
     savePattern({ ...p, updatedAt: Date.now() });
     const fname = safeFilename(p.name);
     if (kind === 'print') navigate(`#/print/${p.id}`);
+    if (kind === 'transfer') setTransfer(true);
     if (kind === 'png') downloadBlob(await exportPng(p, view === 'symbol' ? 'symbol' : 'color'), `${fname}.png`);
     if (kind === 'json') downloadBlob(new Blob([JSON.stringify(p, null, 1)], { type: 'application/json' }), `${fname}.stitch.json`);
     if (kind === 'stl') {
@@ -206,6 +211,7 @@ export function Editor({ id }: { id: string }) {
             <div className="menu" onMouseLeave={() => setMenu(false)}>
               <button onClick={() => doExport('print')}><Icon name="print" /> <span><b>พิมพ์ / บันทึกเป็น PDF</b><small>แผนผัง + รายการด้าย + รายละเอียด</small></span></button>
               <button onClick={() => doExport('png')}><Icon name="image" /> <span><b>รูปภาพ PNG</b><small>สำหรับส่งให้เพื่อนทาง LINE / โซเชียล</small></span></button>
+              <button onClick={() => doExport('transfer')}><Icon name="phone" /> <span><b>ส่งไปมือถือ / อีกเครื่อง</b><small>สแกน QR เพื่อปักต่อในมือถือ (รวมความคืบหน้า)</small></span></button>
               <button onClick={() => doExport('share')}><Icon name="link" /> <span><b>คัดลอกลิงก์แชร์</b><small>เพื่อนเปิดดูและบันทึกต่อได้</small></span></button>
               <button onClick={() => doExport('json')}><Icon name="file" /> <span><b>ไฟล์ลาย (.json)</b><small>สำรองข้อมูล / นำเข้าเครื่องอื่น</small></span></button>
               <button onClick={() => doExport('stl')}><Icon name="cube" /> <span><b>โมเดล 3D (.stl)</b><small>แผ่นเจาะรูตามรูปทรงนี้ สำหรับพิมพ์</small></span></button>
@@ -285,9 +291,14 @@ export function Editor({ id }: { id: string }) {
           </nav>
           {tab === 'palette' && <PalettePanel pattern={p} active={active} setActive={setActive} onPalette={onPalette} />}
           {tab === 'details' && <DetailsPanel pattern={p} onChange={(patch) => setPattern({ ...p, ...patch })} />}
-          {tab === '3d' && <Preview3D pattern={p} />}
+          {tab === '3d' && (
+            <Suspense fallback={<div className="preview3d"><p className="muted">กำลังโหลดภาพ 3 มิติ…</p></div>}>
+              <Preview3D pattern={p} />
+            </Suspense>
+          )}
         </aside>
       </div>
+      {transfer && <TransferDialog pattern={p} onClose={() => setTransfer(false)} />}
       {imgImport && (
         <ImageImportDialog
           pattern={p}

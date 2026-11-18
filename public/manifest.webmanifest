@@ -1,0 +1,18 @@
+{
+  "name": "Stitch by Style — ออกแบบลายปัก",
+  "short_name": "Stitch by Style",
+  "description": "ออกแบบและติดตามการปักลายบนผ้าและชิ้นงานพิมพ์ 3 มิติ",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#faf6ef",
+  "theme_color": "#243b6b",
+  "lang": "th",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -1,5 +1,6 @@
 import type { Pattern } from '../types';
-import { normalizePattern } from './pattern';
+import { defaultDetails, normalizePattern } from './pattern';
+import { uid } from './threads';
 
 function toB64Url(bytes: Uint8Array): string {
   let s = '';
@@ -19,21 +20,79 @@ async function pipe(bytes: Uint8Array, stream: CompressionStream | Decompression
   return new Uint8Array(await res.arrayBuffer());
 }
 
-export async function encodeShare(p: Pattern): Promise<string> {
-  // stitching progress is personal: never put it in a share link
-  const { id, createdAt, updatedAt, progress, ...rest } = p;
-  const bytes = new TextEncoder().encode(JSON.stringify(rest));
+/*
+ * Compact cell encoding: one character per cell ('.' = empty, '0'.. = palette index),
+ * which deflates far better than a JSON number array. Decoding accepts both forms,
+ * so links made before this change keep working.
+ */
+const CELL_BASE = 48; // '0'
+const MAX_COMPACT_PALETTE = 74; // '0'..'z'
+
+function pack(p: Partial<Pattern>): Record<string, unknown> {
+  const { cells, details, palette, ...rest } = p;
+  // details: only fields that differ from the defaults (normalizePattern fills the rest back in)
+  const defaults = defaultDetails() as unknown as Record<string, unknown>;
+  const d: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(details ?? {})) {
+    if (JSON.stringify(v) !== JSON.stringify(defaults[k])) d[k] = v;
+  }
+  // palette ids are only React keys; they are regenerated on decode
+  const pal = palette?.map(({ id, ...t }) => t);
+  const out: Record<string, unknown> = { ...rest, details: d, palette: pal };
+  if (!cells || (palette?.length ?? 0) > MAX_COMPACT_PALETTE) return { ...out, cells };
+  return { ...out, c: cells.map((v) => (v < 0 ? '.' : String.fromCharCode(CELL_BASE + v))).join('') };
+}
+
+function unpack(raw: any): any {
+  let out = raw;
+  if (typeof raw.c === 'string' && !Array.isArray(raw.cells)) {
+    const { c, ...rest } = raw;
+    out = { ...rest, cells: Array.from(c as string, (ch) => (ch === '.' ? -1 : ch.charCodeAt(0) - CELL_BASE)) };
+  }
+  if (Array.isArray(out.palette)) out = { ...out, palette: out.palette.map((t: any) => ({ ...t, id: t.id || uid() })) };
+  return out;
+}
+
+async function deflateJson(obj: unknown): Promise<string> {
+  const bytes = new TextEncoder().encode(JSON.stringify(obj));
   return toB64Url(await pipe(bytes, new CompressionStream('deflate-raw')));
 }
 
-export async function decodeShare(data: string): Promise<Pattern> {
+async function inflateJson(data: string): Promise<any> {
   const bytes = await pipe(fromB64Url(data), new DecompressionStream('deflate-raw'));
-  return normalizePattern({ ...JSON.parse(new TextDecoder().decode(bytes)), id: '' });
+  return unpack(JSON.parse(new TextDecoder().decode(bytes)));
+}
+
+const baseUrl = () => location.href.split('#')[0];
+
+/** Share with someone else: a fresh copy, without your stitching progress. */
+export async function encodeShare(p: Pattern): Promise<string> {
+  // stitching progress is personal: never put it in a share link
+  const { id, createdAt, updatedAt, progress, ...rest } = p;
+  return deflateJson(pack(rest));
+}
+
+export async function decodeShare(data: string): Promise<Pattern> {
+  return normalizePattern({ ...(await inflateJson(data)), id: '' });
 }
 
 export async function shareUrl(p: Pattern): Promise<string> {
-  const base = location.href.split('#')[0];
-  return `${base}#/s/${await encodeShare(p)}`;
+  return `${baseUrl()}#/s/${await encodeShare(p)}`;
+}
+
+/** Move your own pattern to another device: keeps its id, dates and progress. */
+export async function encodeTransfer(p: Pattern): Promise<string> {
+  return deflateJson(pack(p));
+}
+
+export async function decodeTransfer(data: string): Promise<Pattern> {
+  const raw = await inflateJson(data);
+  if (!raw.id) throw new Error('ลิงก์ไม่ครบ');
+  return normalizePattern(raw);
+}
+
+export async function transferUrl(p: Pattern): Promise<string> {
+  return `${baseUrl()}#/t/${await encodeTransfer(p)}`;
 }
 
 export function downloadBlob(blob: Blob, filename: string) {

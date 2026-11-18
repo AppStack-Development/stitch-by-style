@@ -5,6 +5,7 @@ import { Editor } from './pages/Editor';
 import { PrintView } from './pages/PrintView';
 import { SharedView } from './pages/SharedView';
 import { StitchMode } from './pages/StitchMode';
+import { TransferView } from './pages/TransferView';
 import { loadPattern } from './lib/storage';
 
 export function navigate(hash: string) {
@@ -38,5 +39,6 @@ export function App() {
     return <PrintView key={arg} pattern={p} backHref={`#/edit/${arg}`} />;
   }
   if (route === 's' && arg) return <SharedView key={arg} data={parts.slice(1).join('/')} />;
+  if (route === 't' && arg) return <TransferView key={arg} data={parts.slice(1).join('/')} />;
   return <Home />;
 }

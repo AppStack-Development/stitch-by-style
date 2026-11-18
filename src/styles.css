@@ -376,3 +376,35 @@ label.check small { color: var(--ink-3); }
 .part-chip small { color: var(--ink-2); white-space: nowrap; }
 .part-chip.on { border-color: var(--brand); box-shadow: 0 0 0 3px #243b6b22; }
 .part-chip:disabled { opacity: .5; cursor: not-allowed; }
+
+/* transfer (QR) dialog */
+.modal.transfer { width: min(640px, 100%); }
+.transfer-body { display: flex; gap: 20px; padding: 18px; align-items: flex-start; flex-wrap: wrap; overflow-y: auto; }
+.qr-box { border: 1px solid var(--line); border-radius: 14px; padding: 6px; background: #fff; cursor: zoom-in; line-height: 0; }
+.qr-box canvas { image-rendering: pixelated; border-radius: 8px; }
+.qr-box.big { position: fixed; inset: 0; z-index: 60; border-radius: 0; display: grid; place-items: center; background: #fff; cursor: zoom-out; }
+.transfer-info { flex: 1; min-width: 220px; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+.transfer-info b { font-size: 16px; }
+.transfer-info ol { margin: 6px 0 0; padding-left: 20px; color: var(--ink-2); line-height: 1.7; }
+.error.small { font-size: 12.5px; margin: 4px 0 0; }
+.merge-box { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.merge-box > div { display: flex; flex-direction: column; padding: 8px 12px; background: #f8f4ec; border-radius: 10px; min-width: 76px; }
+.merge-box span { font-size: 12px; color: var(--ink-2); }
+.merge-box b { font-size: 20px; font-variant-numeric: tabular-nums; }
+.merge-box .arrow { background: none; min-width: 0; padding: 0; font-size: 20px; color: var(--ink-3); }
+.merge-box .result { background: #2f7d4f14; }
+.merge-box .result b { color: var(--ok); }
+
+/* install help (iOS) */
+.ios-help { max-width: 1160px; margin: 12px auto 0; display: flex; gap: 10px; align-items: center; padding: 10px 14px;
+  background: #243b6b0d; border: 1px solid #243b6b33; border-radius: 12px; font-size: 14px; }
+.ios-help span { flex: 1; }
+@media (max-width: 900px) { .ios-help { margin: 12px 16px 0; } }
+
+/* previews never wider than their card (phones) */
+.preview-card canvas, .card-thumb canvas { max-width: 100%; height: auto !important; }
+.shared-body > * { min-width: 0; }
+@media (max-width: 900px) {
+  .shared-body { padding: 16px; gap: 16px; }
+  .preview-card { min-height: 0; padding: 12px; }
+}

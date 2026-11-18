@@ -131,3 +131,25 @@ export function fmtClock(sec: number): string {
   const mm = String(m).padStart(2, '0'), ss = String(r).padStart(2, '0');
   return h ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
 }
+
+/** Same grid, holes, stitches and thread colours: progress from one can be merged into the other. */
+export function sameDesign(a: Pattern, b: Pattern): boolean {
+  if (a.cols !== b.cols || a.rows !== b.rows || a.mask !== b.mask) return false;
+  if (a.palette.length !== b.palette.length || a.palette.some((t, i) => t.hex !== b.palette[i].hex)) return false;
+  for (let i = 0; i < a.cells.length; i++) if (a.cells[i] !== b.cells[i]) return false;
+  return true;
+}
+
+/**
+ * Combine progress recorded on two devices: a stitch done on either counts as done,
+ * and timer/daily tallies keep the larger value (they were counted on one device or the other).
+ */
+export function mergeProgress(a: Progress | undefined, b: Progress | undefined): Progress | undefined {
+  if (!a) return b;
+  if (!b || a.done.length !== b.done.length) return a;
+  let done = '';
+  for (let i = 0; i < a.done.length; i++) done += a.done.charCodeAt(i) === 49 || b.done.charCodeAt(i) === 49 ? '1' : '0';
+  const daily: Record<string, number> = { ...a.daily };
+  for (const [k, v] of Object.entries(b.daily)) daily[k] = Math.max(daily[k] ?? 0, v);
+  return { done, seconds: Math.max(a.seconds, b.seconds), daily, updatedAt: Date.now() };
+}

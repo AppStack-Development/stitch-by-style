@@ -8,10 +8,13 @@ import { computeProgress } from '../lib/progress';
 import { Thumb } from '../components/Thumb';
 import { Icon } from '../components/Icon';
 import { navigate } from '../App';
+import { useInstall } from '../lib/pwa';
 
 export function Home() {
   const [items, setItems] = useState<Pattern[]>(() => listPatterns());
   const fileRef = useRef<HTMLInputElement>(null);
+  const inst = useInstall();
+  const [iosHelp, setIosHelp] = useState(false);
   const refresh = () => setItems(listPatterns());
 
   const importFile = async (f: File) => {
@@ -38,11 +41,22 @@ export function Home() {
           Stitch by Style
         </a>
         <div className="spacer" />
+        {(inst.canPrompt || inst.iosManual) && (
+          <button className="btn" onClick={() => (inst.canPrompt ? inst.install() : setIosHelp(!iosHelp))} title="ติดตั้งเป็นแอปบนหน้าจอโฮม ใช้งานได้แม้ออฟไลน์">
+            <Icon name="install" size={16} /> ติดตั้งแอป
+          </button>
+        )}
         <button className="btn ghost" onClick={() => fileRef.current?.click()}><Icon name="upload" size={16} /> นำเข้าไฟล์ลาย</button>
         <input ref={fileRef} type="file" accept=".json,application/json" hidden
           onChange={(e) => { const f = e.target.files?.[0]; if (f) importFile(f); e.target.value = ''; }} />
       </header>
 
+      {iosHelp && (
+        <div className="ios-help">
+          <span>บน iPhone/iPad: กดปุ่ม <b>แชร์</b> (สี่เหลี่ยมมีลูกศรชี้ขึ้น) ใน Safari แล้วเลือก <b>“เพิ่มไปยังหน้าจอโฮม”</b></span>
+          <button className="icon-btn sm" onClick={() => setIosHelp(false)} title="ปิด"><Icon name="close" size={16} /></button>
+        </div>
+      )}
       <section className="hero">
         <h1>ออกแบบลายปัก<br />สำหรับผ้าและชิ้นงานพิมพ์ 3 มิติ</h1>
         <p>เติมสีลงในช่อง วางแผนด้าย เข็ม และขนาดชิ้นงาน แล้วพิมพ์แผนผังหรือแชร์ให้เพื่อนได้ในคลิกเดียว</p>

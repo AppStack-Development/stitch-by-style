@@ -7,6 +7,7 @@ import {
 import { contrastText } from '../lib/threads';
 import { StitchCanvas, type MarkMode, type StitchCanvasHandle } from '../components/StitchCanvas';
 import { Icon, type IconName } from '../components/Icon';
+import { TransferDialog } from '../components/TransferDialog';
 
 const MODES: { id: MarkMode; icon: IconName; label: string; hint: string }[] = [
   { id: 'tap', icon: 'tap', label: 'แตะ', hint: 'แตะช่องเพื่อทำเครื่องหมาย · ลากเพื่อเลื่อน' },
@@ -40,6 +41,7 @@ export function StitchMode({ id }: { id: string }) {
   const [grid, setGrid] = useState(true);
   const [timerSince, setTimerSince] = useState<number | null>(null);
   const [awake, setAwake] = useState(false);
+  const [transfer, setTransfer] = useState(false);
   const [, force] = useState(0);
   const undo = useRef<string[]>([]);
   const canvas = useRef<StitchCanvasHandle>(null);
@@ -216,6 +218,9 @@ export function StitchMode({ id }: { id: string }) {
           <Icon name={timerSince != null ? 'pause' : 'play'} size={15} />
           <Clock base={progress.seconds} since={timerSince} />
         </button>
+        <button className="icon-btn" onClick={() => { flush(); setTransfer(true); }} title="ส่งไปอีกเครื่อง (QR) พร้อมความคืบหน้า">
+          <Icon name="phone" />
+        </button>
         {wakeSupported && (
           <button className={'icon-btn' + (awake ? ' on' : '')} onClick={() => setAwake(!awake)}
             title={awake ? 'ปิด: ให้หน้าจอดับตามปกติ' : 'เปิดหน้าจอค้างไว้ระหว่างปัก'}>
@@ -224,6 +229,7 @@ export function StitchMode({ id }: { id: string }) {
         )}
       </header>
 
+      {transfer && <TransferDialog pattern={{ ...p, progress, updatedAt: Date.now() }} onClose={() => setTransfer(false)} />}
       <div className="editor-main stitch-main">
         <section className="stage">
           <div className="stitch-tools">

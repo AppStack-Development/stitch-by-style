@@ -3,7 +3,10 @@ import type { BaseType } from '../types';
 import { TEMPLATES, freeMask, type TemplateDef } from '../lib/templates';
 import { createPattern } from '../lib/pattern';
 import { savePattern } from '../lib/storage';
-import { analyzeParts, bestPart, readModelFile, type ModelPart, type PartAnalysis, type StlAnalysis } from '../lib/stlImport';
+import type { ModelPart, PartAnalysis, StlAnalysis } from '../lib/stlImport';
+
+// the model importer pulls in three.js + fflate: load it only when a file is chosen
+const importer = () => import('../lib/stlImport');
 import { needleHint } from '../lib/stats';
 import { Thumb } from '../components/Thumb';
 import { Icon } from '../components/Icon';
@@ -132,6 +135,7 @@ function TemplatePicker() {
   const loadStl = async (f: File) => {
     setBusy(true);
     const buf = await f.arrayBuffer();
+    const { readModelFile, analyzeParts, bestPart } = await importer();
     // let the "analysing" state paint before the (synchronous) work
     setTimeout(() => {
       try {
@@ -159,8 +163,9 @@ function TemplatePicker() {
     applyResult(stl.analyses[i].result!, stl.analyses[i].part.name);
   };
 
-  const reanalyse = (override?: number) => {
+  const reanalyse = async (override?: number) => {
     if (!stl || stl.sel < 0) return;
+    const { analyzeParts } = await importer();
     const [a] = analyzeParts([stl.parts[stl.sel]], override);
     setStl({ ...stl, analyses: stl.analyses.map((x, i) => (i === stl.sel ? a : x)), err: a.result ? '' : a.error });
     if (a.result) applyResult(a.result, a.part.name);
