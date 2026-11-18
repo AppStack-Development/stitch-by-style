@@ -10,6 +10,7 @@ import { PatternCanvas, type CanvasHandle } from '../components/PatternCanvas';
 import { PalettePanel } from '../components/PalettePanel';
 import { DetailsPanel } from '../components/DetailsPanel';
 import { TransferDialog } from '../components/TransferDialog';
+import { TextDialog } from '../components/TextDialog';
 
 // three.js is large: load the 3D preview only when its tab is opened
 const Preview3D = lazy(() => import('../components/Preview3D').then((m) => ({ default: m.Preview3D })));
@@ -48,6 +49,7 @@ export function Editor({ id }: { id: string }) {
   /** image import dialog: closed (null), open empty, or open with a file */
   const [imgImport, setImgImport] = useState<{ file: File | null } | null>(null);
   const [transfer, setTransfer] = useState(false);
+  const [textDlg, setTextDlg] = useState(false);
   const undo = useRef<Snap[]>([]);
   const redo = useRef<Snap[]>([]);
   const [, force] = useState(0);
@@ -126,7 +128,7 @@ export function Editor({ id }: { id: string }) {
 
   // keyboard shortcuts
   useEffect(() => {
-    if (imgImport) return;
+    if (imgImport || textDlg) return;
     const onKey = (e: KeyboardEvent) => {
       const tgt = e.target as HTMLElement;
       if (tgt && (tgt.tagName === 'INPUT' || tgt.tagName === 'TEXTAREA' || tgt.tagName === 'SELECT')) return;
@@ -138,6 +140,7 @@ export function Editor({ id }: { id: string }) {
       }
       if (mod && e.key.toLowerCase() === 'y') { e.preventDefault(); doRedo(); return; }
       if (mod) return;
+      if (e.key.toLowerCase() === 't') { setTextDlg(true); return; }
       const t = TOOLS.find((x) => x.key.toLowerCase() === e.key.toLowerCase());
       if (t) { setTool(t.id); return; }
       if (/^[1-9]$/.test(e.key) && pattern && +e.key <= pattern.palette.length) { setActive(+e.key - 1); return; }
@@ -149,7 +152,7 @@ export function Editor({ id }: { id: string }) {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [doUndo, doRedo, pattern, imgImport]);
+  }, [doUndo, doRedo, pattern, imgImport, textDlg]);
 
   const stats = useMemo(() => (pattern ? computeStats(pattern) : null), [pattern]);
 
@@ -238,6 +241,7 @@ export function Editor({ id }: { id: string }) {
               <Icon name={t.icon} size={20} />
             </button>
           ))}
+          <button className="tool" onClick={() => setTextDlg(true)} title="ใส่ชื่อ / ข้อความ (T)"><Icon name="text" size={20} /></button>
           <div className="tool-sep" />
           <button className={'tool' + (mirrorX ? ' on' : '')} onClick={() => setMirrorX(!mirrorX)} title="สมมาตรซ้าย-ขวา (X)"><Icon name="mirrorX" size={20} /></button>
           <button className={'tool' + (mirrorY ? ' on' : '')} onClick={() => setMirrorY(!mirrorY)} title="สมมาตรบน-ล่าง (Y)"><Icon name="mirrorY" size={20} /></button>
@@ -310,6 +314,19 @@ export function Editor({ id }: { id: string }) {
         </aside>
       </div>
       {transfer && <TransferDialog pattern={p} onClose={() => setTransfer(false)} />}
+      {textDlg && (
+        <TextDialog
+          pattern={p}
+          initialColor={active}
+          onClose={() => setTextDlg(false)}
+          onApply={(cells, summary) => {
+            snapshot();
+            setPattern(reconcileProgress({ ...p, cells }, p.cells));
+            setTextDlg(false);
+            flash(summary);
+          }}
+        />
+      )}
       {imgImport && (
         <ImageImportDialog
           pattern={p}

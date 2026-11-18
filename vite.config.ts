@@ -22,7 +22,8 @@ function serviceWorker(): Plugin {
     apply: 'build',
     generateBundle(_, bundle) {
       const publicFiles = listFiles('public').map((f) => relative('public', f).split('\\').join('/'));
-      const files = [...Object.keys(bundle), ...publicFiles].filter((f) => !f.endsWith('.map') && f !== 'sw.js');
+      // og-image.png is only fetched by link-preview crawlers, never needed offline
+      const files = [...Object.keys(bundle), ...publicFiles].filter((f) => !f.endsWith('.map') && f !== 'sw.js' && f !== 'og-image.png');
       const assets = ['./', ...files.map((f) => `./${f}`)];
       const version = createHash('sha256').update(files.sort().join('|')).digest('hex').slice(0, 10);
       const source = `// generated at build time — do not edit

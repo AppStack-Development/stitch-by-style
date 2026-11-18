@@ -476,3 +476,17 @@ kbd { font-family: 'IBM Plex Mono', monospace; font-size: 12px; padding: 1px 6px
   .import-canvas { min-height: 0; }
   .stitch-banner.hint-only { display: none; }
 }
+
+/* text dialog */
+.text-colors { display: flex; flex-wrap: wrap; gap: 6px; }
+.text-colors .swatch { width: 32px; height: 32px; }
+.text-colors .swatch.on { outline: 3px solid var(--brand); outline-offset: 2px; }
+.nudge { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 13px; color: var(--ink-2); font-weight: 500; }
+.nudge span { margin-right: 4px; }
+.warn { color: #b35c00; }
+.import-canvas canvas { max-width: 100%; height: auto !important; }
+@media (max-width: 900px) {
+  /* one scrolling column on phones: the preview keeps its full height above the controls */
+  .modal-body { display: flex; flex-direction: column; overflow-y: auto; }
+  .modal-body > .import-preview, .modal-body > .import-controls { overflow: visible; flex: none; }
+}
