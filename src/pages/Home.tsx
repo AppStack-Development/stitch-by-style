@@ -7,6 +7,7 @@ import { computeStats } from '../lib/stats';
 import { computeProgress } from '../lib/progress';
 import { Thumb } from '../components/Thumb';
 import { Icon } from '../components/Icon';
+import { LogoMark } from '../components/LogoMark';
 import { navigate } from '../App';
 import { useInstall } from '../lib/pwa';
 import { TEMPLATES } from '../lib/templates';
@@ -93,10 +94,7 @@ export function Home() {
   return (
     <div className="home">
       <header className="site-head">
-        <a className="brand" href="#/">
-          <span className="brand-mark"><Icon name="close" size={18} /></span>
-          Stitch by Style
-        </a>
+        <a className="brand" href="#/" aria-label="Stitch by Style หน้าแรก"><LogoMark size={36} /><span className="wordmark">Stitch by Style</span></a>
         <div className="spacer" />
         {(inst.canPrompt || inst.iosManual) && (
           <button className="btn" onClick={() => (inst.canPrompt ? inst.install() : setIosHelp(!iosHelp))} title="ติดตั้งเป็นแอปบนหน้าจอโฮม ใช้งานได้แม้ออฟไลน์">

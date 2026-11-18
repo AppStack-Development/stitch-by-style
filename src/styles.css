@@ -80,8 +80,11 @@ textarea { resize: vertical; }
 /* site header */
 .site-head { display: flex; align-items: center; gap: 12px; padding: 14px 28px; border-bottom: 1px solid var(--line); background: var(--bg); position: sticky; top: 0; z-index: 5; }
 .site-head h2 { font-size: 18px; }
-.brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; letter-spacing: .2px; }
-.brand-mark { width: 30px; height: 30px; border-radius: 8px; background: var(--brand); color: var(--accent); display: grid; place-items: center; }
+.brand { display: flex; align-items: center; gap: 10px; color: var(--brand); }
+.brand svg { flex-shrink: 0; border-radius: 9px; box-shadow: 0 1px 2px #1f2a4426; }
+/* pixel wordmark: with line-height 1, Pixelify Sans' cap height is centred on the line box,
+   so flex centring lines the capitals up with the mark's centre (cap height ~0.64em ~ half the mark) */
+.wordmark { font-family: 'Pixelify Sans', 'IBM Plex Sans Thai', system-ui, sans-serif; font-size: 28px; font-weight: 600; line-height: 1; letter-spacing: .01em; white-space: nowrap; }
 
 /* home */
 .home { padding-bottom: 60px; }
@@ -317,7 +320,7 @@ label.check small { color: var(--ink-3); }
 .sheet-head h1 { font-size: 24px; }
 .sheet-head p { margin: 4px 0 0; font-size: 12.5px; }
 .sheet-head.small { align-items: baseline; font-size: 13px; border-bottom-width: 1px; }
-.sheet-brand { font-size: 11px; color: #888; white-space: nowrap; }
+.sheet-brand { font-family: 'Pixelify Sans', system-ui, sans-serif; font-weight: 600; font-size: 13px; line-height: 1; color: #243b6b; white-space: nowrap; }
 .sheet-cover { display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: start; }
 .sheet-thumb { padding: 8px; border: 1px solid #ddd; border-radius: 8px; display: grid; place-items: center; min-width: 120px; }
 .info-table { border-collapse: collapse; font-size: 12.5px; width: 100%; }
@@ -465,7 +468,9 @@ kbd { font-family: 'IBM Plex Mono', monospace; font-size: 12px; padding: 1px 6px
   .editor-top .btn { padding: 7px 10px; }
   .site-head { gap: 6px; padding: 10px 12px; }
   .site-head .btn { padding: 7px 10px; }
-  .brand { font-size: 16px; gap: 8px; }
+  .brand { gap: 8px; }
+  .wordmark { font-size: 22px; }
+  .brand svg { width: 32px; height: 32px; }
 }
 
 /* phone refinements found in QA */
@@ -489,4 +494,13 @@ kbd { font-family: 'IBM Plex Mono', monospace; font-size: 12px; padding: 1px 6px
   /* one scrolling column on phones: the preview keeps its full height above the controls */
   .modal-body { display: flex; flex-direction: column; overflow-y: auto; }
   .modal-body > .import-preview, .modal-body > .import-controls { overflow: visible; flex: none; }
+}
+
+/* very small phones (e.g. 320 px) with all three header buttons (install, guide, import) */
+@media (max-width: 380px) {
+  .site-head { padding: 10px; gap: 4px; }
+  .site-head .btn { padding: 7px 8px; }
+  .brand { gap: 7px; }
+  .brand svg { width: 30px; height: 30px; }
+  .wordmark { font-size: 19px; }
 }

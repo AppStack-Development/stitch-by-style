@@ -1,0 +1,53 @@
+{
+  "description": "Stitch by Style mark: a Pixelify-style S of cross stitches, centred; the last stitch is half done and the tip of a needle pokes into its next hole, its thread hanging below. '#' = stitch. Unit space is the 1x1 tile. Shared by LogoMark.tsx and scripts/make-icons.mjs.",
+  "grid": [
+    ".######.",
+    "########",
+    "##....##",
+    "##....##",
+    "##......",
+    "#######.",
+    ".#######",
+    "......##",
+    "##....##",
+    "##....##",
+    "########",
+    ".######."
+  ],
+  "colors": {
+    "tile": "#243b6b",
+    "hole": "#34508a",
+    "under": "#e9a92c",
+    "over": "#f6c35a",
+    "needleLight": "#ffffff",
+    "needleMid": "#e3e8f0",
+    "needleDark": "#93a1b8",
+    "pierce": "#16264a"
+  },
+  "geometry": {
+    "tileRadius": 0.24,
+    "span": 0.66,
+    "x0": 0.28,
+    "y0": 0.17,
+    "stitchHalf": 0.36,
+    "stitchWidth": 0.3,
+    "holeRadius": 0.08,
+    "minStrokePx": 1.1
+  },
+  "needle": {
+    "stitch": [7, 3],
+    "angle": -0.5,
+    "length": 0.6,
+    "halfWidth": 0.024,
+    "taper": 0.2,
+    "eyeAt": 0.86,
+    "eyeHalfLength": 0.09,
+    "eyeHalfWidth": 0.36,
+    "pierceRadius": 0.13,
+    "minHalfWidthPx": 0.8
+  },
+  "thread": {
+    "c1": [0.06, 0.24],
+    "c2": [-0.12, 0.28]
+  }
+}

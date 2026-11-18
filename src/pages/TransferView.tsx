@@ -6,6 +6,7 @@ import { computeProgress, mergeProgress, sameDesign } from '../lib/progress';
 import { uid } from '../lib/threads';
 import { Thumb } from '../components/Thumb';
 import { Icon } from '../components/Icon';
+import { LogoMark } from '../components/LogoMark';
 import { navigate } from '../App';
 
 const fmtWhen = (t: number) =>
@@ -48,7 +49,7 @@ export function TransferView({ data }: { data: string }) {
   return (
     <div className="shared">
       <header className="site-head">
-        <a className="brand" href="#/"><span className="brand-mark"><Icon name="close" size={18} /></span>Stitch by Style</a>
+        <a className="brand" href="#/" aria-label="Stitch by Style หน้าแรก"><LogoMark size={36} /><span className="wordmark">Stitch by Style</span></a>
       </header>
       <div className="shared-body">
         <div className="preview-card"><Thumb pattern={incoming} max={400} view="stitch" /></div>

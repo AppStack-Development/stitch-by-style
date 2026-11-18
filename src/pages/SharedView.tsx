@@ -6,6 +6,7 @@ import { uid, contrastText } from '../lib/threads';
 import { computeStats } from '../lib/stats';
 import { Thumb } from '../components/Thumb';
 import { Icon } from '../components/Icon';
+import { LogoMark } from '../components/LogoMark';
 import { PrintView } from './PrintView';
 import { navigate } from '../App';
 
@@ -34,7 +35,7 @@ export function SharedView({ data }: { data: string }) {
   return (
     <div className="shared">
       <header className="site-head">
-        <a className="brand" href="#/"><span className="brand-mark"><Icon name="close" size={18} /></span>Stitch by Style</a>
+        <a className="brand" href="#/" aria-label="Stitch by Style หน้าแรก"><LogoMark size={36} /><span className="wordmark">Stitch by Style</span></a>
       </header>
       <div className="shared-body">
         <div className="preview-card"><Thumb pattern={p} max={420} view="stitch" /></div>
