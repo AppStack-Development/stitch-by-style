@@ -13,6 +13,7 @@ import { useInstall } from '../lib/pwa';
 import { TEMPLATES } from '../lib/templates';
 import { t, locale } from '../lib/i18n';
 import { LangSwitch } from '../components/LangSwitch';
+import { SampleGallery } from '../components/SampleGallery';
 
 /**
  * Card art drawn from the real heart-keychain template, so every hole sits exactly
@@ -136,6 +137,8 @@ export function Home() {
           <span className="go">{t('เลือกแม่แบบ →', 'Choose a template →')}</span>
         </a>
       </section>
+
+      <SampleGallery />
 
       <section className="my-patterns">
         <div className="section-head">

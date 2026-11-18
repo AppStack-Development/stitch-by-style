@@ -1,0 +1,32 @@
+/* sample patterns on the home page (src/components/SampleGallery.tsx) */
+.samples { padding: 40px 28px 0; }
+.samples .section-head { display: flex; align-items: center; justify-content: space-between; gap: 10px 16px; flex-wrap: wrap; margin-bottom: 16px; }
+.samples h2 { font-size: 22px; display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; }
+.samples h2 small { font-size: 13px; color: var(--ink-3); font-weight: 400; }
+.sample-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 16px; }
+.sample-card { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); overflow: hidden; display: flex; flex-direction: column; }
+.sample-thumb { position: relative; border: 0; padding: 0; cursor: pointer; height: 170px; display: grid; place-items: center; background: repeating-conic-gradient(#f2ede4 0 25%, #f8f5ef 0 50%) 0 0 / 16px 16px; }
+.sample-thumb:hover canvas { transform: scale(1.04); }
+.sample-thumb { overflow: hidden; }
+.sample-thumb canvas { transition: transform .15s ease; max-width: 88%; max-height: 150px; width: auto !important; height: auto !important; }
+.sample-kind { position: absolute; top: 8px; left: 8px; font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: #ffffffe6; color: var(--ink-2); border: 1px solid var(--line); }
+.sample-kind.print3d { color: var(--brand); }
+.sample-body { padding: 12px 14px 6px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.sample-body h3 { font-size: 15.5px; }
+.sample-body p { margin: 0; font-size: 12.5px; color: var(--ink-2); line-height: 1.45; }
+.sample-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 12px; color: var(--ink-3); margin-top: 2px; }
+.sample-meta .diff { font-weight: 600; }
+.sample-meta .diff.easy { color: var(--ok); }
+.sample-meta .diff.medium { color: #b35c00; }
+.sample-meta .diff.hard { color: var(--err); }
+.sample-actions { display: flex; gap: 6px; padding: 6px 12px 12px; }
+.sample-actions .btn { flex: 1; justify-content: center; }
+@media (max-width: 600px) {
+  .samples { padding: 32px 16px 0; }
+  .sample-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .sample-thumb { height: 130px; }
+  .sample-thumb canvas { max-height: 112px; }
+  .sample-body { padding: 10px 10px 4px; }
+  .sample-body p { display: none; }
+  .sample-actions { flex-direction: column; padding: 6px 10px 10px; gap: 4px; }
+}

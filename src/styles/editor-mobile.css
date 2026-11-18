@@ -1,0 +1,138 @@
+/* Pattern editor: phone tool bar + "More" sheet, first-run tip, scroll cues.
+   Loaded after styles.css. Everything outside the phone query keeps desktop/tablet unchanged
+   (it only hides phone-only elements and styles the tip). */
+
+/* ---------- phone-only elements, hidden on larger screens ---------- */
+.tool-label, .tool-more, .zoom-float { display: none; }
+@media (min-width: 601px) { .tool-sheet-backdrop { display: none; } }
+
+/* ---------- first-run tip (all sizes) ---------- */
+.coach {
+  position: absolute; z-index: 6; left: 12px; bottom: 46px; width: min(330px, calc(100% - 24px));
+  display: flex; flex-direction: column; gap: 4px; padding: 10px 12px 12px 14px;
+  background: var(--paper); border: 1px solid var(--line); border-radius: 14px;
+  box-shadow: 0 12px 40px #1f2a4426; font-size: 13.5px; line-height: 1.5;
+  animation: coach-in .2s ease-out;
+}
+.coach-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-right: -4px; }
+.coach-kicker { font-size: 11.5px; font-weight: 600; color: var(--ink-3); letter-spacing: .3px; }
+.coach-title { font-size: 15px; }
+.coach p { margin: 0; color: var(--ink-2); }
+.coach p svg { vertical-align: -2px; }
+.coach-foot { display: flex; align-items: center; gap: 6px; margin-top: 6px; }
+.coach-dots { flex: 1; display: flex; gap: 5px; }
+.coach-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--line-2); }
+.coach-dots i.on { background: var(--brand); width: 16px; border-radius: 3px; }
+/* the element the current step talks about */
+.coach-glow { outline: 3px solid var(--accent); outline-offset: -3px; animation: coach-pulse 1.6s ease-in-out infinite; }
+.btn.coach-glow { outline-offset: 2px; }
+@keyframes coach-pulse { 50% { outline-color: #f2b33d55; } }
+@keyframes coach-in { from { opacity: 0; transform: translateY(6px); } }
+@media (prefers-reduced-motion: reduce) {
+  .coach, .coach-glow, .tool-sheet { animation: none !important; }
+}
+
+/* ---------- phones ---------- */
+@media (max-width: 600px) {
+  /* iOS Safari: 100vh is taller than the visible area and pushed the bottom of the editor off-screen */
+  @supports (height: 100dvh) { .editor { height: 100dvh; } }
+
+  /* canvas, then the tool bar, then the side panel (Colors / Details / 3D) */
+  .editor-main.ed-main { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto min(300px, 38vh); }
+  .ed-main > .stage { grid-row: 1; grid-column: 1; }
+  .ed-main > .toolbar { grid-row: 2; grid-column: 1; }
+  .ed-main > .side { grid-row: 3; grid-column: 1; }
+
+  /* bottom tool bar: a few tools with names + "More"; nothing scrolls */
+  .ed-main .toolbar {
+    flex-direction: row; justify-content: space-around; align-items: stretch; gap: 2px;
+    padding: 4px; border-right: 0; border-top: 1px solid var(--line); overflow: visible;
+  }
+    .toolbar .tool {
+    position: relative; flex: 1 1 0; min-width: 0; max-width: 92px; width: auto; height: 52px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 0 2px;
+  }
+  .tool-label {
+    display: block; max-width: 100%; font-size: 11px; line-height: 1.35; font-weight: 500;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .toolbar .tool-more { display: flex; }
+  .toolbar .tool.tool-x, .toolbar .tool-sep { display: none; }
+  .tool-more.open:not(.on) { background: #1f2a4414; color: var(--ink); }
+  /* small corner caret: this button opens a list */
+  .tool-more::after {
+    content: ''; position: absolute; top: 6px; right: 6px; width: 0; height: 0;
+    border-left: 4px solid transparent; border-right: 4px solid transparent; border-bottom: 5px solid currentColor; opacity: .55;
+  }
+  /* a mirror is on (mirror lives in the sheet) */
+  .more-badge {
+    position: absolute; top: 3px; left: 4px; width: 17px; height: 17px; border-radius: 50%;
+    display: grid; place-items: center; background: var(--accent); color: var(--ink); box-shadow: 0 0 0 2px var(--paper);
+  }
+
+  /* zoom buttons over the canvas, just above the status line */
+  .zoom-float { display: block; position: relative; height: 0; z-index: 4; }
+  .zoom-float > div { position: absolute; right: 8px; bottom: 8px; display: flex; flex-direction: column; gap: 6px; }
+  .zoom-float .icon-btn { width: 40px; height: 40px; border-radius: 10px; box-shadow: var(--shadow); }
+
+  .status { gap: 4px 12px; padding: 5px 10px; }
+  .status .kbd-hint { display: none; } /* "Right-click = erase" means nothing on a phone */
+
+  /* edit-shape bar: keep inside the screen on 320 px */
+  .hole-bar { left: 8px; right: 8px; transform: none; flex-wrap: wrap; justify-content: center; }
+  .hole-bar .chip { min-height: 36px; }
+
+  /* export menu: never wider than the screen */
+  .editor-top .menu { width: min(320px, calc(100vw - 12px)); }
+  .editor-top .menu button { min-height: 44px; }
+
+  /* side panel tabs: bigger targets */
+  .ed-main .tabs button { min-height: 44px; padding: 8px 4px; }
+  /* scroll cue: a soft shadow at the top/bottom edge while more content is above/below */
+  .ed-main .side .panel-body {
+    background:
+      linear-gradient(var(--paper) 30%, #fff0) center top,
+      linear-gradient(#fff0, var(--paper) 70%) center bottom,
+      radial-gradient(farthest-side at 50% 0, #1f2a4426, #1f2a4400) center top,
+      radial-gradient(farthest-side at 50% 100%, #1f2a4426, #1f2a4400) center bottom;
+    background-repeat: no-repeat;
+    background-size: 100% 36px, 100% 36px, 100% 12px, 100% 12px;
+    background-attachment: local, local, scroll, scroll;
+    background-color: var(--paper);
+  }
+
+  /* first-run tip: across the top of the canvas, clear of the tool bar and Colors */
+  .coach { top: 8px; bottom: auto; left: 8px; right: 8px; width: auto; }
+  .coach .btn.sm { min-height: 40px; padding: 8px 14px; }
+  .coach .icon-btn.sm { width: 36px; height: 36px; }
+
+  /* "More" bottom sheet */
+  .tool-sheet-backdrop {
+    position: fixed; inset: 0; z-index: 45; background: #1f2a4433;
+    display: flex; align-items: flex-end; justify-content: center;
+  }
+  .tool-sheet {
+    width: 100%; max-height: calc(100% - 40px); overflow-y: auto; overscroll-behavior: contain;
+    background: var(--paper); border-radius: 16px 16px 0 0; box-shadow: 0 -10px 36px #1f2a4426;
+    padding: 6px 12px calc(14px + env(safe-area-inset-bottom)); outline: none;
+    animation: sheet-up .18s ease-out;
+  }
+  .tool-sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-left: 2px; }
+  .tool-sheet-head b { font-size: 16px; }
+  .tool-sheet-head .icon-btn { width: 40px; height: 40px; }
+  .tool-sheet h5 { margin: 8px 2px 6px; font-size: 12px; font-weight: 600; color: var(--ink-3); letter-spacing: .3px; }
+  .tool-sheet-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .sheet-tool {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+    min-height: 66px; padding: 8px 4px; border: 1px solid var(--line); border-radius: 12px;
+    background: var(--paper); color: var(--ink); cursor: pointer; text-align: center;
+    font-size: 12.5px; line-height: 1.3; overflow-wrap: break-word;
+  }
+  .sheet-tool svg { color: var(--ink-2); flex-shrink: 0; }
+  .sheet-tool small { font-size: 11px; color: var(--ink-3); }
+  .sheet-tool.on { background: var(--brand); border-color: var(--brand); color: #fff; }
+  .sheet-tool.on svg, .sheet-tool.on small { color: #fff; }
+  .sheet-tool:active { transform: translateY(1px); }
+  .tool-sheet .seg button { min-height: 40px; padding: 8px 4px; font-size: 13.5px; }
+  @keyframes sheet-up { from { transform: translateY(24px); opacity: .6; } }
+}

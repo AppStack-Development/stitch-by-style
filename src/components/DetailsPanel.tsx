@@ -1,8 +1,13 @@
 import { useMemo, useState } from 'react';
 import type { Pattern, PatternDetails } from '../types';
-import { BASE_LABEL, DIFFICULTY_LABEL, STITCH_LABEL } from '../lib/pattern';
+import { BASE_LABEL, DIFFICULTY_LABEL, STITCH_LABEL, defaultDetails } from '../lib/pattern';
 import { computeStats, fmtInch, fmtMm, needleHint } from '../lib/stats';
 import { t } from '../lib/i18n';
+import { DefaultTag, FieldHead } from './DefaultTag';
+import { sameNeedleSize, suggestNeedle } from './needleSuggest';
+
+/** starting values every new pattern gets (see defaultDetails in lib/pattern.ts) */
+const DEF = defaultDetails();
 
 interface Props {
   pattern: Pattern;
@@ -17,6 +22,16 @@ export function DetailsPanel({ pattern: p, onChange }: Props) {
   const used = stats.colors.filter((c) => c.count > 0);
   const skeins = used.reduce((a, c) => a + Math.max(0.1, c.skeins), 0);
   const is3d = d.baseType === 'print3d';
+  const sug = suggestNeedle(p.pitchMm);
+  // plate thickness / hole size of an imported model were measured from the file, not set by us
+  const fromModel = p.templateId === 'stl';
+  const setBase = (baseType: PatternDetails['baseType']) => {
+    const patch: Partial<Pattern> = { details: { ...d, baseType } };
+    if (baseType === 'aida') patch.pitchMm = +(25.4 / d.aidaCount).toFixed(3);
+    if (baseType === 'plastic-canvas') patch.pitchMm = +(25.4 / 7).toFixed(3);
+    onChange(patch);
+  };
+  const setAida = (aidaCount: number) => onChange({ details: { ...d, aidaCount }, pitchMm: +(25.4 / aidaCount).toFixed(3) });
 
   return (
     <div className="panel-body details">
@@ -32,7 +47,7 @@ export function DetailsPanel({ pattern: p, onChange }: Props) {
       <label>{t('คำอธิบาย', 'Description')}<textarea rows={2} value={d.description} onChange={(e) => set({ description: e.target.value })} placeholder={t('แรงบันดาลใจ, ใช้ทำอะไร', 'Inspiration, what it’s for')} /></label>
       <div className="row2">
         <label>{t('ผู้ออกแบบ', 'Designer')}<input value={d.author} onChange={(e) => set({ author: e.target.value })} /></label>
-        <label>{t('ระดับความยาก', 'Difficulty')}
+        <label><FieldHead label={t('ระดับความยาก', 'Difficulty')}><DefaultTag value={d.difficulty} def={DEF.difficulty} onReset={() => set({ difficulty: DEF.difficulty })} /></FieldHead>
           <select value={d.difficulty} onChange={(e) => set({ difficulty: e.target.value as PatternDetails['difficulty'] })}>
             {Object.entries(DIFFICULTY_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </select>
@@ -47,23 +62,14 @@ export function DetailsPanel({ pattern: p, onChange }: Props) {
       </div>
 
       <h4>{t('วัสดุพื้น', 'Base material')}</h4>
-      <label>{t('ประเภทพื้นที่ใช้ปัก', 'Stitching base')}
-        <select value={d.baseType} onChange={(e) => {
-          const baseType = e.target.value as PatternDetails['baseType'];
-          const patch: Partial<Pattern> = { details: { ...d, baseType } };
-          if (baseType === 'aida') patch.pitchMm = +(25.4 / d.aidaCount).toFixed(3);
-          if (baseType === 'plastic-canvas') patch.pitchMm = +(25.4 / 7).toFixed(3);
-          onChange(patch);
-        }}>
+      <label><FieldHead label={t('ประเภทพื้นที่ใช้ปัก', 'Stitching base')} />
+        <select value={d.baseType} onChange={(e) => setBase(e.target.value as PatternDetails['baseType'])}>
           {Object.entries(BASE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
         </select>
       </label>
       {d.baseType === 'aida' ? (
-        <label>{t('ความถี่ผ้า (count ต่อนิ้ว)', 'Fabric count (per inch)')}
-          <select value={d.aidaCount} onChange={(e) => {
-            const aidaCount = +e.target.value;
-            onChange({ details: { ...d, aidaCount }, pitchMm: +(25.4 / aidaCount).toFixed(3) });
-          }}>
+        <label><FieldHead label={t('ความถี่ผ้า (count ต่อนิ้ว)', 'Fabric count (per inch)')}><DefaultTag value={d.aidaCount} def={DEF.aidaCount} onReset={() => setAida(DEF.aidaCount)} /></FieldHead>
+          <select value={d.aidaCount} onChange={(e) => setAida(+e.target.value)}>
             {[11, 14, 16, 18, 20, 22].map((c) => <option key={c} value={c}>{c} ct ({(25.4 / c).toFixed(2)} {t('มม./ช่อง', 'mm/cell')})</option>)}
           </select>
         </label>
@@ -76,13 +82,13 @@ export function DetailsPanel({ pattern: p, onChange }: Props) {
       {is3d && (
         <>
           <div className="row2">
-            <label>{t('เส้นพลาสติก', 'Filament')}<input value={d.filament} onChange={(e) => set({ filament: e.target.value })} list="filaments" /></label>
-            <label>{t('สีชิ้นงาน', 'Filament color')}<input type="color" value={d.filamentColor} onChange={(e) => set({ filamentColor: e.target.value })} /></label>
+            <label><FieldHead label={t('เส้นพลาสติก', 'Filament')}><DefaultTag value={d.filament} def={DEF.filament} onReset={() => set({ filament: DEF.filament })} /></FieldHead><input value={d.filament} onChange={(e) => set({ filament: e.target.value })} list="filaments" /></label>
+            <label><FieldHead label={t('สีชิ้นงาน', 'Filament color')}><DefaultTag value={d.filamentColor.toLowerCase()} def={DEF.filamentColor} onReset={() => set({ filamentColor: DEF.filamentColor })} /></FieldHead><input type="color" value={d.filamentColor} onChange={(e) => set({ filamentColor: e.target.value })} /></label>
           </div>
           <datalist id="filaments">{['PLA', 'PETG', 'TPU', 'PLA Matte', 'PLA Silk'].map((f) => <option key={f} value={f} />)}</datalist>
           <div className="row2">
-            <label>{t('ความหนาแผ่น (มม.)', 'Plate thickness (mm)')}<input type="number" step={0.2} min={0.6} max={8} value={d.thicknessMm} onChange={(e) => set({ thicknessMm: +e.target.value || 2 })} /></label>
-            <label>{t(<>ขนาดรู ({Math.round(d.holeRatio * 100)}% ของช่อง)</>, <>Hole size ({Math.round(d.holeRatio * 100)}% of cell)</>)}
+            <label><FieldHead label={t('ความหนาแผ่น (มม.)', 'Plate thickness (mm)')}>{!fromModel && <DefaultTag value={d.thicknessMm} def={DEF.thicknessMm} onReset={() => set({ thicknessMm: DEF.thicknessMm })} />}</FieldHead><input type="number" step={0.2} min={0.6} max={8} value={d.thicknessMm} onChange={(e) => set({ thicknessMm: +e.target.value || 2 })} /></label>
+            <label><FieldHead label={t(<>ขนาดรู ({Math.round(d.holeRatio * 100)}% ของช่อง)</>, <>Hole size ({Math.round(d.holeRatio * 100)}% of cell)</>)}>{!fromModel && <DefaultTag value={d.holeRatio} def={DEF.holeRatio} onReset={() => set({ holeRatio: DEF.holeRatio })} />}</FieldHead>
               <input type="range" min={0.3} max={0.8} step={0.05} value={d.holeRatio} onChange={(e) => set({ holeRatio: +e.target.value })} />
             </label>
           </div>
@@ -91,19 +97,23 @@ export function DetailsPanel({ pattern: p, onChange }: Props) {
       )}
 
       <h4>{t('ด้ายและเข็ม', 'Thread and needle')}</h4>
-      <label>{t('รูปแบบการปัก', 'Stitch type')}
+      <label><FieldHead label={t('รูปแบบการปัก', 'Stitch type')}><DefaultTag value={d.stitchType} def={DEF.stitchType} onReset={() => set({ stitchType: DEF.stitchType })} /></FieldHead>
         <select value={d.stitchType} onChange={(e) => set({ stitchType: e.target.value as PatternDetails['stitchType'] })}>
           {Object.entries(STITCH_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
         </select>
       </label>
       <div className="row2">
-        <label>{t('ยี่ห้อด้าย', 'Thread brand')}<input value={d.threadBrand} onChange={(e) => set({ threadBrand: e.target.value })} list="brands" /></label>
-        <label>{t('จำนวนเส้นด้าย', 'Strands')}<input type="number" min={1} max={12} value={d.strands} onChange={(e) => set({ strands: Math.max(1, +e.target.value || 1) })} /></label>
+        <label><FieldHead label={t('ยี่ห้อด้าย', 'Thread brand')}><DefaultTag value={d.threadBrand} def={DEF.threadBrand} onReset={() => set({ threadBrand: DEF.threadBrand })} /></FieldHead><input value={d.threadBrand} onChange={(e) => set({ threadBrand: e.target.value })} list="brands" /></label>
+        <label><FieldHead label={t('จำนวนเส้นด้าย', 'Strands')}>
+          <DefaultTag kind="suggested" reason={sug.reason} value={d.strands} def={sug.strand} equals={(v) => v >= sug.strands[0] && v <= sug.strands[1]} onReset={() => set({ strands: sug.strand })} />
+        </FieldHead><input type="number" min={1} max={12} value={d.strands} onChange={(e) => set({ strands: Math.max(1, +e.target.value || 1) })} /></label>
       </div>
       <datalist id="brands">{['DMC', 'Anchor', 'Cosmo', 'Madeira', t('ไหมพรม', 'Yarn'), t('ด้ายทั่วไป', 'Generic thread')].map((f) => <option key={f} value={f} />)}</datalist>
       <div className="row2">
-        <label>{t('ชนิดเข็ม', 'Needle type')}<input value={d.needleType} onChange={(e) => set({ needleType: e.target.value })} list="needles" /></label>
-        <label>{t('เบอร์เข็ม', 'Needle size')}<input value={d.needleSize} onChange={(e) => set({ needleSize: e.target.value })} list="needleSizes" /></label>
+        <label><FieldHead label={t('ชนิดเข็ม', 'Needle type')}><DefaultTag value={d.needleType} def={DEF.needleType} onReset={() => set({ needleType: DEF.needleType })} /></FieldHead><input value={d.needleType} onChange={(e) => set({ needleType: e.target.value })} list="needles" /></label>
+        <label><FieldHead label={t('เบอร์เข็ม', 'Needle size')}>
+          <DefaultTag kind="suggested" reason={sug.reason} value={d.needleSize} def={sug.size} equals={(v) => sug.sizes.some((s) => sameNeedleSize(v, s))} onReset={() => set({ needleSize: sug.size })} />
+        </FieldHead><input value={d.needleSize} onChange={(e) => set({ needleSize: e.target.value })} list="needleSizes" /></label>
       </div>
       <datalist id="needles">{[t('เข็มปลายมน (Tapestry)', 'Tapestry (blunt tip)'), t('เข็มปลายแหลม (Embroidery)', 'Embroidery (sharp tip)'), t('เข็มพลาสติก', 'Plastic needle'), t('เข็มร้อยไหมพรม', 'Yarn needle')].map((f) => <option key={f} value={f} />)}</datalist>
       <datalist id="needleSizes">{['#18', '#20', '#22', '#24', '#26', '#28'].map((f) => <option key={f} value={f} />)}</datalist>

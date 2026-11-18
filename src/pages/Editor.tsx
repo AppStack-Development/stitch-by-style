@@ -11,6 +11,8 @@ import { PalettePanel } from '../components/PalettePanel';
 import { DetailsPanel } from '../components/DetailsPanel';
 import { TransferDialog } from '../components/TransferDialog';
 import { TextDialog } from '../components/TextDialog';
+import { ToolSheet, type SheetSection } from '../components/ToolSheet';
+import { EditorTip, type CoachTarget } from '../components/EditorTip';
 
 // three.js is large: load the 3D preview only when its tab is opened
 const Preview3D = lazy(() => import('../components/Preview3D').then((m) => ({ default: m.Preview3D })));
@@ -22,16 +24,23 @@ import { t } from '../lib/i18n';
 
 type Snap = Pick<Pattern, 'cells' | 'mask' | 'palette'>;
 
-const TOOLS: { id: Tool; icon: IconName; label: string; key: string }[] = [
-  { id: 'pencil', icon: 'pencil', label: t('ดินสอ', 'Pencil'), key: 'B' },
-  { id: 'eraser', icon: 'eraser', label: t('ยางลบ', 'Eraser'), key: 'E' },
-  { id: 'fill', icon: 'fill', label: t('เทสี', 'Fill'), key: 'G' },
-  { id: 'picker', icon: 'picker', label: t('ดูดสี', 'Eyedropper'), key: 'I' },
-  { id: 'line', icon: 'line', label: t('เส้นตรง', 'Line'), key: 'L' },
-  { id: 'rect', icon: 'rect', label: t('กรอบสี่เหลี่ยม', 'Rectangle'), key: 'R' },
-  { id: 'pan', icon: 'pan', label: t('เลื่อนมุมมอง (กด Space ค้าง)', 'Pan (hold Space)'), key: 'H' },
-  { id: 'hole', icon: 'hole', label: t('แก้ไขช่องปัก/โครง', 'Edit cells/frame'), key: 'K' },
+/**
+ * `short` is the visible name (phone tool bar / "More" sheet). `phone` tools stay in the phone's
+ * bottom bar; the rest move into the "More" sheet there. Pan is in the bar because the editor canvas
+ * has no two-finger pan on touch screens.
+ */
+const TOOLS: { id: Tool; icon: IconName; label: string; short: string; key: string; phone?: boolean }[] = [
+  { id: 'pencil', icon: 'pencil', label: t('ดินสอ', 'Pencil'), short: t('ดินสอ', 'Pencil'), key: 'B', phone: true },
+  { id: 'eraser', icon: 'eraser', label: t('ยางลบ', 'Eraser'), short: t('ยางลบ', 'Eraser'), key: 'E', phone: true },
+  { id: 'fill', icon: 'fill', label: t('เทสี', 'Fill'), short: t('เทสี', 'Fill'), key: 'G', phone: true },
+  { id: 'picker', icon: 'picker', label: t('ดูดสี', 'Eyedropper'), short: t('ดูดสี', 'Eyedropper'), key: 'I' },
+  { id: 'line', icon: 'line', label: t('เส้นตรง', 'Line'), short: t('เส้นตรง', 'Line'), key: 'L' },
+  { id: 'rect', icon: 'rect', label: t('กรอบสี่เหลี่ยม', 'Rectangle'), short: t('กรอบสี่เหลี่ยม', 'Rectangle'), key: 'R' },
+  { id: 'pan', icon: 'pan', label: t('เลื่อนมุมมอง (กด Space ค้าง)', 'Pan (hold Space)'), short: t('เลื่อนมุมมอง', 'Pan'), key: 'H', phone: true },
+  { id: 'hole', icon: 'hole', label: t('แก้ไขช่องปัก/โครง', 'Edit cells/frame'), short: t('แก้ไขช่องปัก/โครง', 'Edit cells/frame'), key: 'K' },
 ];
+
+const VIEWS = [['stitch', t('ฝีเข็ม', 'Stitches')], ['color', t('สี', 'Color')], ['symbol', t('สัญลักษณ์', 'Symbol')]] as const;
 
 export function Editor({ id }: { id: string }) {
   const [pattern, setPattern] = useState<Pattern | null>(() => loadPattern(id));
@@ -51,6 +60,11 @@ export function Editor({ id }: { id: string }) {
   const [imgImport, setImgImport] = useState<{ file: File | null } | null>(null);
   const [transfer, setTransfer] = useState(false);
   const [textDlg, setTextDlg] = useState(false);
+  /** phone "More" tools sheet */
+  const [moreOpen, setMoreOpen] = useState(false);
+  const closeMore = useCallback(() => setMoreOpen(false), []);
+  /** element the first-run tip is pointing at */
+  const [coach, setCoach] = useState<CoachTarget | null>(null);
   const undo = useRef<Snap[]>([]);
   const redo = useRef<Snap[]>([]);
   const [, force] = useState(0);
@@ -172,6 +186,31 @@ export function Editor({ id }: { id: string }) {
   const hoverKind = hover ? p.mask[hover.y * p.cols + hover.x] : null;
   const hoverColor = hover ? p.palette[p.cells[hover.y * p.cols + hover.x]] : undefined;
 
+  // phone "More" sheet: every tool and toggle that is not in the phone's bottom bar
+  const sheetTool = TOOLS.find((x) => x.id === tool && !x.phone);
+  const moreTitle = t('เครื่องมือเพิ่มเติม', 'More tools')
+    + (sheetTool ? ` · ${t('กำลังใช้', 'using')}: ${sheetTool.short}` : '')
+    + (mirrorX || mirrorY ? ` · ${t('เปิดสมมาตรอยู่', 'mirror on')}` : '');
+  const sheetSections: SheetSection[] = [
+    {
+      title: t('เครื่องมือ', 'Tools'),
+      items: [
+        ...TOOLS.filter((x) => !x.phone).map((x) => ({
+          key: x.id, icon: x.icon, label: x.short, title: `${x.label} (${x.key})`, on: tool === x.id, onSelect: () => setTool(x.id),
+        })),
+        { key: 'text', icon: 'text', label: t('ใส่ชื่อ / ข้อความ', 'Name / text'), title: t('ใส่ชื่อ / ข้อความ (T)', 'Name / text (T)'), onSelect: () => setTextDlg(true) },
+      ],
+    },
+    {
+      title: t('สมมาตรและเส้นตาราง', 'Mirror & grid'),
+      items: [
+        { key: 'mx', icon: 'mirrorX', label: t('สมมาตรซ้าย-ขวา', 'Mirror left-right'), title: t('สมมาตรซ้าย-ขวา (X)', 'Mirror left-right (X)'), toggle: true, on: mirrorX, onSelect: () => setMirrorX((v) => !v) },
+        { key: 'my', icon: 'mirrorY', label: t('สมมาตรบน-ล่าง', 'Mirror top-bottom'), title: t('สมมาตรบน-ล่าง (Y)', 'Mirror top-bottom (Y)'), toggle: true, on: mirrorY, onSelect: () => setMirrorY((v) => !v) },
+        { key: 'grid', icon: 'grid', label: t('เส้นตาราง', 'Grid lines'), toggle: true, on: grid, onSelect: () => setGrid((v) => !v) },
+      ],
+    },
+  ];
+
   const doExport = async (kind: 'print' | 'png' | 'json' | 'stl' | 'share' | 'transfer') => {
     setMenu(false);
     savePattern({ ...p, updatedAt: Date.now() });
@@ -209,7 +248,7 @@ export function Editor({ id }: { id: string }) {
           <Icon name="image" size={16} /> <span>{t('รูปภาพ → ลาย', 'Image → pattern')}</span>
         </button>
         <div className="seg" role="group" aria-label={t('มุมมอง', 'View')}>
-          {([['stitch', t('ฝีเข็ม', 'Stitches')], ['color', t('สี', 'Color')], ['symbol', t('สัญลักษณ์', 'Symbol')]] as const).map(([v, l]) => (
+          {VIEWS.map(([v, l]) => (
             <button key={v} className={view === v ? 'on' : ''} onClick={() => setView(v)}>{l}</button>
           ))}
         </div>
@@ -221,7 +260,7 @@ export function Editor({ id }: { id: string }) {
           <Icon name="needle" size={16} /> <span>{t('โหมดปัก', 'Stitch mode')}{p.progress ? ` · ${Math.floor(computeProgress(p).pct)}%` : ''}</span>
         </a>
         <div className="menu-wrap">
-          <button className="btn primary" onClick={() => setMenu(!menu)} title={t('ส่งออก / แชร์', 'Export / share')}><Icon name="download" size={16} /> <span className="hide-xs">{t('ส่งออก / แชร์', 'Export / share')}</span></button>
+          <button className={'btn primary' + (coach === 'export' ? ' coach-glow' : '')} onClick={() => setMenu(!menu)} title={t('ส่งออก / แชร์', 'Export / share')}><Icon name="download" size={16} /> <span className="hide-xs">{t('ส่งออก / แชร์', 'Export / share')}</span></button>
           {menu && (
             <div className="menu" onMouseLeave={() => setMenu(false)}>
               <button onClick={() => doExport('print')}><Icon name="print" /> <span><b>{t('พิมพ์ / บันทึกเป็น PDF', 'Print / save as PDF')}</b><small>{t('แผนผัง + รายการด้าย + รายละเอียด', 'Chart + thread list + details')}</small></span></button>
@@ -235,22 +274,35 @@ export function Editor({ id }: { id: string }) {
         </div>
       </header>
 
-      <div className="editor-main">
-        <aside className="toolbar">
-          {TOOLS.map((t) => (
-            <button key={t.id} className={'tool' + (tool === t.id ? ' on' : '')} onClick={() => setTool(t.id)} title={`${t.label} (${t.key})`}>
-              <Icon name={t.icon} size={20} />
+      <div className="editor-main ed-main">
+        {/* desktop/tablet: the full vertical rail. Phones (editor-mobile.css): a bottom bar with the
+            `phone` tools + "More"; everything marked tool-x lives in the More sheet instead. */}
+        <aside className={'toolbar' + (coach === 'tools' ? ' coach-glow' : '')}>
+          {TOOLS.map((x) => (
+            <button key={x.id}
+              className={'tool' + (x.phone ? '' : ' tool-x') + (tool === x.id ? ' on' : '') + (x.id === 'pencil' && coach === 'pencil' ? ' coach-glow' : '')}
+              onClick={() => setTool(x.id)} title={`${x.label} (${x.key})`} aria-label={x.short} aria-pressed={tool === x.id}>
+              <Icon name={x.icon} size={20} />
+              {x.phone && <span className="tool-label">{x.short}</span>}
             </button>
           ))}
-          <button className="tool" onClick={() => setTextDlg(true)} title={t('ใส่ชื่อ / ข้อความ (T)', 'Name / text (T)')}><Icon name="text" size={20} /></button>
+          <button className="tool tool-x" onClick={() => setTextDlg(true)} title={t('ใส่ชื่อ / ข้อความ (T)', 'Name / text (T)')}><Icon name="text" size={20} /></button>
           <div className="tool-sep" />
-          <button className={'tool' + (mirrorX ? ' on' : '')} onClick={() => setMirrorX(!mirrorX)} title={t('สมมาตรซ้าย-ขวา (X)', 'Mirror left-right (X)')}><Icon name="mirrorX" size={20} /></button>
-          <button className={'tool' + (mirrorY ? ' on' : '')} onClick={() => setMirrorY(!mirrorY)} title={t('สมมาตรบน-ล่าง (Y)', 'Mirror top-bottom (Y)')}><Icon name="mirrorY" size={20} /></button>
-          <button className={'tool' + (grid ? ' on' : '')} onClick={() => setGrid(!grid)} title={t('เส้นตาราง', 'Grid lines')}><Icon name="grid" size={20} /></button>
+          <button className={'tool tool-x' + (mirrorX ? ' on' : '')} onClick={() => setMirrorX(!mirrorX)} title={t('สมมาตรซ้าย-ขวา (X)', 'Mirror left-right (X)')}><Icon name="mirrorX" size={20} /></button>
+          <button className={'tool tool-x' + (mirrorY ? ' on' : '')} onClick={() => setMirrorY(!mirrorY)} title={t('สมมาตรบน-ล่าง (Y)', 'Mirror top-bottom (Y)')}><Icon name="mirrorY" size={20} /></button>
+          <button className={'tool tool-x' + (grid ? ' on' : '')} onClick={() => setGrid(!grid)} title={t('เส้นตาราง', 'Grid lines')}><Icon name="grid" size={20} /></button>
           <div className="tool-sep" />
-          <button className="tool" onClick={() => canvas.current?.zoomBy(1.25)} title={t('ซูมเข้า (+)', 'Zoom in (+)')}><Icon name="zoomIn" size={20} /></button>
-          <button className="tool" onClick={() => canvas.current?.zoomBy(0.8)} title={t('ซูมออก (−)', 'Zoom out (−)')}><Icon name="zoomOut" size={20} /></button>
-          <button className="tool" onClick={() => canvas.current?.fit()} title={t('พอดีจอ (0)', 'Fit to screen (0)')}><Icon name="fit" size={20} /></button>
+          <button className="tool tool-x" onClick={() => canvas.current?.zoomBy(1.25)} title={t('ซูมเข้า (+)', 'Zoom in (+)')}><Icon name="zoomIn" size={20} /></button>
+          <button className="tool tool-x" onClick={() => canvas.current?.zoomBy(0.8)} title={t('ซูมออก (−)', 'Zoom out (−)')}><Icon name="zoomOut" size={20} /></button>
+          <button className="tool tool-x" onClick={() => canvas.current?.fit()} title={t('พอดีจอ (0)', 'Fit to screen (0)')}><Icon name="fit" size={20} /></button>
+          {/* phones only: opens the sheet; shows the active tool when that tool lives in the sheet */}
+          <button className={'tool tool-more' + (sheetTool ? ' on' : '') + (moreOpen ? ' open' : '') + (coach === 'more' ? ' coach-glow' : '')}
+            onClick={() => setMoreOpen(!moreOpen)} aria-haspopup="dialog" aria-expanded={moreOpen}
+            title={moreTitle} aria-label={moreTitle}>
+            <Icon name={sheetTool ? sheetTool.icon : 'more'} size={20} />
+            <span className="tool-label">{sheetTool ? sheetTool.short : t('เพิ่มเติม', 'More')}</span>
+            {(mirrorX || mirrorY) && <span className="more-badge" aria-hidden="true"><Icon name={mirrorX ? 'mirrorX' : 'mirrorY'} size={11} /></span>}
+          </button>
         </aside>
 
         <section className="stage"
@@ -282,6 +334,14 @@ export function Editor({ id }: { id: string }) {
             onPick={(i) => { setActive(i); setTool('pencil'); }}
             onHover={setHover}
           />
+          {/* phones only: zoom buttons on the canvas (there is no pinch zoom in the editor) */}
+          <div className="zoom-float">
+            <div>
+              <button className="icon-btn bg" onClick={() => canvas.current?.zoomBy(1.25)} title={t('ซูมเข้า', 'Zoom in')} aria-label={t('ซูมเข้า', 'Zoom in')}><Icon name="zoomIn" size={20} /></button>
+              <button className="icon-btn bg" onClick={() => canvas.current?.zoomBy(0.8)} title={t('ซูมออก', 'Zoom out')} aria-label={t('ซูมออก', 'Zoom out')}><Icon name="zoomOut" size={20} /></button>
+              <button className="icon-btn bg" onClick={() => canvas.current?.fit()} title={t('พอดีจอ', 'Fit to screen')} aria-label={t('พอดีจอ', 'Fit to screen')}><Icon name="fit" size={20} /></button>
+            </div>
+          </div>
           <footer className="status">
             {activeColor && (
               <span className="status-color">
@@ -297,11 +357,12 @@ export function Editor({ id }: { id: string }) {
             <span className="kbd-hint">{t('คลิกขวา = ลบ', 'Right-click = erase')}</span>
           </footer>
           {toast && <div className="toast">{toast}</div>}
+          <EditorTip onTarget={setCoach} />
         </section>
 
         <aside className="side">
           <nav className="tabs">
-            <button className={tab === 'palette' ? 'on' : ''} onClick={() => setTab('palette')}><Icon name="palette" size={16} /> {t('สีด้าย', 'Colors')}</button>
+            <button className={(tab === 'palette' ? 'on' : '') + (coach === 'colors' ? ' coach-glow' : '')} onClick={() => setTab('palette')}><Icon name="palette" size={16} /> {t('สีด้าย', 'Colors')}</button>
             <button className={tab === 'details' ? 'on' : ''} onClick={() => setTab('details')}><Icon name="info" size={16} /> {t('รายละเอียด', 'Details')}</button>
             <button className={tab === '3d' ? 'on' : ''} onClick={() => setTab('3d')}><Icon name="cube" size={16} /> 3D</button>
           </nav>
@@ -314,6 +375,23 @@ export function Editor({ id }: { id: string }) {
           )}
         </aside>
       </div>
+      {moreOpen && (
+        <ToolSheet
+          title={t('เครื่องมือเพิ่มเติม', 'More tools')}
+          sections={sheetSections}
+          onClose={closeMore}
+          footer={
+            <section>
+              <h5>{t('มุมมอง', 'View')}</h5>
+              <div className="seg full" role="group" aria-label={t('มุมมอง', 'View')}>
+                {VIEWS.map(([v, l]) => (
+                  <button key={v} className={view === v ? 'on' : ''} aria-pressed={view === v} onClick={() => setView(v)}>{l}</button>
+                ))}
+              </div>
+            </section>
+          }
+        />
+      )}
       {transfer && <TransferDialog pattern={p} onClose={() => setTransfer(false)} />}
       {textDlg && (
         <TextDialog

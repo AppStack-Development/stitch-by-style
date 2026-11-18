@@ -10,8 +10,10 @@ const importer = () => import('../lib/stlImport');
 import { needleHint } from '../lib/stats';
 import { Thumb } from '../components/Thumb';
 import { Icon } from '../components/Icon';
+import { DefaultTag, FieldHead, sameValue } from '../components/DefaultTag';
 import { navigate } from '../App';
 import { t } from '../lib/i18n';
+import { suggestNeedle } from '../components/needleSuggest';
 
 const blank = (cols: number, rows: number, mask: string, baseType: BaseType = 'print3d') => ({
   cols, rows, mask, cells: new Array(cols * rows).fill(-1), palette: [],
@@ -35,20 +37,25 @@ export function NewPattern({ mode }: { mode: 'free' | 'template' }) {
   );
 }
 
+/** starting values of the free-design form */
+const FREE_DEF = { cols: 40, rows: 40, base: 'aida' as BaseType, count: 14, pitch: 3 };
+/** starting values of the template form (size comes from the chosen template) */
+const TPL_DEF = { pitch: 3, holeRatio: 0.55, thick: 2 };
+
 function FreeForm() {
   const [name, setName] = useState(t('ลายใหม่', 'New pattern'));
-  const [cols, setCols] = useState(40);
-  const [rows, setRows] = useState(40);
-  const [base, setBase] = useState<BaseType>('aida');
-  const [count, setCount] = useState(14);
-  const [pitch, setPitch] = useState(3);
+  const [cols, setCols] = useState(FREE_DEF.cols);
+  const [rows, setRows] = useState(FREE_DEF.rows);
+  const [base, setBase] = useState<BaseType>(FREE_DEF.base);
+  const [count, setCount] = useState(FREE_DEF.count);
+  const [pitch, setPitch] = useState(FREE_DEF.pitch);
   const pitchMm = base === 'aida' ? 25.4 / count : base === 'plastic-canvas' ? 25.4 / 7 : pitch;
   const clamp = (v: number) => Math.max(4, Math.min(200, Math.round(v) || 4));
 
   const create = () => {
     const p = createPattern({
       name, mode: 'free', cols, rows, mask: freeMask(cols, rows), pitchMm: +pitchMm.toFixed(3),
-      details: { baseType: base, aidaCount: count, needleSize: base === 'aida' ? (count >= 16 ? '#26' : '#24') : '#22', strands: base === 'aida' ? 2 : 4 },
+      details: { baseType: base, aidaCount: count, needleSize: suggestNeedle(pitchMm).size, strands: suggestNeedle(pitchMm).strand },
     });
     savePattern(p);
     navigate(`#/edit/${p.id}`);
@@ -64,10 +71,10 @@ function FreeForm() {
           ))}
         </div>
         <div className="row2">
-          <label>{t('กว้าง (ช่อง)', 'Width (cells)')}<input type="number" value={cols} min={4} max={200} onChange={(e) => setCols(clamp(+e.target.value))} /></label>
-          <label>{t('สูง (ช่อง)', 'Height (cells)')}<input type="number" value={rows} min={4} max={200} onChange={(e) => setRows(clamp(+e.target.value))} /></label>
+          <label><FieldHead label={t('กว้าง (ช่อง)', 'Width (cells)')}><DefaultTag value={cols} def={FREE_DEF.cols} onReset={() => setCols(FREE_DEF.cols)} /></FieldHead><input type="number" value={cols} min={4} max={200} onChange={(e) => setCols(clamp(+e.target.value))} /></label>
+          <label><FieldHead label={t('สูง (ช่อง)', 'Height (cells)')}><DefaultTag value={rows} def={FREE_DEF.rows} onReset={() => setRows(FREE_DEF.rows)} /></FieldHead><input type="number" value={rows} min={4} max={200} onChange={(e) => setRows(clamp(+e.target.value))} /></label>
         </div>
-        <label>{t('พื้นที่จะใช้ปัก', 'Stitch on')}
+        <label><FieldHead label={t('พื้นที่จะใช้ปัก', 'Stitch on')}><DefaultTag value={base} def={FREE_DEF.base} onReset={() => setBase(FREE_DEF.base)} /></FieldHead>
           <select value={base} onChange={(e) => setBase(e.target.value as BaseType)}>
             <option value="aida">{t('ผ้า Aida', 'Aida fabric')}</option>
             <option value="plastic-canvas">{t('แผ่น Plastic canvas (7 ct)', 'Plastic canvas (7 ct)')}</option>
@@ -76,14 +83,14 @@ function FreeForm() {
           </select>
         </label>
         {base === 'aida' && (
-          <label>{t('ความถี่ผ้า', 'Fabric count')}
+          <label><FieldHead label={t('ความถี่ผ้า', 'Fabric count')}><DefaultTag value={count} def={FREE_DEF.count} onReset={() => setCount(FREE_DEF.count)} /></FieldHead>
             <select value={count} onChange={(e) => setCount(+e.target.value)}>
               {[11, 14, 16, 18, 20].map((c) => <option key={c} value={c}>{c} ct</option>)}
             </select>
           </label>
         )}
         {(base === 'print3d' || base === 'other') && (
-          <label>{t('ระยะห่างระหว่างช่อง (มม.)', 'Cell spacing (mm)')}<input type="number" step={0.1} min={0.8} value={pitch} onChange={(e) => setPitch(+e.target.value || 3)} /></label>
+          <label><FieldHead label={t('ระยะห่างระหว่างช่อง (มม.)', 'Cell spacing (mm)')}><DefaultTag value={pitch} def={FREE_DEF.pitch} onReset={() => setPitch(FREE_DEF.pitch)} /></FieldHead><input type="number" step={0.1} min={0.8} value={pitch} onChange={(e) => setPitch(+e.target.value || 3)} /></label>
         )}
         <p className="hint">{t(<>ขนาดชิ้นงานจริง ≈ {(cols * pitchMm).toFixed(0)} × {(rows * pitchMm).toFixed(0)} มม.</>, <>Finished size ≈ {(cols * pitchMm).toFixed(0)} × {(rows * pitchMm).toFixed(0)} mm</>)} · {needleHint(pitchMm)}</p>
         <button className="btn primary lg" onClick={create}>{t('สร้างลาย', 'Create pattern')} <Icon name="check" size={16} /></button>
@@ -99,15 +106,17 @@ function TemplatePicker() {
   const [sel, setSel] = useState<TemplateDef | 'stl'>(TEMPLATES[0]);
   const [w, setW] = useState(TEMPLATES[0].w);
   const [h, setH] = useState(TEMPLATES[0].h);
-  const [pitch, setPitch] = useState(3);
-  const [holeRatio, setHoleRatio] = useState(0.55);
-  const [thick, setThick] = useState(2);
+  const [pitch, setPitch] = useState(TPL_DEF.pitch);
+  const [holeRatio, setHoleRatio] = useState(TPL_DEF.holeRatio);
+  const [thick, setThick] = useState(TPL_DEF.thick);
   const [name, setName] = useState('');
   /** imported model: every part analysed, one selected */
-  const [stl, setStl] = useState<{ file: string; parts: ModelPart[]; analyses: PartAnalysis[]; sel: number; err: string } | null>(null);
+  const [stl, setStl] = useState<{ file: string; parts: ModelPart[]; analyses: PartAnalysis[]; sel: number; err: string; auto: number[] } | null>(null);
   const [stlPitch, setStlPitch] = useState('');
   const [busy, setBusy] = useState(false);
   const stlRes: StlAnalysis | null = stl && stl.sel >= 0 ? stl.analyses[stl.sel].result : null;
+  /** hole pitch measured from the selected part before any manual override */
+  const autoPitch = stl && stl.sel >= 0 ? stl.auto[stl.sel] : 0;
 
   // on narrow screens the settings card sits below all the template cards: bring it into view
   const revealForm = () => {
@@ -152,14 +161,14 @@ function TemplatePicker() {
         const analyses = analyzeParts(parts);
         const best = bestPart(analyses);
         setStl({
-          file: f.name, parts, analyses, sel: best,
+          file: f.name, parts, analyses, sel: best, auto: analyses.map((a) => a.result?.pitchMm ?? 0),
           err: best < 0 ? (parts.length > 1 ? t(`ไม่พบรูสำหรับปักในทั้ง ${parts.length} ชิ้นของไฟล์นี้`, `No stitch holes found in any of the ${parts.length} parts in this file`) : analyses[0].error) : '',
         });
         setName('');
         if (best >= 0) applyResult(analyses[best].result!, analyses[best].part.name);
         revealForm();
       } catch (e) {
-        setStl({ file: f.name, parts: [], analyses: [], sel: -1, err: (e as Error).message });
+        setStl({ file: f.name, parts: [], analyses: [], sel: -1, err: (e as Error).message, auto: [] });
       } finally {
         setBusy(false);
       }
@@ -181,6 +190,17 @@ function TemplatePicker() {
     if (a.result) applyResult(a.result, a.part.name);
   };
 
+  /** back to the measured pitch (re-analyses only if an override is in effect) */
+  const resetStlPitch = () => {
+    setStlPitch(String(autoPitch));
+    if (stlRes && !sameValue(stlRes.pitchMm, autoPitch)) reanalyse();
+  };
+  const resetWidth = () => {
+    if (sel === 'stl') return;
+    setW(sel.w);
+    setH(sel.h);
+  };
+
   const create = () => {
     if (!built) return;
     const part = stl && stl.sel >= 0 ? stl.parts[stl.sel] : null;
@@ -193,7 +213,7 @@ function TemplatePicker() {
       templateId: sel === 'stl' ? 'stl' : sel.id,
       templateName: tname,
       cols: built.cols, rows: built.rows, mask: built.mask, pitchMm: pitch,
-      details: { baseType: 'print3d', holeRatio, thicknessMm: thick, strands: pitch >= 2.4 ? 4 : 2, needleSize: pitch >= 2.4 ? '#22' : '#24' },
+      details: { baseType: 'print3d', holeRatio, thicknessMm: thick, needleSize: suggestNeedle(pitch).size, strands: suggestNeedle(pitch).strand },
     });
     savePattern(p);
     navigate(`#/edit/${p.id}`);
@@ -246,7 +266,10 @@ function TemplatePicker() {
             )}
             {stlRes && (
               <div className="row2 end">
-                <label>{t('ระยะห่างรู (มม.)', 'Hole pitch (mm)')}<input value={stlPitch} onChange={(e) => setStlPitch(e.target.value)} /></label>
+                <label><FieldHead label={t('ระยะห่างรู (มม.)', 'Hole pitch (mm)')}>
+                  {autoPitch > 0 && <DefaultTag kind="suggested" reason={t(`วัดจากโมเดลได้ ${autoPitch} มม.`, `measured from the model: ${autoPitch} mm`)}
+                    value={+stlPitch} def={autoPitch} onReset={resetStlPitch} />}
+                </FieldHead><input value={stlPitch} onChange={(e) => setStlPitch(e.target.value)} /></label>
                 <button className="btn" onClick={() => reanalyse(+stlPitch || undefined)}>{t('วิเคราะห์ใหม่', 'Re-analyze')}</button>
               </div>
             )}
@@ -258,17 +281,21 @@ function TemplatePicker() {
         ) : (
           <>
             <h3>{sel.name}</h3>
-            <label>{t(<>ความกว้าง: {w} ช่อง</>, <>Width: {w} cells</>)}
+            <label><FieldHead label={t(<>ความกว้าง: {w} ช่อง</>, <>Width: {w} cells</>)}>
+              <DefaultTag value={w} def={sel.w} reason={t('ขนาดมาตรฐานของแม่แบบนี้', 'this template’s standard size')} onReset={resetWidth} />
+            </FieldHead>
               <input type="range" min={sel.min} max={sel.max} value={w} onChange={(e) => setWidth(+e.target.value)} />
             </label>
             {!sel.lockAspect && (
-              <label>{t(<>ความสูง: {h} ช่อง</>, <>Height: {h} cells</>)}
+              <label><FieldHead label={t(<>ความสูง: {h} ช่อง</>, <>Height: {h} cells</>)}>
+                <DefaultTag value={h} def={sel.h} reason={t('ขนาดมาตรฐานของแม่แบบนี้', 'this template’s standard size')} onReset={() => setH(sel.h)} />
+              </FieldHead>
                 <input type="range" min={sel.min} max={sel.max * 2} value={h} onChange={(e) => setH(+e.target.value)} />
               </label>
             )}
             <div className="row2">
-              <label>{t('ระยะห่างรู (มม.)', 'Hole pitch (mm)')}<input type="number" step={0.1} min={1} max={8} value={pitch} onChange={(e) => setPitch(+e.target.value || 3)} /></label>
-              <label>{t('ความหนา (มม.)', 'Thickness (mm)')}<input type="number" step={0.2} min={0.6} max={8} value={thick} onChange={(e) => setThick(+e.target.value || 2)} /></label>
+              <label><FieldHead label={t('ระยะห่างรู (มม.)', 'Hole pitch (mm)')}><DefaultTag value={pitch} def={TPL_DEF.pitch} onReset={() => setPitch(TPL_DEF.pitch)} /></FieldHead><input type="number" step={0.1} min={1} max={8} value={pitch} onChange={(e) => setPitch(+e.target.value || 3)} /></label>
+              <label><FieldHead label={t('ความหนา (มม.)', 'Thickness (mm)')}><DefaultTag value={thick} def={TPL_DEF.thick} onReset={() => setThick(TPL_DEF.thick)} /></FieldHead><input type="number" step={0.2} min={0.6} max={8} value={thick} onChange={(e) => setThick(+e.target.value || 2)} /></label>
             </div>
           </>
         )}

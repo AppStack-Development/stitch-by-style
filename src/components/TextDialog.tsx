@@ -5,6 +5,7 @@ import { contrastText } from '../lib/threads';
 import { Thumb } from './Thumb';
 import { Icon } from './Icon';
 import { t } from '../lib/i18n';
+import { DefaultTag, FieldHead } from './DefaultTag';
 
 interface Props {
   pattern: Pattern;
@@ -15,15 +16,20 @@ interface Props {
 
 type Mode = 'pixel' | 'font';
 
+/** starting values of the dialog */
+const DEF = { mode: 'pixel' as Mode, scale: 1, height: 10, bold: true, threshold: 0.45 };
+
 /** Type a name or message, see it on the piece, nudge it into place, then stamp it in one colour. */
 export function TextDialog({ pattern: p, initialColor, onApply, onClose }: Props) {
   const [text, setText] = useState('');
-  const [mode, setMode] = useState<Mode>('pixel');
-  const [scale, setScale] = useState(1);
-  const [height, setHeight] = useState(10);
-  const [bold, setBold] = useState(true);
-  const [threshold, setThreshold] = useState(0.45);
-  const [color, setColor] = useState(Math.max(0, Math.min(initialColor, p.palette.length - 1)));
+  const [mode, setMode] = useState<Mode>(DEF.mode);
+  const [scale, setScale] = useState(DEF.scale);
+  const [height, setHeight] = useState(DEF.height);
+  const [bold, setBold] = useState(DEF.bold);
+  const [threshold, setThreshold] = useState(DEF.threshold);
+  // starts on the colour the user is drawing with
+  const startColor = Math.max(0, Math.min(initialColor, p.palette.length - 1));
+  const [color, setColor] = useState(startColor);
   const [dx, setDx] = useState(0);
   const [dy, setDy] = useState(0);
   const [bmp, setBmp] = useState<Bitmap>({ w: 0, h: 0, bits: new Uint8Array(0) });
@@ -96,7 +102,7 @@ export function TextDialog({ pattern: p, initialColor, onApply, onClose }: Props
                 autoFocus={window.matchMedia('(pointer: fine)').matches}
                 placeholder={mode === 'pixel' ? t('เช่น ANNA ♥', 'e.g. ANNA ♥') : t('เช่น น้องมะลิ', 'e.g. Lily')} />
             </label>
-            <label>{t('รูปแบบตัวอักษร', 'Lettering')}
+            <label><FieldHead label={t('รูปแบบตัวอักษร', 'Lettering')}><DefaultTag value={mode} def={DEF.mode} onReset={() => setMode(DEF.mode)} /></FieldHead>
               <div className="seg full">
                 <button className={mode === 'pixel' ? 'on' : ''} onClick={() => setMode('pixel')}>{t('พิกเซล A–Z', 'Pixel A–Z')}</button>
                 <button className={mode === 'font' ? 'on' : ''} onClick={() => setMode('font')}>{t('ฟอนต์ทั่วไป (ไทยได้)', 'Regular font (Thai OK)')}</button>
@@ -113,7 +119,7 @@ export function TextDialog({ pattern: p, initialColor, onApply, onClose }: Props
                     <button className="guide-link" onClick={() => setMode('font')}>Use a regular font</button></>)}
                   </p>
                 )}
-                <label>{t('ขนาด', 'Size')}
+                <label><FieldHead label={t('ขนาด', 'Size')}><DefaultTag value={scale} def={DEF.scale} onReset={() => setScale(DEF.scale)} /></FieldHead>
                   <div className="seg full">
                     {[1, 2, 3].map((s) => <button key={s} className={scale === s ? 'on' : ''} onClick={() => setScale(s)}>×{s} ({7 * s} {t('ช่อง', 'cells')})</button>)}
                   </div>
@@ -121,17 +127,19 @@ export function TextDialog({ pattern: p, initialColor, onApply, onClose }: Props
               </>
             ) : (
               <>
-                <label>{t('ความสูง:', 'Height:')} <b>{height} {t('ช่อง', 'cells')}</b>
+                <label><FieldHead label={<>{t('ความสูง:', 'Height:')} <b>{height} {t('ช่อง', 'cells')}</b></>}><DefaultTag value={height} def={DEF.height} onReset={() => setHeight(DEF.height)} /></FieldHead>
                   <input type="range" min={5} max={Math.max(12, Math.min(60, p.rows))} value={height} onChange={(e) => setHeight(+e.target.value)} />
                 </label>
-                <label>{t('ความหนาเส้น', 'Stroke weight')}
+                <label><FieldHead label={t('ความหนาเส้น', 'Stroke weight')}><DefaultTag value={threshold} def={DEF.threshold} onReset={() => setThreshold(DEF.threshold)} /></FieldHead>
                   <input type="range" min={0.2} max={0.7} step={0.05} value={0.9 - threshold} onChange={(e) => setThreshold(+(0.9 - +e.target.value).toFixed(2))} />
                 </label>
-                <label className="check"><input type="checkbox" checked={bold} onChange={(e) => setBold(e.target.checked)} /><span>{t('ตัวหนา', 'Bold')}</span></label>
+                <label className="check"><input type="checkbox" checked={bold} onChange={(e) => setBold(e.target.checked)} /><FieldHead label={t('ตัวหนา', 'Bold')}><DefaultTag value={bold} def={DEF.bold} onReset={() => setBold(DEF.bold)} /></FieldHead></label>
                 <p className="hint">{t('ภาษาไทยที่มีสระบน/ล่าง ควรสูงอย่างน้อย 12 ช่องเพื่อให้อ่านออก', 'Thai text with upper/lower vowels needs a height of at least 12 cells to stay readable')}</p>
               </>
             )}
-            <label>{t('สีด้าย', 'Thread color')}
+            <label><FieldHead label={t('สีด้าย', 'Thread color')}>
+              {p.palette.length > 1 && <DefaultTag kind="suggested" reason={t('สีที่เลือกอยู่ในเครื่องมือวาด', 'the color you’re drawing with')} value={color} def={startColor} onReset={() => setColor(startColor)} />}
+            </FieldHead>
               <div className="text-colors">
                 {p.palette.map((t, i) => (
                   <button key={t.id} className={'swatch' + (i === color ? ' on' : '')} style={{ background: t.hex, color: contrastText(t.hex) }}
@@ -141,6 +149,8 @@ export function TextDialog({ pattern: p, initialColor, onApply, onClose }: Props
             </label>
             <div className="nudge">
               <span>{t('ตำแหน่ง', 'Position')}</span>
+              {/* the "Center" button below already resets the position */}
+              <DefaultTag value={dx === 0 && dy === 0} def={true} reason={t('จัดไว้กึ่งกลางพื้นที่ปัก', 'centered on the stitch area')} />
               <button className="icon-btn sm bg" onClick={() => nudge(-1, 0)} title={t('ซ้าย (←)', 'Left (←)')}>←</button>
               <button className="icon-btn sm bg" onClick={() => nudge(0, -1)} title={t('ขึ้น (↑)', 'Up (↑)')}>↑</button>
               <button className="icon-btn sm bg" onClick={() => nudge(0, 1)} title={t('ลง (↓)', 'Down (↓)')}>↓</button>
