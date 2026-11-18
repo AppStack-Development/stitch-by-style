@@ -3,7 +3,7 @@ import type { BaseType } from '../types';
 import { TEMPLATES, freeMask, type TemplateDef } from '../lib/templates';
 import { createPattern } from '../lib/pattern';
 import { savePattern } from '../lib/storage';
-import { analyzeStl, type StlAnalysis } from '../lib/stlImport';
+import { analyzeParts, bestPart, readModelFile, type ModelPart, type PartAnalysis, type StlAnalysis } from '../lib/stlImport';
 import { needleHint } from '../lib/stats';
 import { Thumb } from '../components/Thumb';
 import { Icon } from '../components/Icon';
@@ -98,8 +98,11 @@ function TemplatePicker() {
   const [holeRatio, setHoleRatio] = useState(0.55);
   const [thick, setThick] = useState(2);
   const [name, setName] = useState('');
-  const [stl, setStl] = useState<{ buf: ArrayBuffer; file: string; res: StlAnalysis | null; err: string } | null>(null);
+  /** imported model: every part analysed, one selected */
+  const [stl, setStl] = useState<{ file: string; parts: ModelPart[]; analyses: PartAnalysis[]; sel: number; err: string } | null>(null);
   const [stlPitch, setStlPitch] = useState('');
+  const [busy, setBusy] = useState(false);
+  const stlRes: StlAnalysis | null = stl && stl.sel >= 0 ? stl.analyses[stl.sel].result : null;
 
   const pick = (t: TemplateDef) => {
     setSel(t);
@@ -114,31 +117,61 @@ function TemplatePicker() {
   };
 
   const built = useMemo(() => {
-    if (sel === 'stl') return stl?.res ? { cols: stl.res.cols, rows: stl.res.rows, mask: stl.res.mask } : null;
+    if (sel === 'stl') return stlRes ? { cols: stlRes.cols, rows: stlRes.rows, mask: stlRes.mask } : null;
     return sel.build(w, h);
-  }, [sel, w, h, stl]);
+  }, [sel, w, h, stlRes]);
 
-  const loadStl = async (f: File, override?: number) => {
-    const buf = await f.arrayBuffer();
-    runStl(buf, f.name, override);
+  const applyResult = (res: StlAnalysis, partName: string) => {
+    setPitch(res.pitchMm);
+    setHoleRatio(res.holeRatio);
+    setThick(res.thicknessMm);
+    setStlPitch(String(res.pitchMm));
+    setName((n) => n || partName);
   };
-  const runStl = (buf: ArrayBuffer, file: string, override?: number) => {
-    try {
-      const res = analyzeStl(buf, override);
-      setStl({ buf, file, res, err: '' });
-      setPitch(res.pitchMm);
-      setHoleRatio(res.holeRatio);
-      setThick(res.thicknessMm);
-      setStlPitch(String(res.pitchMm));
-      if (!name) setName(file.replace(/\.stl$/i, ''));
-    } catch (e) {
-      setStl({ buf, file, res: null, err: (e as Error).message });
-    }
+
+  const loadStl = async (f: File) => {
+    setBusy(true);
+    const buf = await f.arrayBuffer();
+    // let the "analysing" state paint before the (synchronous) work
+    setTimeout(() => {
+      try {
+        const parts = readModelFile(f.name, buf);
+        const analyses = analyzeParts(parts);
+        const best = bestPart(analyses);
+        setStl({
+          file: f.name, parts, analyses, sel: best,
+          err: best < 0 ? (parts.length > 1 ? `ไม่พบรูสำหรับปักในทั้ง ${parts.length} ชิ้นของไฟล์นี้` : analyses[0].error) : '',
+        });
+        setName('');
+        if (best >= 0) applyResult(analyses[best].result!, analyses[best].part.name);
+      } catch (e) {
+        setStl({ file: f.name, parts: [], analyses: [], sel: -1, err: (e as Error).message });
+      } finally {
+        setBusy(false);
+      }
+    }, 30);
+  };
+
+  const choosePart = (i: number) => {
+    if (!stl || !stl.analyses[i].result) return;
+    setStl({ ...stl, sel: i });
+    setName('');
+    applyResult(stl.analyses[i].result!, stl.analyses[i].part.name);
+  };
+
+  const reanalyse = (override?: number) => {
+    if (!stl || stl.sel < 0) return;
+    const [a] = analyzeParts([stl.parts[stl.sel]], override);
+    setStl({ ...stl, analyses: stl.analyses.map((x, i) => (i === stl.sel ? a : x)), err: a.result ? '' : a.error });
+    if (a.result) applyResult(a.result, a.part.name);
   };
 
   const create = () => {
     if (!built) return;
-    const tname = sel === 'stl' ? `STL: ${stl?.file ?? ''}` : sel.name;
+    const part = stl && stl.sel >= 0 ? stl.parts[stl.sel] : null;
+    const tname = sel === 'stl'
+      ? `${stl?.file ?? ''}${part && stl!.parts.length > 1 ? ` · ${part.name}` : ''}`
+      : sel.name;
     const p = createPattern({
       name: name || (sel === 'stl' ? 'ลายจากโมเดล' : `ลาย${sel.name}`),
       mode: 'template',
@@ -168,30 +201,43 @@ function TemplatePicker() {
         })}
         <label className={'tpl-card stl' + (sel === 'stl' ? ' on' : '')} onClick={() => setSel('stl')}>
           <div className="tpl-thumb"><Icon name="upload" size={34} /></div>
-          <b>นำเข้าไฟล์ STL</b>
-          <small>ตรวจหารูปักจากโมเดลของคุณอัตโนมัติ</small>
-          <input type="file" accept=".stl" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) { setSel('stl'); loadStl(f); } e.target.value = ''; }} />
+          <b>นำเข้าไฟล์ STL / 3MF</b>
+          <small>ตรวจหารูปักจากโมเดลของคุณอัตโนมัติ (รองรับไฟล์จาก MakerWorld)</small>
+          <input type="file" accept=".stl,.3mf" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) { setSel('stl'); loadStl(f); } e.target.value = ''; }} />
         </label>
       </div>
 
       <div className="form-card">
         {sel === 'stl' ? (
           <>
-            <h3>นำเข้าโมเดล STL</h3>
-            {!stl && <p className="muted">เลือกไฟล์ .stl ของแผ่นที่มีรูเรียงเป็นตาราง (วางแนวราบ) ระบบจะแปลงรูเป็นช่องสำหรับเติมสี</p>}
-            {stl?.err && <p className="error">{stl.err}</p>}
-            {stl?.res && (
-              <p className="ok">พบ {stl.res.holeCount} รู · ตาราง {stl.res.cols}×{stl.res.rows} · ชิ้นงาน {stl.res.widthMm.toFixed(1)}×{stl.res.heightMm.toFixed(1)}×{stl.res.thicknessMm} มม.</p>
+            <h3>นำเข้าโมเดล STL / 3MF</h3>
+            {!stl && !busy && <p className="muted">เลือกไฟล์ .stl หรือ .3mf ของชิ้นงานที่มีรูเรียงเป็นตาราง เช่น ฝากล่อง ที่คั่นหนังสือ พวงกุญแจ ระบบจะหาชิ้นที่มีรูและแปลงเป็นช่องสำหรับเติมสี</p>}
+            {busy && <p className="muted">กำลังวิเคราะห์โมเดล…</p>}
+            {stl && stl.parts.length > 1 && (
+              <div className="part-pick">
+                <span className="muted">ไฟล์นี้มี {stl.parts.length} ชิ้น เลือกชิ้นที่จะปัก:</span>
+                {stl.analyses.map((a, i) => (
+                  <button key={i} className={'part-chip' + (i === stl.sel ? ' on' : '')} disabled={!a.result} onClick={() => choosePart(i)}
+                    title={`${a.part.name} · ${a.result ? `${a.result.holeCount} รู` : 'ไม่พบรูสำหรับปัก'}`}>
+                    <b>{a.part.name}</b>
+                    <small>{a.result ? `${a.result.holeCount.toLocaleString()} รู` : 'ไม่มีรู'}</small>
+                  </button>
+                ))}
+              </div>
             )}
-            {stl && (
+            {stl?.err && <p className="error">{stl.err}</p>}
+            {stlRes && (
+              <p className="ok">พบ {stlRes.holeCount.toLocaleString()} รู · ตาราง {stlRes.cols}×{stlRes.rows} · ชิ้นงาน {stlRes.widthMm.toFixed(1)}×{stlRes.heightMm.toFixed(1)} มม. · แผ่นหนา {stlRes.thicknessMm} มม.</p>
+            )}
+            {stlRes && (
               <div className="row2 end">
                 <label>ระยะห่างรู (มม.)<input value={stlPitch} onChange={(e) => setStlPitch(e.target.value)} /></label>
-                <button className="btn" onClick={() => runStl(stl.buf, stl.file, +stlPitch || undefined)}>วิเคราะห์ใหม่</button>
+                <button className="btn" onClick={() => reanalyse(+stlPitch || undefined)}>วิเคราะห์ใหม่</button>
               </div>
             )}
             <label className="btn ghost file-btn">
-              <Icon name="upload" size={16} /> {stl ? 'เลือกไฟล์อื่น' : 'เลือกไฟล์ STL'}
-              <input type="file" accept=".stl" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) loadStl(f); e.target.value = ''; }} />
+              <Icon name="upload" size={16} /> {stl ? 'เลือกไฟล์อื่น' : 'เลือกไฟล์ STL / 3MF'}
+              <input type="file" accept=".stl,.3mf" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) loadStl(f); e.target.value = ''; }} />
             </label>
           </>
         ) : (

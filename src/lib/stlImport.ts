@@ -1,4 +1,5 @@
 import { STLLoader } from 'three/examples/jsm/loaders/STLLoader.js';
+import { strFromU8, unzipSync } from 'fflate';
 import type { CellKind } from '../types';
 
 export interface StlAnalysis {
@@ -21,13 +22,16 @@ interface Raster {
   px: Uint8Array;
   dims: number[];
   thin: number;
+  A: number;
+  B: number;
+  min: number[];
+  max: number[];
+  pos: ArrayLike<number>;
 }
 
 /** Project the model along its thinnest axis and rasterise its footprint. */
-function rasterise(buffer: ArrayBuffer): Raster {
-  const geom = new STLLoader().parse(buffer);
-  const pos = geom.getAttribute('position').array as ArrayLike<number>;
-  if (pos.length < 9) throw new Error('ไฟล์ STL ว่างเปล่า');
+function rasterise(pos: ArrayLike<number>): Raster {
+  if (pos.length < 9) throw new Error('ไฟล์โมเดลว่างเปล่า');
   const min = [Infinity, Infinity, Infinity], max = [-Infinity, -Infinity, -Infinity];
   for (let i = 0; i < pos.length; i += 3) {
     for (let k = 0; k < 3; k++) {
@@ -79,7 +83,7 @@ function rasterise(buffer: ArrayBuffer): Raster {
       }
     }
   }
-  return { W, H, res, px, dims, thin };
+  return { W, H, res, px, dims, thin, A, B, min, max, pos };
 }
 
 interface Blob2 { cx: number; cy: number; area: number }
@@ -111,7 +115,15 @@ function findHoles(r: Raster): Blob2[] {
 }
 
 export function analyzeStl(buffer: ArrayBuffer, pitchOverrideMm?: number): StlAnalysis {
-  const r = rasterise(buffer);
+  return analyzePositions(stlPositions(buffer), pitchOverrideMm);
+}
+
+function stlPositions(buffer: ArrayBuffer): ArrayLike<number> {
+  return new STLLoader().parse(buffer).getAttribute('position').array as ArrayLike<number>;
+}
+
+export function analyzePositions(pos: ArrayLike<number>, pitchOverrideMm?: number): StlAnalysis {
+  const r = rasterise(pos);
   const all = findHoles(r).filter((b) => b.area >= 4);
   if (all.length < 2) throw new Error('ไม่พบรูสำหรับปักในโมเดลนี้ (ต้องเป็นแผ่นที่มีรูเรียงเป็นตาราง)');
   const areas = all.map((b) => b.area).sort((a, b) => a - b);
@@ -191,16 +203,193 @@ export function analyzeStl(buffer: ArrayBuffer, pitchOverrideMm?: number): StlAn
   }
   const pitchMm = Math.round(pitchPx * r.res * 100) / 100;
   const holeSide = Math.sqrt(median) * r.res;
-  const [A, B] = [0, 1, 2].filter((k) => k !== r.thin);
   return {
     cols,
     rows,
     mask: mask.join(''),
     pitchMm,
     holeCount: holes.length,
-    widthMm: r.dims[A],
-    heightMm: r.dims[B],
-    thicknessMm: Math.round(r.dims[r.thin] * 100) / 100,
+    widthMm: r.dims[r.A],
+    heightMm: r.dims[r.B],
+    // only geometry over stitch cells counts: lid walls and rims sit on frame cells
+    thicknessMm: panelThickness(r, (x, y) => {
+      const i = Math.round((x - h0.cx) / pitchPx) - iLo, j = Math.round((y - h0.cy) / pitchPx) - jLo;
+      return i >= 0 && j >= 0 && i < cols && j < rows && mask[j * cols + i] === '2';
+    }),
     holeRatio: Math.min(0.85, Math.max(0.25, Math.round((holeSide / pitchMm) * 100) / 100)),
   };
+}
+
+/**
+ * Thickness of the stitching panel: the extent along the thin axis of triangles whose
+ * footprint centre lies on a stitch cell. Box lids have walls/rims much taller than the panel.
+ */
+function panelThickness(r: Raster, onStitchCell: (px: number, py: number) => boolean): number {
+  const { pos, A, B, thin, min, max, res } = r;
+  let lo = Infinity, hi = -Infinity;
+  for (let i = 0; i < pos.length; i += 9) {
+    const cx = ((pos[i + A] + pos[i + 3 + A] + pos[i + 6 + A]) / 3 - min[A]) / res + 1;
+    const cy = (max[B] - (pos[i + B] + pos[i + 3 + B] + pos[i + 6 + B]) / 3) / res + 1;
+    if (!onStitchCell(cx, cy)) continue;
+    for (let k = 0; k < 9; k += 3) {
+      lo = Math.min(lo, pos[i + k + thin]);
+      hi = Math.max(hi, pos[i + k + thin]);
+    }
+  }
+  const t = hi > lo ? hi - lo : r.dims[thin];
+  return Math.round(t * 100) / 100;
+}
+
+// ---------------------------------------------------------------------------
+// Model files: STL (one part) and 3MF (one part per printable object)
+
+export interface ModelPart {
+  name: string;
+  positions: Float32Array;
+}
+
+export interface PartAnalysis {
+  part: ModelPart;
+  result: StlAnalysis | null;
+  error: string;
+}
+
+export function readModelFile(fileName: string, buffer: ArrayBuffer): ModelPart[] {
+  const base = fileName.replace(/\.[^.]+$/, '');
+  if (/\.3mf$/i.test(fileName)) return read3mf(buffer, base);
+  const pos = stlPositions(buffer);
+  return [{ name: base, positions: pos instanceof Float32Array ? pos : Float32Array.from(pos) }];
+}
+
+export function analyzeParts(parts: ModelPart[], pitchOverrideMm?: number): PartAnalysis[] {
+  return parts.map((part) => {
+    try {
+      return { part, result: analyzePositions(part.positions, pitchOverrideMm), error: '' };
+    } catch (e) {
+      return { part, result: null, error: (e as Error).message };
+    }
+  });
+}
+
+/** Index of the part with the most stitch holes, or -1. */
+export function bestPart(list: PartAnalysis[]): number {
+  let best = -1;
+  list.forEach((a, i) => {
+    if (a.result && (best < 0 || a.result.holeCount > list[best].result!.holeCount)) best = i;
+  });
+  return best;
+}
+
+type Mat = number[]; // 3MF 3x4, row-vector convention: m00 m01 m02 m10 m11 m12 m20 m21 m22 m30 m31 m32
+
+interface Obj3mf {
+  verts?: Float64Array;
+  tris?: Uint32Array;
+  comps: { key: string; m: Mat | null }[];
+}
+
+const UNIT_MM: Record<string, number> = { micron: 0.001, millimeter: 1, centimeter: 10, inch: 25.4, foot: 304.8, meter: 1000 };
+
+function attrs(s: string): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const m of s.matchAll(/([\w:]+)="([^"]*)"/g)) out[m[1]] = m[2];
+  return out;
+}
+
+const parseMat = (t?: string): Mat | null => {
+  if (!t) return null;
+  const v = t.trim().split(/\s+/).map(Number);
+  return v.length === 12 && v.every(Number.isFinite) ? v : null;
+};
+
+function read3mf(buffer: ArrayBuffer, base: string): ModelPart[] {
+  let files: Record<string, Uint8Array>;
+  try {
+    files = unzipSync(new Uint8Array(buffer), { filter: (f) => f.name.endsWith('.model') || f.name.endsWith('.rels') || f.name.endsWith('model_settings.config') });
+  } catch {
+    throw new Error('เปิดไฟล์ 3MF ไม่ได้ (ไฟล์อาจเสียหาย)');
+  }
+  const text = (name: string) => (files[name] ? strFromU8(files[name]) : '');
+  const norm = (p: string) => p.replace(/^\//, '');
+  const rels = text('_rels/.rels');
+  const main = norm(/Target="([^"]+\.model)"/i.exec(rels)?.[1] ?? '3D/3dmodel.model');
+  if (!files[main]) throw new Error('ไม่พบข้อมูลโมเดลในไฟล์ 3MF');
+
+  const objects = new Map<string, Obj3mf>();
+  let unitScale = 1;
+  const parseFile = (path: string) => {
+    const xml = text(path);
+    if (path === main) unitScale = UNIT_MM[attrs(/<(?:\w+:)?model\b([^>]*)>/.exec(xml)?.[1] ?? '').unit ?? 'millimeter'] ?? 1;
+    for (const om of xml.matchAll(/<(?:\w+:)?object\b([^>]*)>([\s\S]*?)<\/(?:\w+:)?object>/g)) {
+      const id = attrs(om[1]).id;
+      const body = om[2];
+      const obj: Obj3mf = { comps: [] };
+      const vm = /<(?:\w+:)?vertices>([\s\S]*?)<\/(?:\w+:)?vertices>/.exec(body);
+      if (vm) {
+        const v: number[] = [];
+        for (const m of vm[1].matchAll(/<(?:\w+:)?vertex\b([^>]*?)\/?>/g)) {
+          const a = attrs(m[1]);
+          v.push(+a.x, +a.y, +a.z);
+        }
+        const t: number[] = [];
+        const tm = /<(?:\w+:)?triangles>([\s\S]*?)<\/(?:\w+:)?triangles>/.exec(body);
+        if (tm) {
+          for (const m of tm[1].matchAll(/<(?:\w+:)?triangle\b([^>]*?)\/?>/g)) {
+            const a = attrs(m[1]);
+            t.push(+a.v1, +a.v2, +a.v3);
+          }
+        }
+        obj.verts = Float64Array.from(v);
+        obj.tris = Uint32Array.from(t);
+      }
+      for (const m of body.matchAll(/<(?:\w+:)?component\b([^>]*?)\/?>/g)) {
+        const a = attrs(m[1]);
+        const p = a['p:path'] ? norm(a['p:path']) : path;
+        obj.comps.push({ key: `${p}#${a.objectid}`, m: parseMat(a.transform) });
+        if (a['p:path'] && files[p] && !parsed.has(p)) { parsed.add(p); parseFile(p); }
+      }
+      objects.set(`${path}#${id}`, obj);
+    }
+  };
+  const parsed = new Set([main]);
+  parseFile(main);
+
+  // part names from Bambu/Orca project metadata, keyed by build object id
+  const names = new Map<string, string>();
+  for (const m of text('Metadata/model_settings.config').matchAll(/<object id="(\d+)">([\s\S]*?)<\/object>/g)) {
+    const n = /<metadata key="name" value="([^"]*)"/.exec(m[2])?.[1];
+    if (n) names.set(m[1], n.replace(/\.(step|stp|stl|obj|3mf)$/i, ''));
+  }
+
+  const emit = (key: string, chain: Mat[], out: number[], depth = 0) => {
+    const o = objects.get(key);
+    if (!o || depth > 16) return;
+    if (o.verts && o.tris) {
+      const v = o.verts;
+      for (const vi of o.tris) {
+        let x = v[vi * 3], y = v[vi * 3 + 1], z = v[vi * 3 + 2];
+        for (const m of chain) {
+          const nx = x * m[0] + y * m[3] + z * m[6] + m[9];
+          const ny = x * m[1] + y * m[4] + z * m[7] + m[10];
+          const nz = x * m[2] + y * m[5] + z * m[8] + m[11];
+          x = nx; y = ny; z = nz;
+        }
+        out.push(x * unitScale, y * unitScale, z * unitScale);
+      }
+    }
+    for (const c of o.comps) emit(c.key, c.m ? [c.m, ...chain] : chain, out, depth + 1);
+  };
+
+  const parts: ModelPart[] = [];
+  const items = [...text(main).matchAll(/<(?:\w+:)?item\b([^>]*?)\/?>/g)].map((m) => attrs(m[1]));
+  const roots = items.length
+    ? items.map((a) => ({ id: a.objectid, m: parseMat(a.transform) }))
+    : [...objects.keys()].filter((k) => k.startsWith(main + '#')).map((k) => ({ id: k.split('#')[1], m: null }));
+  roots.forEach((it, n) => {
+    const out: number[] = [];
+    emit(`${main}#${it.id}`, it.m ? [it.m] : [], out);
+    if (out.length >= 9) parts.push({ name: names.get(it.id) ?? (roots.length > 1 ? `${base} (ชิ้นที่ ${n + 1})` : base), positions: Float32Array.from(out) });
+  });
+  if (!parts.length) throw new Error('ไม่พบชิ้นงานที่มีรูปทรงในไฟล์ 3MF');
+  return parts;
 }
