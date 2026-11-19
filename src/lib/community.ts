@@ -85,13 +85,14 @@ async function run<T>(fn: () => PromiseLike<{ data: T; error: unknown }>): Promi
 const PAGE = 24;
 
 /** One page of published posts. */
-export async function listPosts(opts: { base?: PostBase; sort?: PostSort; page?: number; limit?: number } = {}): Promise<{ posts: Post[]; more: boolean }> {
+export async function listPosts(opts: { base?: PostBase; tag?: string; sort?: PostSort; page?: number; limit?: number } = {}): Promise<{ posts: Post[]; more: boolean }> {
   const c = await client();
   const limit = opts.limit ?? PAGE;
   const from = (opts.page ?? 0) * limit;
   const rows = await run(() => {
     let q = c.from('posts').select(COLUMNS).eq('status', 'published');
     if (opts.base) q = q.eq('base', opts.base);
+    if (opts.tag) q = q.contains('tags', [opts.tag]);
     q = opts.sort === 'popular'
       ? q.order('like_count', { ascending: false }).order('created_at', { ascending: false })
       : q.order('created_at', { ascending: false });

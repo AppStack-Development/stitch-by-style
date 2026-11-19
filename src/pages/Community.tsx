@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { communityEnabled, listPosts, myLikes, type Post, type PostBase, type PostSort } from '../lib/community';
+import { TAGS, communityEnabled, listPosts, myLikes, type Post, type PostBase, type PostSort } from '../lib/community';
 import { useCloud } from '../lib/cloud';
 import { t } from '../lib/i18n';
 import { Icon } from '../components/Icon';
@@ -11,10 +11,16 @@ import { FeedbackLink } from '../components/FeedbackDialog';
 
 type Filter = 'all' | PostBase;
 
-/** "ลายจากชุมชน": everyone's shared patterns. Browsing needs no account. */
-export function Community() {
+/** "ลายจากชุมชน": everyone's shared patterns. Browsing needs no account. #/community/<tag> opens one category. */
+export function Community({ tag: initialTag }: { tag?: string }) {
   const cloud = useCloud();
   const [filter, setFilter] = useState<Filter>('all');
+  const [tag, setTagState] = useState<string>(() => (TAGS.some((x) => x.id === initialTag) ? initialTag! : ''));
+  // keep the address in step (so a category can be linked) without a hash change, which would scroll to the top
+  const setTag = (id: string) => {
+    setTagState(id);
+    history.replaceState(history.state, '', `${location.pathname}${location.search}#/community${id ? `/${id}` : ''}`);
+  };
   const [sort, setSort] = useState<PostSort>('new');
   const [posts, setPosts] = useState<Post[]>([]);
   const [page, setPage] = useState(0);
@@ -31,12 +37,12 @@ export function Community() {
     let live = true;
     setLoading(true);
     setErr('');
-    listPosts({ base: filter === 'all' ? undefined : filter, sort, page: 0 })
+    listPosts({ base: filter === 'all' ? undefined : filter, tag: tag || undefined, sort, page: 0 })
       .then((r) => { if (!live) return; setPosts(r.posts); setMore(r.more); setPage(0); })
       .catch((e) => { if (live) setErr((e as Error).message); })
       .finally(() => { if (live) setLoading(false); });
     return () => { live = false; };
-  }, [filter, sort, reload]);
+  }, [filter, tag, sort, reload]);
 
   // your hearts (after signing in too). Keyed on the ids only: re-fetching after every count change
   // would race the like being saved and un-fill the heart.
@@ -50,7 +56,7 @@ export function Community() {
   const loadMore = async () => {
     setLoading(true);
     try {
-      const r = await listPosts({ base: filter === 'all' ? undefined : filter, sort, page: page + 1 });
+      const r = await listPosts({ base: filter === 'all' ? undefined : filter, tag: tag || undefined, sort, page: page + 1 });
       // a post can shift pages when new ones arrive; skip ones already shown
       setPosts((cur) => [...cur, ...r.posts.filter((p) => !cur.some((c) => c.id === p.id))]);
       setMore(r.more);
@@ -104,6 +110,12 @@ export function Community() {
                   <button key={k} role="tab" aria-selected={sort === k} className={sort === k ? 'on' : ''} onClick={() => setSort(k)}>{label}</button>
                 ))}
               </div>
+            </div>
+            <div className="tag-row" role="group" aria-label={t('หมวด', 'Category')}>
+              <button type="button" className={'chip' + (!tag ? ' on' : '')} aria-pressed={!tag} onClick={() => setTag('')}>{t('ทุกหมวด', 'All categories')}</button>
+              {TAGS.map((x) => (
+                <button key={x.id} type="button" className={'chip' + (tag === x.id ? ' on' : '')} aria-pressed={tag === x.id} onClick={() => setTag(tag === x.id ? '' : x.id)}>{x.label()}</button>
+              ))}
             </div>
 
             {err && (

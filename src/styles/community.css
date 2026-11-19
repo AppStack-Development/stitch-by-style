@@ -138,3 +138,9 @@
   .review-thumb canvas { max-height: 128px; max-width: 90%; }
   .review-actions .btn { flex: 1 1 auto; justify-content: center; }
 }
+
+/* category chips under the gallery filters; they wrap rather than scroll so none are hidden on phones */
+.tag-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag-row .chip, .post-tags a.chip { cursor: pointer; font: inherit; font-size: 13px; }
+.tag-row .chip:not(.on), .post-tags a.chip { color: var(--ink); }
+.post-tags a.chip:hover { border-color: var(--brand); color: var(--brand); }

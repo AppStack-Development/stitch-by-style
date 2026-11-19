@@ -53,7 +53,7 @@ function Routes() {
   if (route === 'account') return <Account />;
   if (route === 'privacy') return <Privacy />;
   if (route === 'terms') return <Terms />;
-  if (route === 'community') return <Community />;
+  if (route === 'community') return <Community key={arg ?? ''} tag={arg} />;
   if (route === 'moderation') return <Moderation />;
   if (route === 'c' && arg) return <CommunityPost key={arg} id={arg} />;
   if (route === 'new') return <NewPattern key={arg} mode={arg === 'template' ? 'template' : 'free'} />;

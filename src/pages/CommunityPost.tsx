@@ -5,6 +5,8 @@ import { useStash } from '../lib/stash';
 import { computeStats } from '../lib/stats';
 import { contrastText } from '../lib/threads';
 import { DIFFICULTY_LABEL } from '../lib/pattern';
+import { buildPlate, toBinaryStl } from '../lib/plate';
+import { downloadBlob, safeFilename } from '../lib/share';
 import { trackStep } from '../lib/analytics';
 import { t, locale } from '../lib/i18n';
 import { navigate } from '../App';
@@ -116,6 +118,12 @@ export function CommunityPost({ id }: { id: string }) {
       prompt(t('คัดลอกลิงก์นี้', 'Copy this link'), url);
     }
   };
+  // 3D pieces: the printable plate straight from the shared pattern (same as the editor's STL export)
+  const downloadStl = () => {
+    if (!p) return;
+    downloadBlob(toBinaryStl(buildPlate(p, p.details.thicknessMm, p.details.holeRatio), post.title), `${safeFilename(post.title)}.stl`);
+    trackStep('/c/stl');
+  };
   const shared = new Date(post.createdAt).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
 
   return (
@@ -144,7 +152,11 @@ export function CommunityPost({ id }: { id: string }) {
             <p className="post-credit">{t('ดัดแปลงจาก', 'Adapted from')} <a className="acct-link" href={`#/c/${origin.id}`}>{origin.title}</a> {t('โดย', 'by')} {origin.author.name}</p>
           )}
           {post.description && <p className="post-desc">{post.description}</p>}
-          {post.tags.length > 0 && <div className="post-tags">{post.tags.map((x) => <span key={x} className="chip">{tagLabel(x)}</span>)}</div>}
+          {post.tags.length > 0 && (
+            <div className="post-tags">
+              {post.tags.map((x) => <a key={x} className="chip" href={`#/community/${x}`} title={t('ดูลายในหมวดนี้', 'See patterns in this category')}>{tagLabel(x)}</a>)}
+            </div>
+          )}
           <p className="hint">
             {post.templateName ?? (post.base === 'aida' ? t('ผ้า Aida', 'Aida fabric') : t('ชิ้นงาน 3D', '3D print'))}
             {' · '}<span className={`diff-text ${post.difficulty}`}>{DIFFICULTY_LABEL[post.difficulty]}</span>
@@ -165,6 +177,9 @@ export function CommunityPost({ id }: { id: string }) {
             <LikeButton post={post} liked={liked} onChange={(on, count) => { setLiked(on); setPost({ ...post, likeCount: count }); }} />
             <button className="btn sm ghost" onClick={copyLink}><Icon name={copied ? 'check' : 'link'} size={15} /> {copied ? t('คัดลอกแล้ว', 'Copied') : t('คัดลอกลิงก์', 'Copy link')}</button>
             <button className="btn sm ghost" onClick={() => setPrinting(true)} disabled={!p}><Icon name="print" size={15} /> {t('แผนผัง / พิมพ์', 'Chart / print')}</button>
+            {post.base === 'print3d' && (
+              <button className="btn sm ghost" onClick={downloadStl} disabled={!p}><Icon name="cube" size={15} /> {t('ดาวน์โหลด STL', 'Download STL')}</button>
+            )}
           </div>
 
           {used.length > 0 && p && (

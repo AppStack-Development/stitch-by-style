@@ -62,24 +62,24 @@ function useSections(): Section[] {
         <>
           <p>Stitch by Style ใช้ออกแบบลายปักแบบครอสติช (cross stitch) ทั้งบน<b>ผ้า Aida</b> และบน<b>ชิ้นงานพิมพ์ 3 มิติ</b>ที่เจาะรูไว้ให้ปัก เช่น พวงกุญแจ ที่คั่นหนังสือ หรือฝากล่อง</p>
           <ol>
-            <li>ที่หน้าแรก กด <b>“สร้างลายจากรูป”</b> (<Go to="quick">ง่ายที่สุด</Go>) หรือเลือกโหมดขั้นสูง <b>“ออกแบบอิสระ”</b> / <b>“ใช้โมเดลแม่แบบ”</b> หรือลอง<b>ลายตัวอย่าง</b></li>
+            <li>ที่หน้าแรก กด <b>“สร้างลายจากรูป”</b> (<Go to="quick">ง่ายที่สุด</Go>) หรือเลือกโหมดขั้นสูง <b>“ออกแบบอิสระ”</b> / <b>“ใช้โมเดลแม่แบบ”</b> หรือลอง<b>ลายตัวอย่าง</b> และ<Go to="community">ลายจากชุมชน</Go>ที่คนอื่นแชร์ไว้</li>
             <li>เติมสีลงในช่องด้วยเครื่องมือวาด หรือแปลงจากรูปภาพ</li>
             <li>ใส่รายละเอียด เช่น ด้าย เข็ม วัสดุ ในแท็บ “รายละเอียด”</li>
             <li>พิมพ์แผนผัง แชร์ให้เพื่อน หรือเปิด <b>โหมดปัก</b> เพื่อติ๊กช่องที่ปักแล้วระหว่างปักจริง</li>
             <li>เปลี่ยนภาษาได้ด้วยปุ่มภาษา (ไอคอนลูกโลก “EN” / “ไทย”) ด้านบนของหน้าแรก</li>
           </ol>
-          <Note>ลายทั้งหมดบันทึกอัตโนมัติไว้ใน<b>เบราว์เซอร์ของเครื่องนี้</b> ไม่ได้อยู่บนเซิร์ฟเวอร์ ดูวิธีย้ายเครื่องและสำรองข้อมูลได้ที่ <Go to="data">การเก็บข้อมูล</Go></Note>
+          <Note>ลายบันทึกอัตโนมัติไว้ใน<b>เบราว์เซอร์ของเครื่องนี้</b> ถ้าเข้าสู่ระบบ (ไม่บังคับ) จะซิงก์ไปทุกเครื่องด้วย ดูวิธีย้ายเครื่องและสำรองข้อมูลได้ที่ <Go to="data">การเก็บข้อมูล</Go></Note>
         </>,
         <>
           <p>Stitch by Style lets you design cross stitch patterns for both <b>Aida fabric</b> and <b>3D-printed pieces</b> with stitch holes, such as keychains, bookmarks or box lids.</p>
           <ol>
-            <li>On the home page, tap <b>“Pattern from a photo”</b> (<Go to="quick">the easiest way</Go>), pick an advanced mode, <b>“Free design”</b> or <b>“Use a template”</b>, or try a <b>sample pattern</b>.</li>
+            <li>On the home page, tap <b>“Pattern from a photo”</b> (<Go to="quick">the easiest way</Go>), pick an advanced mode, <b>“Free design”</b> or <b>“Use a template”</b>, or try a <b>sample pattern</b> or one of the <Go to="community">community patterns</Go> others have shared.</li>
             <li>Fill in the cells with the drawing tools, or convert an image.</li>
             <li>Add details such as thread, needle and materials in the “Details” tab.</li>
             <li>Print the chart, share it with a friend, or open <b>Stitch mode</b> to tick off cells as you stitch.</li>
             <li>Switch the language with the language button (globe icon, “EN” / “ไทย”) at the top of the home page.</li>
           </ol>
-          <Note>All patterns are saved automatically in <b>this device’s browser</b>, not on a server. To move to another device or back up, see <Go to="data">Storing your data</Go>.</Note>
+          <Note>Patterns are saved automatically in <b>this device’s browser</b>; if you sign in (optional) they also sync to your other devices. To move to another device or back up, see <Go to="data">Storing your data</Go>.</Note>
         </>,
       ),
     },
@@ -128,6 +128,37 @@ function useSections(): Section[] {
             <li>In the editor and on the printed chart, threads you own get a ✓, so you can see what’s left to buy.</li>
           </ul>
           <Note>Your thread list is kept in this browser, just like your patterns.</Note>
+        </>,
+      ),
+    },
+    {
+      id: 'community', title: t('ลายจากชุมชน', 'Community patterns'), icon: 'people',
+      body: t(
+        <>
+          <p>ลายที่ผู้ใช้ Stitch by Style แชร์ไว้ให้ทุกคนใช้ เปิดได้จาก <b>“ลายจากชุมชน”</b> บนหน้าแรก (กด “ดูทั้งหมด”) ดูและปักได้โดย<b>ไม่ต้องเข้าสู่ระบบ</b></p>
+          <ul>
+            <li>กรองลายบนผ้า / ชิ้นงาน 3D และหมวด เช่น สัตว์ เทศกาล หรือเรียงตาม “หัวใจมากสุด”</li>
+            <li><b>ลองปัก</b> บันทึกสำเนาไว้ในเครื่องแล้วเปิดโหมดปักทันที ครั้งต่อไปปุ่มจะเป็น “ปักต่อ”</li>
+            <li><b>แก้ไขเป็นสำเนาของฉัน</b> เปิดสำเนาในหน้าออกแบบ แก้สีหรือเพิ่มชื่อได้ตามใจ ลายต้นฉบับไม่เปลี่ยน</li>
+            <li>ลายชิ้นงาน 3D กด <b>ดาวน์โหลด STL</b> ในหน้าลายได้เลย</li>
+            <li>กด <b>หัวใจ</b> ให้ลายที่ชอบได้เมื่อเข้าสู่ระบบ</li>
+          </ul>
+          <p><b>แชร์ลายของคุณ</b>: ในหน้าออกแบบ กด “ส่งออก / แชร์” → <b>“แชร์ในชุมชน”</b> (ต้อง<a className="guide-link" href="#/account">เข้าสู่ระบบ</a>) ตั้งชื่อที่แสดง (ใช้ชื่อเล่นได้) ชื่อลาย คำอธิบาย และหมวด แล้วยืนยันว่าออกแบบเองหรือได้รับอนุญาต ถ้าแก้ลายทีหลัง เปิดเมนูเดิมแล้วกด “อัปเดต” หัวใจที่ได้ยังอยู่ ถอนลายออกได้ทุกเมื่อที่หน้าบัญชี (ส่วน “ลายที่ฉันแชร์”)</p>
+          <Note>คนอื่นใช้ลายของคุณได้แบบส่วนตัวและดัดแปลงต่อได้ โดยมีเครดิต “ดัดแปลงจาก … โดย …” ให้อัตโนมัติ แต่ห้ามนำไปขาย ความคืบหน้าการปักและรายการด้ายของคุณไม่ถูกแชร์ อ่านเพิ่มที่ <a className="guide-link" href="#/terms">ข้อกำหนดการแชร์</a></Note>
+          <Tip>เจอลายที่เป็นงานของคนอื่นหรือไม่เหมาะสม กด <b>“แจ้งปัญหา”</b> ท้ายหน้าลาย ทีมงานจะตรวจภายใน 7 วัน</Tip>
+        </>,
+        <>
+          <p>Patterns Stitch by Style users have shared for everyone. Open them from <b>“Community patterns”</b> on the home page (tap “See all”). You can browse and stitch them <b>without an account</b>.</p>
+          <ul>
+            <li>Filter by fabric / 3D prints and by category, such as animals or holidays, or sort by “Most liked”.</li>
+            <li><b>Stitch it</b> saves a copy on this device and opens Stitch mode right away; next time the button says “Continue stitching”.</li>
+            <li><b>Edit as my copy</b> opens a copy in the editor to change colors or add a name. The original stays as it is.</li>
+            <li>For 3D pieces, tap <b>Download STL</b> right on the pattern page.</li>
+            <li>Tap the <b>heart</b> on patterns you like (needs an account).</li>
+          </ul>
+          <p><b>Share your own</b>: in the editor, open “Export / share” → <b>“Share with the community”</b> (needs you to <a className="guide-link" href="#/account">sign in</a>). Choose a display name (a nickname is fine), a title, a description and categories, and confirm you designed it or have permission. If you change the pattern later, use the same menu and tap “Update”; its likes stay. Take a pattern down any time from your Account page (“Patterns I’ve shared”).</p>
+          <Note>Others may use your pattern personally and remix it, with an automatic “Adapted from … by …” credit, but may not sell it. Your stitching progress and thread list are never shared. More in the <a className="guide-link" href="#/terms">sharing terms</a>.</Note>
+          <Tip>Found someone else’s work or something inappropriate? Tap <b>“Report”</b> at the bottom of the pattern page; the team reviews reports within 7 days.</Tip>
         </>,
       ),
     },
