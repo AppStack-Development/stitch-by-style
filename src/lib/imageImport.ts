@@ -332,10 +332,12 @@ export function convertImage(src: SourceImage, p: Pattern, o: ImportOpts): Impor
       // optionally allow a few new threads (closest DMC overall) instead
       const own = stashIdx.map((d) => DMC_LAB[d]);
       const POOR = 12 ** 2; // CIE76 distance that clearly reads as a different colour
-      const picks = centers.map((ce) => { const k = nearest(ce, own); return { d: stashIdx[k], err: dist2(ce, own[k]), ce }; });
+      const picks = centers.map((ce, ci) => { const k = nearest(ce, own); return { d: stashIdx[k], err: dist2(ce, own[k]), ce, size: sizes[keep[ci]] }; });
+      // spend the allowed new threads where they fix the most stitches: a badly matched main colour
+      // (the whole face) matters more than a badly matched speck (a nose)
       let extra = o.stashExtra ?? 0;
-      for (const pk of [...picks].sort((a, b) => b.err - a.err)) {
-        if (pk.err < POOR) break;
+      const poor = picks.filter((pk) => pk.err >= POOR).sort((a, b) => b.err * b.size - a.err * a.size);
+      for (const pk of poor) {
         if (extra > 0) { pk.d = nearest(pk.ce, DMC_LAB); pk.err = 0; extra--; } else poorMatches++;
       }
       const chosen = [...new Set(picks.map((pk) => pk.d))];
