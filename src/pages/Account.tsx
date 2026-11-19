@@ -8,6 +8,8 @@ import { LangSwitch } from '../components/LangSwitch';
 import { Avatar } from '../components/AccountButton';
 import { navigate } from '../App';
 import { FeedbackLink } from '../components/FeedbackDialog';
+import { detectInApp, externalUrl, canOpenExternally, type InAppInfo } from '../lib/inAppBrowser';
+import { trackStep } from '../lib/analytics';
 
 const errText = (e: unknown) => (e as Error)?.message || t('เกิดข้อผิดพลาด ลองอีกครั้ง', 'Something went wrong. Please try again.');
 
@@ -130,6 +132,56 @@ function DeleteDialog({ onClose }: { onClose: () => void }) {
   );
 }
 
+/**
+ * Google blocks sign-in inside LINE/Facebook/Instagram browsers, so instead of the Google button we explain
+ * that and offer a way out to Safari or Chrome (LINE and Android can be opened directly; otherwise copy the link).
+ */
+function InAppNotice({ info, onTryHere }: { info: InAppInfo; onTryHere: () => void }) {
+  const [copied, setCopied] = useState<'no' | 'yes' | 'failed'>('no');
+  const browser = info.os === 'ios' ? 'Safari' : info.os === 'android' ? 'Chrome' : t('เบราว์เซอร์', 'your browser');
+  const inApp = info.label ? t(`แอป ${info.label}`, info.label) : t('แอปนี้', 'this app');
+  const link = location.origin + location.pathname + '#/account';
+  useEffect(() => { trackStep(`/account/in-app/${info.app}`); }, [info.app]);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopied('yes');
+    } catch {
+      setCopied('failed'); // some in-app browsers block the clipboard: show the link to copy by hand
+    }
+  };
+  // only shown where we can't open the browser ourselves (iPhone apps other than LINE)
+  const menuTip = t(`หรือกดเมนู ⋯ ของ${inApp} แล้วเลือก “เปิดในเบราว์เซอร์” (Open in browser)`,
+    `Or tap ${info.label ? `${info.label}’s` : 'the app’s'} ⋯ menu and choose “Open in browser”.`);
+
+  return (
+    <div className="acct-inapp" role="note">
+      <p className="acct-inapp-title"><Icon name="info" size={18} /> {t(`เข้าสู่ระบบด้วย Google ใน${inApp} ไม่ได้`, `Google sign-in doesn’t work inside ${inApp}`)}</p>
+      <p>{t(`Google ไม่อนุญาตให้เข้าสู่ระบบในเบราว์เซอร์ที่อยู่ในแอป เปิดหน้านี้ใน ${browser} แล้วเข้าสู่ระบบได้ตามปกติ`,
+        `Google doesn’t allow signing in from browsers inside apps. Open this page in ${browser} and sign in there.`)}</p>
+      <div className="btn-row">
+        {canOpenExternally(info) ? (
+          <a className="btn lg primary" href={externalUrl(info)}><Icon name="globe" size={18} /> {t(`เปิดใน ${browser}`, `Open in ${browser}`)}</a>
+        ) : (
+          <button className="btn lg primary" onClick={copy}>
+            <Icon name={copied === 'yes' ? 'check' : 'copy'} size={18} /> {copied === 'yes' ? t('คัดลอกลิงก์แล้ว', 'Link copied') : t('คัดลอกลิงก์', 'Copy link')}
+          </button>
+        )}
+      </div>
+      {copied === 'yes' && <p className="hint">{t(`เปิด ${browser} แล้ววางลิงก์ในช่องที่อยู่`, `Open ${browser} and paste the link into the address bar.`)}</p>}
+      {copied === 'failed' && (
+        <input className="acct-inapp-link" readOnly value={link} aria-label={t('ลิงก์ของหน้านี้', 'Link to this page')}
+          onFocus={(e) => e.currentTarget.select()} />
+      )}
+      {!canOpenExternally(info) && copied !== 'yes' && <p className="hint">{menuTip}</p>}
+      <p className="hint">{t('ลายที่ทำไว้ในเบราว์เซอร์นี้จะไม่ตามไปเอง ใช้ “ส่งไปมือถือ / อีกเครื่อง” ในหน้าแก้ไขลายเพื่อย้ายไป',
+        'Patterns you made in this browser won’t move by themselves. Use “Send to phone / another device” in the editor to bring them along.')}</p>
+      <button type="button" className="link-btn acct-inapp-try" onClick={onTryHere}>{t('ลองเข้าสู่ระบบที่นี่ต่อ', 'Try signing in here anyway')}</button>
+    </div>
+  );
+}
+
 function SignedOut({ error }: { error: string }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
@@ -144,6 +196,8 @@ function SignedOut({ error }: { error: string }) {
     }
   };
   const shown = err || error;
+  const [inApp] = useState(() => detectInApp());
+  const [tryHere, setTryHere] = useState(false);
   return (
     <section className="acct-card acct-signin">
       <h3><Icon name="cloud" size={20} /> {t('เก็บงานไว้ในบัญชี', 'Keep your work in an account')}</h3>
@@ -154,9 +208,13 @@ function SignedOut({ error }: { error: string }) {
       </ul>
       <p className="muted">{t('ไม่บังคับ ใช้งานได้ครบทุกอย่างโดยไม่ต้องเข้าสู่ระบบ ลายจะเก็บไว้ในเครื่องนี้เท่านั้น',
         'It’s optional. Everything works without signing in; your patterns are then kept on this device only.')}</p>
-      <button className="btn lg google-btn" onClick={go} disabled={busy}>
-        <GoogleG /> {busy ? t('กำลังไปที่ Google…', 'Opening Google…') : t('เข้าสู่ระบบด้วย Google', 'Continue with Google')}
-      </button>
+      {inApp && !tryHere ? (
+        <InAppNotice info={inApp} onTryHere={() => setTryHere(true)} />
+      ) : (
+        <button className="btn lg google-btn" onClick={go} disabled={busy}>
+          <GoogleG /> {busy ? t('กำลังไปที่ Google…', 'Opening Google…') : t('เข้าสู่ระบบด้วย Google', 'Continue with Google')}
+        </button>
+      )}
       {shown && <p className="error small" role="alert">{shown}</p>}
       <p className="hint">{t(<>เมื่อเข้าสู่ระบบ เราจะเก็บข้อมูลตามที่อธิบายไว้ใน<a className="acct-link" href="#/privacy">นโยบายความเป็นส่วนตัว</a></>,
         <>When you sign in, we store data as described in our <a className="acct-link" href="#/privacy">privacy notice</a>.</>)}</p>
