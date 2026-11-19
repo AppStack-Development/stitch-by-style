@@ -209,6 +209,8 @@ export function Editor({ id }: { id: string }) {
           key: x.id, icon: x.icon, label: x.short, title: `${x.label} (${x.key})`, on: tool === x.id, onSelect: () => setTool(x.id),
         })),
         { key: 'text', icon: 'text', label: t('ใส่ชื่อ / ข้อความ', 'Name / text'), title: t('ใส่ชื่อ / ข้อความ (T)', 'Name / text (T)'), onSelect: () => setTextDlg(true) },
+        // on phones the header button is hidden to give the pattern name room; it lives here instead
+        { key: 'image', icon: 'image', label: t('รูปภาพ → ลาย', 'Image → pattern'), title: t('แปลงรูปภาพเป็นลายปัก', 'Turn an image into a pattern'), onSelect: () => setImgImport({ file: null }) },
       ],
     },
     {

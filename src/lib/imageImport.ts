@@ -28,6 +28,8 @@ export interface ImportOpts {
   stash?: string[];
   /** 'stash' mode: how many threads outside the stash may be added for colours the stash can't match */
   stashExtra?: number;
+  /** keep small colours that are clearly their own (a nose, blush, dots) rather than edge blends; default on */
+  keepDetails?: boolean;
 }
 
 export const DEFAULT_IMPORT: ImportOpts = {
@@ -97,6 +99,17 @@ function labToHexApprox(l: Lab): string {
 }
 
 const dist2 = (a: Lab, b: Lab) => (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2;
+
+/**
+ * Whether colour p looks like a mix of a and b. Smoothed edges mix in RGB (blue + yellow give grey), so
+ * the mixes are made in RGB and compared in Lab.
+ */
+function isMixOf(p: Lab, a: Rgb, b: Rgb, maxDist2: number): boolean {
+  for (let t = 0.05; t < 1; t += 0.05) {
+    if (dist2(p, rgbToLab(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t)) < maxDist2) return true;
+  }
+  return false;
+}
 
 const DMC_LAB = DMC_LIBRARY.map((d) => hexToLab(d.hex));
 
@@ -313,6 +326,26 @@ export function convertImage(src: SourceImage, p: Pattern, o: ImportOpts): Impor
     const minSize = Math.max(1, Math.round(pts.length * 0.01));
     let keep = km.centers.map((_, i) => i).filter((i) => sizes[i] >= minSize);
     if (!keep.length) keep = [sizes.indexOf(Math.max(...sizes))];
+    if (o.keepDetails !== false && pixLab.length) {
+      // ...but a small cluster can be a real detail (a nose, blush, a button). Keep it unless it sits
+      // close to a bigger colour or on the mix between two of them (or between one and the background),
+      // which is what anti-aliased edges produce
+      const rgb = km.centers.map(() => [0, 0, 0]);
+      km.assign.forEach((a, i) => { rgb[a][0] += pixRgb[i][0]; rgb[a][1] += pixRgb[i][1]; rgb[a][2] += pixRgb[i][2]; });
+      const meanRgb = (i: number): Rgb => [rgb[i][0] / sizes[i], rgb[i][1] / sizes[i], rgb[i][2] / sizes[i]];
+      const anchors: { lab: Lab; rgb: Rgb }[] = keep.map((i) => ({ lab: km.centers[i], rgb: meanRgb(i) }));
+      if (o.skipBackground && src.bg && src.bgHex) {
+        const h = parseInt(src.bgHex.slice(1), 16);
+        anchors.push({ lab: src.bg, rgb: [(h >> 16) & 255, (h >> 8) & 255, h & 255] });
+      }
+      const DISTINCT = 12 ** 2;
+      const detailMin = Math.max(2, Math.round(pts.length * 0.0015));
+      const isBlend = (c: Lab) => anchors.some((a, ai) => dist2(c, a.lab) < DISTINCT
+        || anchors.some((b, bi) => bi > ai && isMixOf(c, a.rgb, b.rgb, DISTINCT)));
+      const details = km.centers.map((_, i) => i)
+        .filter((i) => sizes[i] < minSize && sizes[i] >= detailMin && !isBlend(km.centers[i]));
+      keep = [...keep, ...details];
+    }
     const centers = keep.map((i) => km.centers[i]);
     if (o.paletteMode === 'exact') {
       const acc = centers.map(() => [0, 0, 0, 0]);
