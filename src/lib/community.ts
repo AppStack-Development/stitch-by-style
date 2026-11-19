@@ -23,6 +23,7 @@ export const TAGS: { id: string; label: () => string }[] = [
   { id: 'animals', label: () => t('สัตว์', 'Animals') },
   { id: 'flowers', label: () => t('ดอกไม้ ต้นไม้', 'Flowers & plants') },
   { id: 'cute', label: () => t('การ์ตูน น่ารัก', 'Cute & cartoon') },
+  { id: 'characters', label: () => t('ตัวละคร', 'Characters') },
   { id: 'letters', label: () => t('ตัวอักษร ชื่อ', 'Letters & names') },
   { id: 'festival', label: () => t('เทศกาล', 'Holidays') },
   { id: 'food', label: () => t('อาหาร ขนม', 'Food') },

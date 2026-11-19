@@ -48,6 +48,20 @@ class Grid {
   dots(list: [number, number][], c: string) {
     for (const [x, y] of list) this.set(x, y, c);
   }
+  /** Draw `c` around every cell of the chars in `of` (4 neighbours), only on cells holding a char in `over`. */
+  outline(c: string, of: string, over = '.') {
+    const hit: [number, number][] = [];
+    for (let y = 0; y < this.h; y++) for (let x = 0; x < this.w; x++) {
+      if (!over.includes(this.px[y][x])) continue;
+      // off the grid counts as nothing (an empty string would match every `of`)
+      const near = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => {
+        const v = this.px[y + dy]?.[x + dx];
+        return v !== undefined && of.includes(v);
+      });
+      if (near) hit.push([x, y]);
+    }
+    this.dots(hit, c);
+  }
   rows() {
     return this.px.map((r) => r.join(''));
   }
@@ -215,6 +229,157 @@ export const TEAM_PATTERNS: TeamPattern[] = [
       } }),
   },
 ];
+
+// ---------- "ภูตน้อย" series: the team's own original little monsters (not based on any existing character) ----------
+
+const FUFU = { title: 'ภูตน้อย ฟูฟู', description: 'ภูตเมฆปุยตัวกลมแก้มชมพู ลอยไปไหนมีรุ้งสามสีตามหลัง ลายแรกของชุดภูตน้อยจากทีม Stitch by Style' };
+const BAITOEY = { title: 'ภูตน้อย ใบเตย', description: 'กระต่ายหูใบไม้ ทัดดอกไม้สีชมพูไว้บนหัว ชอบนอนกลางสวน ชุดภูตน้อยจากทีม Stitch by Style' };
+const KONHIN = { title: 'ภูตน้อย ก้อนหิน', description: 'เต่าตัวจิ๋วที่มีผลึกสีฟ้างอกบนกระดอง เดินช้าแต่ใจดี ชุดภูตน้อยจากทีม Stitch by Style' };
+const FAICHAI = { title: 'ภูตน้อย ไฟฉาย', description: 'หิ่งห้อยตัวกลมปีกใส หางเรืองแสงสีเหลืองนำทางในคืนมืด ชุดภูตน้อยจากทีม Stitch by Style' };
+const PLADAO = { title: 'ภูตน้อย ปลาดาว', description: 'ปลาดาวสีส้มอมชมพูใส่หมวกฟางไปเที่ยวทะเล ชุดภูตน้อยจากทีม Stitch by Style' };
+const MOKKWAN = { title: 'ภูตน้อย หมอกควัน', description: 'ผีน้อยขี้อายแอบมองอยู่หลังก้อนเมฆ แก้มแดงทุกครั้งที่มีคนทัก ชุดภูตน้อยจากทีม Stitch by Style' };
+
+const MONSTER_TAGS = ['characters', 'cute'];
+
+const MONSTERS: TeamPattern[] = [
+  {
+    ...FUFU, tags: MONSTER_TAGS,
+    make: art({
+      ...FUFU, difficulty: 'easy', w: 27, h: 19,
+      legend: { W: 'B5200', B: '3755', K: '3371', P: '3716', r: '760', y: '744', b: '3766' },
+      draw: (g) => {
+        // rainbow trail out of the left side
+        g.each((x, y) => y === 10 && x <= 6, 'r');
+        g.each((x, y) => y === 11 && x >= 1 && x <= 6, 'y');
+        g.each((x, y) => y === 12 && x >= 2 && x <= 6, 'b');
+        // puffy cloud body
+        g.ellipse(10, 10, 4.5, 4.5, 'W');
+        g.ellipse(15.5, 7.5, 5.5, 5.5, 'W');
+        g.ellipse(21, 10, 4.3, 4.3, 'W');
+        g.ellipse(15.5, 12.5, 9.5, 3.6, 'W');
+        g.outline('B', 'W', '.ryb');
+        g.dots([[12, 9], [12, 10], [19, 9], [19, 10]], 'K'); // eyes
+        g.dots([[14, 12], [15, 13], [16, 13], [17, 12]], 'K'); // smile
+        g.dots([[10, 12], [11, 12], [20, 12], [21, 12]], 'P'); // cheeks
+      },
+    }),
+  },
+  {
+    ...BAITOEY, tags: [...MONSTER_TAGS, 'flowers'],
+    make: art({
+      ...BAITOEY, difficulty: 'easy', w: 23, h: 27,
+      legend: { L: '989', l: '986', C: '3865', o: '738', K: '3371', P: '3354', F: '3326', Y: '725' },
+      draw: (g) => {
+        g.ellipse(7, 6.5, 2.4, 6, 'L', -14); // leaf ears
+        g.ellipse(15, 6.5, 2.4, 6, 'L', 14);
+        g.dots([[8, 10], [7, 9], [7, 8], [7, 7], [6, 6], [6, 5], [6, 4], [14, 10], [15, 9], [15, 8], [15, 7], [16, 6], [16, 5], [16, 4]], 'l'); // leaf veins
+        g.ellipse(11, 22.5, 5.5, 3.6, 'C'); // body
+        g.ellipse(11, 15.5, 7.2, 6, 'C'); // head
+        g.outline('o', 'C');
+        g.dots([[10, 9], [12, 9], [11, 8], [11, 10]], 'F'); // flower petals
+        g.set(11, 9, 'Y');
+        g.dots([[8, 15], [8, 16], [14, 15], [14, 16]], 'K'); // eyes
+        g.set(11, 17, 'F'); // nose
+        g.dots([[10, 18], [12, 18]], 'K'); // mouth
+        g.dots([[6, 17], [16, 17]], 'P'); // cheeks
+        g.dots([[8, 25], [9, 25], [13, 25], [14, 25]], 'o'); // feet
+      },
+    }),
+  },
+  {
+    ...KONHIN, tags: [...MONSTER_TAGS, 'animals'],
+    make: art({
+      ...KONHIN, difficulty: 'medium', w: 27, h: 17,
+      legend: { S: '3863', s: '738', C: '3761', W: 'B5200', G: '3347', g: '989', b: '3828', K: '3371', P: '3354' },
+      draw: (g) => {
+        g.ellipse(4.5, 10, 3.4, 3, 'G'); // head
+        g.dots([[3, 9]], 'K'); // eye
+        g.dots([[2, 11], [3, 11]], 'K'); // smile
+        g.set(5, 11, 'P');
+        g.each((x, y) => (x >= 8 && x <= 9 && y >= 12 && y <= 14) || (x >= 18 && x <= 19 && y >= 12 && y <= 14), 'G'); // legs
+        g.dots([[22, 11], [23, 11]], 'G'); // tail
+        g.each((x, y) => y <= 11 && ((x - 14) / 8.5) ** 2 + ((y - 11) / 6) ** 2 <= 1, 'S'); // shell dome
+        g.each((x, y) => y === 12 && x >= 6 && x <= 22, 'b'); // shell rim
+        g.dots([[10, 8], [14, 7], [18, 8], [12, 10], [16, 10]], 's'); // shell spots
+        for (const cx of [9, 14, 19]) {
+          // a solid little gem on the shell: pointed top, wide base, white glint
+          g.set(cx, 2, 'C');
+          g.each((x, y) => y >= 3 && y <= 5 && Math.abs(x - cx) <= 1, 'C');
+          g.each((x, y) => y === 6 && Math.abs(x - cx) <= 2, 'C');
+          g.dots([[cx - 1, 3], [cx - 1, 4]], 'W');
+        }
+      },
+    }),
+  },
+  {
+    ...FAICHAI, tags: [...MONSTER_TAGS, 'animals'],
+    make: art({
+      ...FAICHAI, difficulty: 'easy', w: 23, h: 24,
+      legend: { w: '3756', o: '3761', B: '436', b: '434', K: '3371', P: '3354', g: '3078', Y: '725', y: '445' },
+      draw: (g) => {
+        g.ellipse(6.5, 7.5, 4, 2.8, 'w', -30); // wings
+        g.ellipse(15.5, 7.5, 4, 2.8, 'w', 30);
+        g.outline('o', 'w');
+        g.dots([[9, 6], [8, 5], [7, 4], [7, 3], [13, 6], [14, 5], [15, 4], [15, 3]], 'K'); // antennae
+        g.dots([[6, 2], [16, 2]], 'Y');
+        g.ellipse(11, 18.5, 4.6, 4.2, 'g'); // glow
+        g.ellipse(11, 18.5, 3.2, 3, 'Y'); // glowing tail
+        g.ellipse(11, 18, 1.6, 1.4, 'y');
+        g.ellipse(11, 11, 5, 4.6, 'B'); // round body, one warm tan
+        g.outline('b', 'B', '.g');
+        g.dots([[9, 10], [9, 11], [13, 10], [13, 11]], 'K'); // eyes
+        g.dots([[10, 13], [11, 14], [12, 13]], 'K'); // smile
+        g.dots([[8, 13], [14, 13]], 'P'); // cheeks
+      },
+    }),
+  },
+  {
+    ...PLADAO, tags: [...MONSTER_TAGS, 'animals'],
+    make: art({
+      ...PLADAO, difficulty: 'medium', w: 25, h: 25,
+      legend: { O: '351', o: '3824', H: '3828', R: '321', K: '3371', P: '3326' },
+      draw: (g) => {
+        const cx = 12, cy = 14;
+        const star: [number, number][] = [];
+        for (let i = 0; i < 10; i++) {
+          const a = -Math.PI / 2 + (i * Math.PI) / 5, r = i % 2 === 0 ? 11 : 5;
+          star.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]);
+        }
+        g.poly(star, 'O');
+        g.dots([[5, 11], [19, 11], [8, 20], [16, 20], [12, 6], [7, 12], [17, 12]], 'o'); // texture dots
+        g.each((x, y) => y >= 0 && y <= 3 && x >= 9 && x <= 15, 'H'); // straw hat crown
+        g.each((x, y) => y === 3 && x >= 9 && x <= 15, 'R'); // hat band
+        g.ellipse(12, 4.4, 7, 1.2, 'H'); // brim
+        g.dots([[10, 12], [10, 13], [14, 12], [14, 13]], 'K'); // eyes
+        g.dots([[11, 16], [12, 17], [13, 16]], 'K'); // smile
+        g.dots([[8, 15], [16, 15]], 'P'); // cheeks
+      },
+    }),
+  },
+  {
+    ...MOKKWAN, tags: MONSTER_TAGS,
+    make: art({
+      ...MOKKWAN, difficulty: 'easy', w: 25, h: 23,
+      legend: { W: 'B5200', g: '340', C: '3753', c: '932', K: '3371', P: '3716' },
+      draw: (g) => {
+        g.ellipse(12, 8, 6.2, 6.2, 'W'); // ghost head
+        g.each((x, y) => x >= 6 && x <= 18 && y >= 8 && y <= 16, 'W'); // ghost body
+        g.ellipse(5.5, 13.5, 1.6, 1.2, 'W'); // little hands on the cloud
+        g.ellipse(18.5, 13.5, 1.6, 1.2, 'W');
+        g.outline('g', 'W');
+        g.dots([[9, 9], [9, 10], [15, 9], [15, 10]], 'K'); // shy eyes looking down
+        g.dots([[12, 12]], 'K'); // small "o" mouth
+        g.dots([[7, 11], [8, 11], [16, 11], [17, 11]], 'P'); // blush
+        g.ellipse(6, 18, 4.2, 3.4, 'C'); // cloud in front
+        g.ellipse(12.5, 17, 5.2, 4, 'C');
+        g.ellipse(19, 18, 4.2, 3.4, 'C');
+        g.ellipse(12.5, 19.5, 11, 2.6, 'C');
+        g.outline('c', 'C', '.Wg');
+      },
+    }),
+  },
+];
+TEAM_PATTERNS.push(...MONSTERS);
 
 /** Share every team pattern the team account hasn't shared yet. Returns what happened per title. */
 export async function publishTeamPatterns(opts: { dryRun?: boolean } = {}) {
