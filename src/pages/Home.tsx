@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Pattern } from '../types';
 import { deletePattern, listPatterns, savePattern } from '../lib/storage';
 import { normalizePattern } from '../lib/pattern';
@@ -13,8 +13,10 @@ import { useInstall } from '../lib/pwa';
 import { TEMPLATES } from '../lib/templates';
 import { t, locale } from '../lib/i18n';
 import { LangSwitch } from '../components/LangSwitch';
+import { AccountButton } from '../components/AccountButton';
 import { SampleGallery } from '../components/SampleGallery';
 import { useStash } from '../lib/stash';
+import { PATTERNS_PULLED } from '../lib/sync';
 
 /**
  * Card art drawn from the real heart-keychain template, so every hole sits exactly
@@ -73,6 +75,12 @@ export function Home() {
   const stash = useStash();
   const [iosHelp, setIosHelp] = useState(false);
   const refresh = () => setItems(listPatterns());
+  // patterns that arrive from the account (another device) show up without a reload
+  useEffect(() => {
+    const on = () => setItems(listPatterns());
+    window.addEventListener(PATTERNS_PULLED, on);
+    return () => window.removeEventListener(PATTERNS_PULLED, on);
+  }, []);
 
   const importFile = async (f: File) => {
     try {
@@ -102,11 +110,12 @@ export function Home() {
         <a className="brand" href="#/" aria-label={t('Stitch by Style หน้าแรก', 'Stitch by Style home')}><LogoMark size={36} /><span className="wordmark">Stitch by Style</span></a>
         <div className="spacer" />
         {(inst.canPrompt || inst.iosManual) && (
-          <button className="btn" onClick={() => (inst.canPrompt ? inst.install() : setIosHelp(!iosHelp))} title={t('ติดตั้งเป็นแอปบนหน้าจอโฮม ใช้งานได้แม้ออฟไลน์', 'Install as an app on your home screen; works offline')}>
+          <button className="btn install-btn" onClick={() => (inst.canPrompt ? inst.install() : setIosHelp(!iosHelp))} title={t('ติดตั้งเป็นแอปบนหน้าจอโฮม ใช้งานได้แม้ออฟไลน์', 'Install as an app on your home screen; works offline')}>
             <Icon name="install" size={16} /> <span className="hide-xs">{t('ติดตั้งแอป', 'Install app')}</span>
           </button>
         )}
         <a className="btn ghost" href="#/guide" title={t('คู่มือการใช้งาน', 'User guide')} aria-label={t('คู่มือการใช้งาน', 'User guide')}><Icon name="book" size={16} /> <span className="hide-sm">{t('คู่มือ', 'Guide')}</span></a>
+        <AccountButton />
         <LangSwitch />
       </header>
 

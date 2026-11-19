@@ -13,7 +13,8 @@ export interface Stash {
 }
 
 const KEY = 'sbs:stash';
-const EVENT = 'sbs:stash-change';
+export const STASH_EVENT = 'sbs:stash-change';
+const EVENT = STASH_EVENT;
 
 export function loadStash(): Stash {
   try {
@@ -26,14 +27,15 @@ export function loadStash(): Stash {
   return { codes: [], updatedAt: 0 };
 }
 
-export function saveStash(codes: Iterable<string>): boolean {
-  const s: Stash = { codes: [...new Set(codes)].sort(), updatedAt: Date.now() };
+/** `at`/`silent` are for writes coming from the account sync (keep the remote time, don't push back). */
+export function saveStash(codes: Iterable<string>, opts: { at?: number; silent?: boolean } = {}): boolean {
+  const s: Stash = { codes: [...new Set(codes)].sort(), updatedAt: opts.at ?? Date.now() };
   try {
     localStorage.setItem(KEY, JSON.stringify(s));
   } catch {
     return false;
   }
-  window.dispatchEvent(new Event(EVENT));
+  window.dispatchEvent(new CustomEvent(EVENT, { detail: { silent: !!opts.silent } }));
   return true;
 }
 

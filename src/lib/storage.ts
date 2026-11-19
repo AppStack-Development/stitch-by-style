@@ -30,20 +30,28 @@ export function loadPattern(id: string): Pattern | null {
   }
 }
 
-/** Returns false when storage is full or unavailable. */
-export function savePattern(p: Pattern): boolean {
+/** Fired on window after a local save/delete, so the account sync can push it. Detail: { id, deleted }. */
+export const PATTERN_CHANGE = 'sbs:pattern-change';
+
+/**
+ * Returns false when storage is full or unavailable.
+ * `silent` is for writes that come from the account sync itself (they must not be pushed back).
+ */
+export function savePattern(p: Pattern, opts: { silent?: boolean } = {}): boolean {
   try {
     localStorage.setItem(PREFIX + p.id, JSON.stringify(p));
-    return true;
   } catch {
     return false;
   }
+  if (!opts.silent) window.dispatchEvent(new CustomEvent(PATTERN_CHANGE, { detail: { id: p.id, deleted: false } }));
+  return true;
 }
 
-export function deletePattern(id: string) {
+export function deletePattern(id: string, opts: { silent?: boolean } = {}) {
   try {
     localStorage.removeItem(PREFIX + id);
   } catch {
-    /* ignore */
+    return;
   }
+  if (!opts.silent) window.dispatchEvent(new CustomEvent(PATTERN_CHANGE, { detail: { id, deleted: true } }));
 }

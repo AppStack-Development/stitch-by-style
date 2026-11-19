@@ -5,3 +5,5 @@ dist
 *.log
 *.tsbuildinfo
 testdata
+.env
+.env.local

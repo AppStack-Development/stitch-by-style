@@ -2,6 +2,7 @@ import { useMemo, useState, type FormEvent } from 'react';
 import { DMC_LIBRARY, DMC_SORTED, contrastText } from '../lib/threads';
 import { useStash } from '../lib/stash';
 import { Icon } from '../components/Icon';
+import { AccountButton } from '../components/AccountButton';
 import { t } from '../lib/i18n';
 
 type Hue = 'red' | 'orange' | 'green' | 'blue' | 'purple' | 'brown' | 'neutral';
@@ -116,6 +117,7 @@ export function MyThreads() {
         <span className={'th-count' + (owned ? ' on' : '')} aria-live="polite">
           {t(`มี ${owned} สี`, `${owned} owned`)}
         </span>
+        <AccountButton />
       </header>
 
       <main className="threads-main">

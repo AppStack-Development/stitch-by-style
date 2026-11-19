@@ -8,6 +8,7 @@ import { Thumb } from '../components/Thumb';
 import { Icon } from '../components/Icon';
 import { LogoMark } from '../components/LogoMark';
 import { LangSwitch } from '../components/LangSwitch';
+import { AccountButton } from '../components/AccountButton';
 import { navigate } from '../App';
 import { t, locale } from '../lib/i18n';
 
@@ -52,7 +53,7 @@ export function TransferView({ data }: { data: string }) {
     <div className="shared">
       <header className="site-head">
         <a className="brand" href="#/" aria-label={t('Stitch by Style หน้าแรก', 'Stitch by Style home')}><LogoMark size={36} /><span className="wordmark">Stitch by Style</span></a>
-        <div className="spacer" /><LangSwitch />
+        <div className="spacer" /><AccountButton /><LangSwitch />
       </header>
       <div className="shared-body">
         <div className="preview-card"><Thumb pattern={incoming} max={400} view="stitch" /></div>

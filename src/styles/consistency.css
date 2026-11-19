@@ -17,7 +17,11 @@
 .icon-btn.sm { width: var(--ctl-sm); height: var(--ctl-sm); }
 .seg button { min-height: calc(var(--ctl-sm) - 2px); }
 
-/* page header: every control the same height; icon-only ones square */
+/* page header: every control the same height; icon-only ones square; controls never get squeezed
+   (the page title gives way instead and ends with "…") */
+.site-head > :is(.btn, .icon-btn, a.btn) { flex-shrink: 0; }
+.site-head > h2 { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 380px) { .guide .site-head .btn.primary { display: none; } }
 .site-head :is(.btn, .icon-btn) { height: var(--hdr); min-height: var(--hdr); padding-block: 0; }
 .site-head .icon-btn { width: var(--hdr); }
 .site-head .btn { font-size: 14px; border-radius: 10px; }

@@ -4,6 +4,7 @@ import { Thumb } from '../components/Thumb';
 import { TEMPLATES } from '../lib/templates';
 import { t } from '../lib/i18n';
 import { LangSwitch } from '../components/LangSwitch';
+import { AccountButton } from '../components/AccountButton';
 import { navigate } from '../App';
 
 interface Section {
@@ -500,6 +501,7 @@ export function Guide({ section }: { section?: string }) {
         <a className="icon-btn" href="#/" title={t('กลับหน้าแรก', 'Back to home')} aria-label={t('กลับหน้าแรก', 'Back to home')}><Icon name="back" /></a>
         <h2><Icon name="book" size={18} /> {t('คู่มือการใช้งาน', 'User guide')}</h2>
         <div className="spacer" />
+        <AccountButton />
         <LangSwitch />
         <a className="btn primary sm" href="#/new/template">{t('เริ่มออกแบบ', 'Start designing')}</a>
       </header>

@@ -1,0 +1,132 @@
+/* ================================================================
+   Optional accounts: header button, Account + Privacy pages, dialogs.
+   Only rendered when accounts are configured (cloudEnabled).
+   ================================================================ */
+
+/* ---------- header button (sized by .site-head .btn in consistency.css) ---------- */
+.account-btn { gap: 6px; }
+/* avatar / icon only: square, same height as its neighbours */
+.site-head .btn.account-btn.icon-only { width: var(--hdr); padding-inline: 0; }
+@media (max-width: 600px) {
+  .account-btn .account-label { display: none; }
+  .site-head .btn.account-btn.signed-out { width: var(--hdr); padding-inline: 0; }
+}
+/* Home on very narrow phones: with the install button showing too, brand + 4 buttons don't fit with the wordmark */
+@media (max-width: 360px) {
+  .home .site-head:has(.account-btn):has(.install-btn) .wordmark { display: none; }
+}
+
+.account-av { position: relative; display: inline-grid; place-items: center; }
+.avatar {
+  display: inline-grid; place-items: center; flex-shrink: 0; border-radius: 50%; overflow: hidden;
+  background: var(--brand); color: #fff; font-weight: 600; line-height: 1; letter-spacing: 0;
+}
+.avatar img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+.sync-dot {
+  display: inline-block; width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0;
+  background: var(--ok); vertical-align: 1px;
+}
+.account-av .sync-dot { position: absolute; right: -2px; bottom: -2px; box-shadow: 0 0 0 2px var(--bg); }
+.sync-dot.syncing { background: var(--accent); animation: acct-pulse 1s ease-in-out infinite; }
+.sync-dot.error { background: var(--err); }
+.sync-dot.offline { background: var(--ink-3); }
+@keyframes acct-pulse { 50% { opacity: .35; transform: scale(.7); } }
+
+.acct-ico { display: inline-grid; place-items: center; }
+.acct-ico.spin svg { animation: acct-spin 1s linear infinite; }
+@keyframes acct-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .sync-dot.syncing, .acct-ico.spin svg { animation: none; }
+}
+
+/* ---------- page layout: shares the header's left edge ---------- */
+.account-page, .privacy-page { min-height: 100vh; }
+.account-page .site-head h2, .privacy-page .site-head h2 {
+  display: flex; align-items: center; gap: 8px; min-width: 0; white-space: nowrap;
+}
+.account-main, .privacy-main {
+  padding-left: var(--page-x); padding-right: var(--page-x);
+  max-width: var(--page-max); margin-left: auto; margin-right: auto;
+  padding-top: 24px; padding-bottom: 60px;
+}
+/* readable column, left-aligned so it starts on the same edge as the header */
+.acct-col { max-width: 640px; display: flex; flex-direction: column; gap: 16px; }
+
+.acct-link { color: var(--brand); text-decoration: underline; text-underline-offset: 2px; }
+.acct-link:hover { text-decoration-thickness: 2px; }
+.acct-foot, .acct-loading { margin: 0; }
+.acct-error { margin: 0; }
+
+/* ---------- cards ---------- */
+.acct-card {
+  background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 20px 22px; line-height: 1.6;
+}
+.acct-card h3 { display: flex; align-items: center; gap: 8px; font-size: 17px; margin-bottom: 6px; }
+.acct-card p { margin: 8px 0 0; }
+.acct-card .btn-row { margin-top: 14px; }
+
+.acct-signin h3 { font-size: 19px; }
+.acct-benefits { list-style: none; margin: 12px 0 4px; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.acct-benefits li { display: flex; align-items: flex-start; gap: 10px; }
+.acct-benefits svg { flex-shrink: 0; margin-top: 3px; color: var(--brand); }
+.btn.lg.google-btn {
+  width: 100%; max-width: 360px; margin-top: 16px; gap: 10px;
+  background: #fff; border-color: var(--line-2); color: var(--ink);
+}
+.btn.lg.google-btn:hover { border-color: var(--ink-3); background: #fafafa; }
+.acct-signin .hint { margin-top: 12px; }
+
+.acct-profile { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.acct-who { display: flex; flex-direction: column; min-width: 0; flex: 1 1 180px; line-height: 1.4; }
+.acct-who b { font-size: 17px; overflow-wrap: anywhere; }
+.acct-who span { font-size: 14px; overflow-wrap: anywhere; }
+
+.acct-sync-line { font-weight: 500; }
+.acct-sync-line .sync-dot { margin-right: 4px; }
+.acct-counts { color: var(--ink-2); font-size: 14px; }
+
+.acct-danger { border-color: #e9c4c0; box-shadow: none; margin-top: 12px; }
+.acct-danger h3 { color: var(--err); }
+
+.btn.danger-solid { background: var(--err); border-color: var(--err); color: #fff; }
+.btn.danger-solid:hover:not(:disabled) { background: #8f1e17; border-color: #8f1e17; }
+
+/* ---------- confirm / merge dialogs (on top of .modal-back / .modal) ---------- */
+.modal.acct-dialog { width: min(460px, 100%); }
+.acct-dialog .modal-head h3 { font-size: 17px; }
+.acct-dialog-body { padding: 16px 18px; overflow-y: auto; min-height: 0; display: flex; flex-direction: column; gap: 10px; line-height: 1.6; }
+.acct-dialog-body p { margin: 0; }
+.acct-dialog-lead { font-size: 16px; font-weight: 600; }
+.acct-dialog-body label.check { line-height: 1.5; }
+.acct-confirm-word { margin-top: 4px; }
+.acct-confirm-word span { color: var(--ink); font-weight: 400; font-size: 14px; }
+/* side-by-side buttons always share one height */
+.acct-dialog-foot { justify-content: flex-end; align-items: stretch; flex-wrap: wrap; }
+.acct-dialog-foot .btn { white-space: normal; text-align: center; }
+@media (max-width: 520px) {
+  .acct-dialog-foot { flex-direction: column-reverse; }
+  .acct-dialog-foot .btn { width: 100%; }
+}
+
+/* ---------- privacy notice ---------- */
+.privacy-doc {
+  max-width: 720px; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: var(--shadow); padding: 24px 28px; line-height: 1.7;
+}
+.privacy-doc h1 { font-size: 26px; }
+.privacy-doc > .hint { margin-top: 6px; }
+.privacy-lead { margin: 14px 0 0; }
+.privacy-sec { margin-top: 22px; }
+.privacy-sec h3 { font-size: 17px; }
+.privacy-sec p { margin: 6px 0 0; }
+.privacy-sec ul { margin: 6px 0 0; padding-left: 22px; }
+.privacy-sec li + li { margin-top: 2px; }
+
+@media (max-width: 600px) {
+  .account-main, .privacy-main { padding-top: 16px; padding-bottom: 40px; }
+  .acct-card { padding: 16px; }
+  .privacy-doc { padding: 18px 16px; }
+  .privacy-doc h1 { font-size: 22px; }
+}

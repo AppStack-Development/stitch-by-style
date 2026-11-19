@@ -12,6 +12,7 @@ import { suggestNeedle } from '../components/needleSuggest';
 import { t } from '../lib/i18n';
 import { Thumb } from '../components/Thumb';
 import { Icon } from '../components/Icon';
+import { AccountButton } from '../components/AccountButton';
 import { navigate } from '../App';
 
 /** What the pattern goes on. Fabric sizes are the longest side in centimetres at 14 count. */
@@ -244,6 +245,7 @@ export function QuickCreate() {
         <h2>{step === 4 ? t('ลายพร้อมแล้ว!', 'Your pattern is ready!') : t('สร้างลายจากรูป', 'Pattern from a photo')}</h2>
         <div className="spacer" />
         <a className="btn ghost sm hide-xs" href="#/new/free">{t('โหมดขั้นสูง', 'Advanced')}</a>
+        <AccountButton />
       </header>
 
       {step < 4 && <Steps step={step} />}
