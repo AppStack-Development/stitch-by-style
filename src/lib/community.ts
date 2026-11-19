@@ -111,6 +111,15 @@ export async function getPost(id: string): Promise<Post | null> {
   return row ? toPost(row) : null;
 }
 
+/**
+ * Link to share a post. On the live site it's /p/<id>, which gives LINE / Facebook a preview with the
+ * pattern's picture (api/p.js) and then opens #/c/<id>. The dev server has no functions, so it links straight in.
+ */
+export function postShareUrl(id: string): string {
+  const local = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname);
+  return local ? `${location.origin}${location.pathname}#/c/${id}` : `${location.origin}/p/${id}`;
+}
+
 /** The pattern inside a post. */
 export function postPattern(post: Post): Promise<Pattern> {
   return decodeShare(post.data).then((p) => ({ ...p, name: post.title }));

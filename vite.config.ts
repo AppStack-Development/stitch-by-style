@@ -47,6 +47,8 @@ self.addEventListener('fetch', (e) => {
   const req = e.request;
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
+  // link-preview pages and serverless functions: always the network, and never stored as the app shell
+  if (url.origin === self.location.origin && (url.pathname.startsWith('/p/') || url.pathname.startsWith('/api/'))) return;
   if (req.mode === 'navigate') {
     // always try the network so a new deploy is picked up; fall back to the cached shell offline
     e.respondWith(

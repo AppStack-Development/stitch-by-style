@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getPost, localCopyOf, myLikes, reportPost, takeCopy, tagLabel, communityEnabled, type Post, type ReportReason } from '../lib/community';
+import { getPost, localCopyOf, myLikes, postShareUrl, reportPost, takeCopy, tagLabel, communityEnabled, type Post, type ReportReason } from '../lib/community';
 import { useCloud } from '../lib/cloud';
 import { useStash } from '../lib/stash';
 import { computeStats } from '../lib/stats';
@@ -109,7 +109,7 @@ export function CommunityPost({ id }: { id: string }) {
     }
   };
   const copyLink = async () => {
-    const url = `${location.origin}${location.pathname}#/c/${post.id}`;
+    const url = postShareUrl(post.id);
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);

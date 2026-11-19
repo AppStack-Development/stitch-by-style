@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { Pattern } from '../types';
-import { TAGS, cannotShare, getMyCreator, myPostFor, publishPattern, saveMyCreator, type Post } from '../lib/community';
+import { TAGS, cannotShare, getMyCreator, myPostFor, postShareUrl, publishPattern, saveMyCreator, type Post } from '../lib/community';
 import { useCloud, signInWithGoogle } from '../lib/cloud';
 import { detectInApp } from '../lib/inAppBrowser';
 import { listPatterns } from '../lib/storage';
@@ -224,7 +224,7 @@ function Form({ pattern, canGoBack, onBack, onClose, onDone }: {
 
 function Done({ postId, onClose }: { postId: string; onClose: () => void }) {
   const [copied, setCopied] = useState(false);
-  const url = `${location.origin}${location.pathname}#/c/${postId}`;
+  const url = postShareUrl(postId);
   const copy = async () => {
     try { await navigator.clipboard.writeText(url); setCopied(true); } catch { prompt(t('คัดลอกลิงก์นี้', 'Copy this link'), url); }
   };
