@@ -17,6 +17,8 @@ interface Props {
   mirrorX: boolean;
   mirrorY: boolean;
   onStrokeStart: () => void;
+  /** a touch stroke turned out to be the first finger of a pinch: undo it and drop its undo step */
+  onStrokeCancel?: () => void;
   onChange: (cells: number[], mask: string) => void;
   onPick: (index: number) => void;
   onHover: (cell: { x: number; y: number } | null) => void;
@@ -69,6 +71,12 @@ export const PatternCanvas = forwardRef<CanvasHandle, Props>(function PatternCan
     panFrom?: { x: number; y: number; ox: number; oy: number };
   } | null>(null);
   const spaceDown = useRef(false);
+  // touch: fingers on the canvas (canvas-local px), the pinch in progress, and the latest one-finger
+  // edit — undone if a second finger lands soon after, because it was meant as a pinch, not a stroke
+  const touches = useRef(new Map<number, Pt>());
+  const pinch = useRef<{ d0: number; mid0: Pt; s0: number; ox0: number; oy0: number } | null>(null);
+  const touchEdit = useRef<{ id: number; at: number } | null>(null);
+  const PINCH_GRACE_MS = 350;
 
   const redraw = useCallback(() => setTick((t) => t + 1), []);
 
@@ -232,11 +240,34 @@ export const PatternCanvas = forwardRef<CanvasHandle, Props>(function PatternCan
     if (changed) propsRef.current.onChange(st.cells.slice(), st.mask.join(''));
   }
 
+  const localPt = (e: { clientX: number; clientY: number }): Pt => {
+    const r = canvasRef.current!.getBoundingClientRect();
+    return { x: e.clientX - r.left, y: e.clientY - r.top };
+  };
+
   function onPointerDown(e: React.PointerEvent) {
     const el = canvasRef.current!;
-    el.setPointerCapture(e.pointerId);
+    try { el.setPointerCapture(e.pointerId); } catch { /* pointer already gone */ }
     const { tool, pattern: cp } = propsRef.current;
     const v = viewRef.current;
+    if (e.pointerType === 'touch') {
+      touches.current.set(e.pointerId, localPt(e));
+      if (touches.current.size === 2) {
+        // second finger: this is a pinch/pan. Take back what the first finger just drew.
+        const te = touchEdit.current;
+        if (te && (stroke.current || Date.now() - te.at < PINCH_GRACE_MS)) propsRef.current.onStrokeCancel?.();
+        touchEdit.current = null;
+        stroke.current = null;
+        previewRef.current = null;
+        const [a, b] = [...touches.current.values()];
+        pinch.current = { d0: Math.hypot(a.x - b.x, a.y - b.y) || 1, mid0: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 }, s0: v.s, ox0: v.ox, oy0: v.oy };
+        redraw();
+        return;
+      }
+      if (touches.current.size > 2) return;
+      // a new first finger: only an edit it makes itself may be taken back by a following pinch
+      if (touches.current.size === 1) touchEdit.current = null;
+    }
     if (e.button === 1 || tool === 'pan' || spaceDown.current) {
       stroke.current = { mode: 'pan', erase: false, last: null, start: null, cells: [], mask: [], panFrom: { x: e.clientX, y: e.clientY, ox: v.ox, oy: v.oy } };
       return;
@@ -251,6 +282,7 @@ export const PatternCanvas = forwardRef<CanvasHandle, Props>(function PatternCan
       return;
     }
     propsRef.current.onStrokeStart();
+    touchEdit.current = e.pointerType === 'touch' ? { id: e.pointerId, at: Date.now() } : null;
     stroke.current = {
       mode: tool === 'line' || tool === 'rect' ? 'shape' : 'paint',
       erase,
@@ -271,6 +303,21 @@ export const PatternCanvas = forwardRef<CanvasHandle, Props>(function PatternCan
   }
 
   function onPointerMove(e: React.PointerEvent) {
+    if (e.pointerType === 'touch' && touches.current.has(e.pointerId)) {
+      touches.current.set(e.pointerId, localPt(e));
+      const pc = pinch.current;
+      if (pc && touches.current.size >= 2) {
+        // zoom around the point between the fingers and follow them as they move
+        const [a, b] = [...touches.current.values()];
+        const d = Math.hypot(a.x - b.x, a.y - b.y);
+        const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+        const s = Math.max(2, Math.min(80, pc.s0 * (d / pc.d0)));
+        const wx = (pc.mid0.x - pc.ox0) / pc.s0, wy = (pc.mid0.y - pc.oy0) / pc.s0;
+        viewRef.current = { s, ox: mid.x - wx * s, oy: mid.y - wy * s };
+        redraw();
+        return;
+      }
+    }
     const pt = cellAt(e);
     const prevH = hoverRef.current;
     if (!prevH || prevH.x !== pt.x || prevH.y !== pt.y) {
@@ -297,7 +344,23 @@ export const PatternCanvas = forwardRef<CanvasHandle, Props>(function PatternCan
     }
   }
 
-  function onPointerUp() {
+  function onPointerUp(e: React.PointerEvent) {
+    if (e.pointerType === 'touch') {
+      touches.current.delete(e.pointerId);
+      if (pinch.current) {
+        if (touches.current.size < 2) pinch.current = null;
+        // one finger left after a pinch: let it keep moving the view, never draw
+        if (touches.current.size === 1) {
+          const [rest] = [...touches.current.values()];
+          const r = canvasRef.current!.getBoundingClientRect();
+          const v = viewRef.current;
+          stroke.current = { mode: 'pan', erase: false, last: null, start: null, cells: [], mask: [], panFrom: { x: rest.x + r.left, y: rest.y + r.top, ox: v.ox, oy: v.oy } };
+        } else {
+          stroke.current = null;
+        }
+        return;
+      }
+    }
     const st = stroke.current;
     if (st && st.mode === 'shape' && previewRef.current) {
       applyPts(previewRef.current, st.erase);

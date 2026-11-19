@@ -206,7 +206,7 @@ function useSections(): Section[] {
               <ul>
                 <li><b>สมมาตร</b> <Icon name="mirrorX" size={15} /> <Icon name="mirrorY" size={15} /> วาดข้างหนึ่ง อีกข้างจะสะท้อนตามอัตโนมัติ</li>
                 <li><b>มุมมอง</b> “ฝีเข็ม” (ดูเหมือนปักจริง) “สี” (สีเรียบ) และ “สัญลักษณ์” (สำหรับพิมพ์ขาวดำ)</li>
-                <li><b>ซูม</b> ใช้ปุ่มด้านซ้าย ล้อเมาส์ หรือหยิกนิ้วบนทัชแพด · <b>สามเหลี่ยมสีแดง</b>ที่ขอบบอกจุดกึ่งกลางของลาย</li>
+                <li><b>ซูม</b> ใช้ปุ่มซูม ล้อเมาส์ หรือหยิกนิ้วบนทัชแพด · บนมือถือ/แท็บเล็ต หยิกสองนิ้วเพื่อซูม และลากสองนิ้วเพื่อเลื่อน · <b>สามเหลี่ยมสีแดง</b>ที่ขอบบอกจุดกึ่งกลางของลาย</li>
                 <li><b>เลิกทำ/ทำซ้ำ</b> ด้วยปุ่มลูกศรด้านบน หรือ <Kbd>Ctrl/⌘ + Z</Kbd></li>
               </ul>
               <Tip>ชื่อสั้นๆ บนพวงกุญแจ ใช้ “ฟอนต์พิกเซล” ขนาด ×1 (สูง 7 ช่อง) จะคมชัดที่สุด ส่วนภาษาไทยใช้ “ฟอนต์ทั่วไป” สูงอย่างน้อย 12 ช่อง</Tip>
@@ -216,7 +216,7 @@ function useSections(): Section[] {
               <ul>
                 <li><b>Mirror</b> <Icon name="mirrorX" size={15} /> <Icon name="mirrorY" size={15} /> Draw on one side and the other side mirrors it automatically.</li>
                 <li><b>Views</b> “Stitches” (looks like real stitching), “Color” (flat color) and “Symbols” (for black-and-white printing).</li>
-                <li><b>Zoom</b> with the buttons on the left, the mouse wheel, or a pinch on the touchpad · the <b>red triangles</b> on the edges mark the center of the pattern.</li>
+                <li><b>Zoom</b> with the zoom buttons, the mouse wheel, or a pinch on the touchpad · on phones and tablets, pinch with two fingers to zoom and drag with two to move · the <b>red triangles</b> on the edges mark the center of the pattern.</li>
                 <li><b>Undo/Redo</b> with the arrow buttons at the top, or <Kbd>Ctrl/⌘ + Z</Kbd>.</li>
               </ul>
               <Tip>For a short name on a keychain, the “Pixel A–Z” at ×1 (7 cells tall) is the sharpest. For Thai text, use the “Regular font (Thai OK)” at least 12 cells tall.</Tip>

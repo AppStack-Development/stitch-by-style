@@ -53,7 +53,7 @@ export function EditorTip({ onTarget }: { onTarget: (target: CoachTarget | null)
       ? {
         target: 'more',
         title: t('3. เครื่องมืออื่นอยู่ใน “เพิ่มเติม”', '3. More tools under “More”'),
-        body: t('เส้นตรง กรอบสี่เหลี่ยม สมมาตร ใส่ชื่อ / ข้อความ และอื่น ๆ ส่วนการซูมใช้ปุ่ม + − ที่มุมขวาของตาราง', 'Line, Rectangle, Mirror, Name / text and more. Zoom with the + − buttons at the corner of the grid.'),
+        body: t('เส้นตรง กรอบสี่เหลี่ยม สมมาตร ใส่ชื่อ / ข้อความ และอื่น ๆ ซูมได้ด้วยการหยิกสองนิ้ว (ลากสองนิ้วเพื่อเลื่อน) หรือปุ่ม + − ที่มุมขวาของตาราง', 'Line, Rectangle, Mirror, Name / text and more. Pinch with two fingers to zoom (drag with two to move), or use the + − buttons at the corner of the grid.'),
       }
       : {
         target: 'tools',

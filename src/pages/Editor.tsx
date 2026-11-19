@@ -112,6 +112,16 @@ export function Editor({ id }: { id: string }) {
     current.current = next;
     setPattern(next);
   }, []);
+  // a touch stroke that became a pinch: put the pattern back and forget that undo step entirely
+  const cancelStroke = useCallback(() => {
+    const p = current.current;
+    const s = undo.current.pop();
+    if (!p || !s) return;
+    const next = { ...p, ...s };
+    current.current = next;
+    setPattern(next);
+    force((n) => n + 1);
+  }, []);
   const doUndo = useCallback(() => restore(undo, redo), [restore]);
   const doRedo = useCallback(() => restore(redo, undo), [restore]);
 
@@ -330,6 +340,7 @@ export function Editor({ id }: { id: string }) {
             mirrorX={mirrorX}
             mirrorY={mirrorY}
             onStrokeStart={snapshot}
+            onStrokeCancel={cancelStroke}
             onChange={(cells, mask) => setPattern((cur) => (cur ? reconcileProgress({ ...cur, cells, mask }, cur.cells) : cur))}
             onPick={(i) => { setActive(i); setTool('pencil'); }}
             onHover={setHover}
