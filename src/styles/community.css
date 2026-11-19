@@ -109,3 +109,32 @@
   .post-foot .btn { display: none; } /* the picture and title already open the pattern; keep just the heart */
   .post-info h1 { font-size: 22px; }
 }
+
+/* moderation (src/pages/Moderation.tsx) */
+.review-list { display: flex; flex-direction: column; gap: 12px; }
+.review-card { display: flex; gap: 14px; padding: 14px; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); }
+.review-thumb { flex-shrink: 0; width: 104px; height: 104px; display: grid; place-items: center; border-radius: 10px; overflow: hidden;
+  background: repeating-conic-gradient(#f2ede4 0 25%, #f8f5ef 0 50%) 0 0 / 12px 12px; }
+.review-thumb canvas { max-width: 96px; max-height: 96px; width: auto !important; height: auto !important; }
+.review-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.review-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.review-title { font-weight: 600; font-size: 16px; color: var(--ink); overflow-wrap: anywhere; }
+.review-title:hover { color: var(--brand); text-decoration: underline; }
+.status-chip { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; }
+.status-chip.published { background: #2f7d4f14; color: var(--ok); }
+.status-chip.hidden { background: #b35c0014; color: #b35c00; }
+.status-chip.removed { background: #b3261e14; color: var(--err); }
+.review-late { font-weight: 600; color: var(--err); }
+.review-reports { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.review-reports li { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 8px 10px; border-radius: 8px; background: #1f2a440a; font-size: 13px; }
+.review-when { color: var(--ink-3); }
+.review-note { flex-basis: 100%; margin: 0; color: var(--ink); white-space: pre-line; overflow-wrap: anywhere; line-height: 1.5; }
+.review-done { color: var(--ink-2); font-weight: 600; }
+.review-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.acct-mod .btn-row .btn { height: var(--ctl); }
+@media (max-width: 600px) {
+  .review-card { flex-direction: column; }
+  .review-thumb { width: 100%; height: 140px; }
+  .review-thumb canvas { max-height: 128px; max-width: 90%; }
+  .review-actions .btn { flex: 1 1 auto; justify-content: center; }
+}

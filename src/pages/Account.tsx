@@ -11,6 +11,7 @@ import { FeedbackLink } from '../components/FeedbackDialog';
 import { detectInApp, externalUrl, canOpenExternally, type InAppInfo } from '../lib/inAppBrowser';
 import { trackStep } from '../lib/analytics';
 import { communityEnabled, getMyCreator, myPosts, saveMyCreator, unpublish, type Post } from '../lib/community';
+import { amModerator, openPostCount } from '../lib/moderation';
 
 const errText = (e: unknown) => (e as Error)?.message || t('เกิดข้อผิดพลาด ลองอีกครั้ง', 'Something went wrong. Please try again.');
 
@@ -223,6 +224,36 @@ function SignedOut({ error }: { error: string }) {
   );
 }
 
+/** Team accounts only: how many reports wait for review, and the way to the review page. */
+function ModeratorCard() {
+  const [count, setCount] = useState<number | null>(null);
+  const [mod, setMod] = useState(false);
+  useEffect(() => {
+    let live = true;
+    amModerator().then(async (ok) => {
+      if (!live || !ok) return;
+      setMod(true);
+      const n = await openPostCount().catch(() => null);
+      if (live) setCount(n);
+    });
+    return () => { live = false; };
+  }, []);
+  if (!mod) return null;
+  return (
+    <section className="acct-card acct-mod">
+      <h3><Icon name="flag" size={18} /> {t('ดูแลชุมชน', 'Moderation')}</h3>
+      <p className="muted">
+        {count === null ? t('กำลังนับการแจ้ง…', 'Counting reports…')
+          : count === 0 ? t('ไม่มีการแจ้งปัญหาที่รอตรวจ', 'No reports waiting for review.')
+            : t(`มีลายที่ถูกแจ้งรอตรวจ ${count} ลาย ควรตรวจภายใน 7 วัน`, `${count} reported pattern${count === 1 ? '' : 's'} waiting for review (within 7 days).`)}
+      </p>
+      <div className="btn-row">
+        <a className={'btn' + (count ? ' primary' : '')} href="#/moderation"><Icon name="flag" size={16} /> {t('ตรวจการแจ้งปัญหา', 'Review reports')}{count ? ` (${count})` : ''}</a>
+      </div>
+    </section>
+  );
+}
+
 /** "ลายที่ฉันแชร์": your public name and the patterns you shared to the community. */
 function MyShared() {
   const [posts, setPosts] = useState<Post[] | null>(null);
@@ -300,7 +331,8 @@ function MyShared() {
                 <span className="shared-meta">
                   <Icon name="heart" size={14} /> {p.likeCount.toLocaleString()}
                   {' · '}{new Date(p.createdAt).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: '2-digit' })}
-                  {p.status !== 'published' && <span className="shared-hidden">{t('ซ่อนไว้ รอตรวจสอบ', 'Hidden for review')}</span>}
+                  {p.status === 'hidden' && <span className="shared-hidden">{t('ซ่อนไว้ รอตรวจสอบ', 'Hidden for review')}</span>}
+                  {p.status === 'removed' && <span className="shared-hidden">{t('ทีมงานนำออกแล้ว', 'Removed by the team')}</span>}
                 </span>
               </div>
               <button className="btn sm ghost" onClick={() => takeDown(p)} disabled={busy === p.id}>
@@ -387,6 +419,7 @@ function SignedIn() {
         <p className="hint">{t('ลายและรายการด้ายจะซิงก์ให้อัตโนมัติเมื่อมีการเปลี่ยนแปลง', 'Patterns and your thread list sync automatically when they change.')}</p>
       </section>
 
+      {communityEnabled && <ModeratorCard />}
       {communityEnabled && <MyShared />}
 
       <section className="acct-card">
