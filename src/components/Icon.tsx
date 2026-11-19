@@ -50,6 +50,8 @@ const PATHS: Record<string, string> = {
   sync: 'M20 11a8 8 0 0 0-14.3-4.3L4 8.5 M4 4v4.5h4.5 M4 13a8 8 0 0 0 14.3 4.3L20 15.5 M20 20v-4.5h-4.5',
   logout: 'M9 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h3 M15 16l4-4-4-4 M19 12H9',
   shield: 'M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z M8.5 12l2.5 2.5 4.5-5',
+  chat: 'M5 5h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-8l-5 4v-4H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z M8 10h8 M8 13h5',
+  send: 'M4 12l16-8-6 16-2.5-6.5z M11.5 13.5L20 4',
 };
 
 export type IconName = keyof typeof PATHS;

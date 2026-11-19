@@ -7,6 +7,7 @@ import { Icon } from '../components/Icon';
 import { LangSwitch } from '../components/LangSwitch';
 import { Avatar } from '../components/AccountButton';
 import { navigate } from '../App';
+import { FeedbackLink } from '../components/FeedbackDialog';
 
 const errText = (e: unknown) => (e as Error)?.message || t('เกิดข้อผิดพลาด ลองอีกครั้ง', 'Something went wrong. Please try again.');
 
@@ -283,7 +284,7 @@ export function Account() {
           {cloud.status === 'signed-out' && <SignedOut error={cloud.error} />}
           {cloud.status === 'signed-in' && cloud.user && <SignedIn />}
           {cloud.status !== 'off' && (
-            <p className="hint acct-foot"><a className="acct-link" href="#/privacy">{t('นโยบายความเป็นส่วนตัว', 'Privacy notice')}</a></p>
+            <p className="hint acct-foot"><a className="acct-link" href="#/privacy">{t('นโยบายความเป็นส่วนตัว', 'Privacy notice')}</a> · <FeedbackLink /></p>
           )}
         </div>
       </main>

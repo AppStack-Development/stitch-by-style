@@ -15,6 +15,7 @@ import { t, locale } from '../lib/i18n';
 import { LangSwitch } from '../components/LangSwitch';
 import { AccountButton } from '../components/AccountButton';
 import { SampleGallery } from '../components/SampleGallery';
+import { FeedbackLink } from '../components/FeedbackDialog';
 import { useStash } from '../lib/stash';
 import { PATTERNS_PULLED } from '../lib/sync';
 
@@ -219,6 +220,14 @@ export function Home() {
           })}
         </div>
       </section>
+
+      <footer className="site-foot">
+        <span>Stitch by Style · AppStack Development</span>
+        <span className="spacer" />
+        <a href="#/guide">{t('คู่มือ', 'Guide')}</a>
+        <a href="#/privacy">{t('นโยบายความเป็นส่วนตัว', 'Privacy')}</a>
+        <FeedbackLink />
+      </footer>
     </div>
   );
 }

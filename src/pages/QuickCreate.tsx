@@ -12,6 +12,8 @@ import { suggestNeedle } from '../components/needleSuggest';
 import { t } from '../lib/i18n';
 import { Thumb } from '../components/Thumb';
 import { Icon } from '../components/Icon';
+import { FeedbackLink } from '../components/FeedbackDialog';
+import { trackStep } from '../lib/analytics';
 import { AccountButton } from '../components/AccountButton';
 import { navigate } from '../App';
 
@@ -127,6 +129,13 @@ export function QuickCreate() {
   const imgInput = useRef<HTMLInputElement>(null);
   const modelInput = useRef<HTMLInputElement>(null);
   const own = useOwn && stash.codes.size > 0;
+
+  // funnel: which step people reach (virtual pages; no photo or pattern data is sent)
+  useEffect(() => {
+    const names = ['', '1-target', '2-photo', '3-results', '4-done'];
+    const kind = target?.kind === 'aida' ? 'fabric' : target ? '3d' : '';
+    trackStep(step === 4 ? `/quick/4-done/${kind}${own ? '-own' : ''}` : `/quick/${names[step]}`);
+  }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const baseName = src ? src.file.replace(/\.[^.]+$/, '') : '';
 
@@ -388,6 +397,7 @@ export function QuickCreate() {
                 )}
                 <a className="btn ghost" href={`#/edit/${saved.id}`}><Icon name="edit" size={16} /> {t('ปรับละเอียดในโหมดขั้นสูง', 'Fine-tune in the editor')}</a>
               </div>
+              <p className="hint qc-feedback">{t('ลายออกมาไม่ถูกใจ หรือมีอะไรอยากให้ปรับ?', 'Not quite what you wanted, or something to improve?')} <FeedbackLink kind="idea">{t('บอกเรา', 'Tell us')}</FeedbackLink></p>
 
               <h4>{t('ด้ายที่ต้องซื้อ', 'Threads to buy')} <small>{needs.buy.length}</small></h4>
               <NeedList list={needs.buy} empty={t('ไม่ต้องซื้อเพิ่ม ใช้ด้ายที่มีได้ครบ 🎉', 'Nothing to buy — you have every thread 🎉')} />

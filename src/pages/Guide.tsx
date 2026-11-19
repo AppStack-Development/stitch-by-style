@@ -4,6 +4,8 @@ import { Thumb } from '../components/Thumb';
 import { TEMPLATES } from '../lib/templates';
 import { t } from '../lib/i18n';
 import { LangSwitch } from '../components/LangSwitch';
+import { FeedbackLink } from '../components/FeedbackDialog';
+import { feedbackEnabled } from '../lib/feedback';
 import { AccountButton } from '../components/AccountButton';
 import { navigate } from '../App';
 
@@ -520,7 +522,12 @@ export function Guide({ section }: { section?: string }) {
               {s.body}
             </section>
           ))}
-          <p className="hint guide-end">{t('มีคำถามหรือพบปัญหา? ใช้ปุ่มย้อนกลับเพื่อกลับไปหน้าที่ใช้งานอยู่', 'Have a question or found a problem? Use the back button to return to the page you were on.')}</p>
+          <p className="hint guide-end">
+            {feedbackEnabled
+              ? t('ยังไม่เจอคำตอบ หรือพบปัญหา? บอกเราได้เลย', 'Didn’t find your answer, or found a problem? Tell us.')
+              : t('มีคำถามหรือพบปัญหา? ใช้ปุ่มย้อนกลับเพื่อกลับไปหน้าที่ใช้งานอยู่', 'Have a question or found a problem? Use the back button to return to the page you were on.')}
+            {' '}<FeedbackLink />
+          </p>
         </main>
       </div>
     </div>

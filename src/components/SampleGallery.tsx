@@ -7,6 +7,7 @@ import { t } from '../lib/i18n';
 import { Thumb } from './Thumb';
 import { Icon } from './Icon';
 import { navigate } from '../App';
+import { trackStep } from '../lib/analytics';
 
 type Filter = 'all' | Sample['base'];
 
@@ -18,6 +19,7 @@ export function SampleGallery() {
   const shown = previews.filter(({ s }) => filter === 'all' || s.base === filter);
 
   const open = (s: Sample, where: 'stitch' | 'edit') => {
+    trackStep(`/sample/${s.id}`);
     const p = s.make();
     if (!savePattern(p)) {
       alert(t('บันทึกไม่สำเร็จ พื้นที่ในเบราว์เซอร์อาจเต็ม', 'Could not save. Browser storage may be full.'));

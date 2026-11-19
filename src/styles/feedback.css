@@ -1,0 +1,29 @@
+/* feedback dialog (src/components/FeedbackDialog.tsx) and entry links */
+.modal.fb-dialog { width: min(520px, 100%); }
+.fb-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; }
+.fb-kinds { display: flex; width: 100%; }
+.fb-kinds button { flex: 1; }
+.fb-field { display: flex; flex-direction: column; gap: 6px; font-size: 13.5px; color: var(--ink-2); position: relative; }
+.fb-field textarea { width: 100%; resize: vertical; min-height: 120px; padding: 10px 12px; border: 1px solid var(--line-2); border-radius: 10px; background: var(--paper); color: var(--ink); font-size: 15px; line-height: 1.5; }
+.fb-count { align-self: flex-end; color: var(--ink-3); font-size: 11.5px; }
+.fb-check { display: flex; flex-direction: row; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; }
+.fb-check input { width: 18px; height: 18px; accent-color: var(--brand); }
+.fb-email { padding: 9px 12px; border: 1px solid var(--line-2); border-radius: 10px; font-size: 15px; background: var(--paper); }
+.fb-email[aria-invalid="true"] { border-color: var(--err); }
+.fb-body .hint a { color: var(--brand); text-decoration: underline; }
+.fb-done { align-items: center; text-align: center; padding: 28px 18px; color: var(--ok); }
+.fb-done p { margin: 0; color: var(--ink); }
+.fb-done .muted { color: var(--ink-2); }
+.fb-foot { justify-content: flex-end; }
+@media (max-width: 520px) {
+  .fb-foot { flex-direction: column-reverse; align-items: stretch; }
+  .fb-foot .btn { width: 100%; }
+}
+/* text-style button for "send feedback" links */
+.link-btn { display: inline-flex; align-items: center; gap: 6px; border: 0; background: none; padding: 6px 2px; color: var(--brand); font: inherit; font-weight: 600; cursor: pointer; min-height: var(--ctl-sm, 34px); }
+.link-btn:hover { text-decoration: underline; }
+/* home page footer */
+.site-foot { max-width: var(--page-max); margin: 48px auto 0; padding: 18px var(--page-x) 28px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; color: var(--ink-3); font-size: 13.5px; }
+.site-foot a { color: var(--ink-2); }
+.site-foot a:hover { color: var(--brand); text-decoration: underline; }
+.site-foot .spacer { flex: 1; }

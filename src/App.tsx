@@ -12,6 +12,7 @@ import { MyThreads } from './pages/MyThreads';
 import { Account } from './pages/Account';
 import { Privacy } from './pages/Privacy';
 import { MergeDialog } from './components/MergeDialog';
+import { FeedbackDialog } from './components/FeedbackDialog';
 import { loadPattern } from './lib/storage';
 import { t } from './lib/i18n';
 
@@ -34,7 +35,7 @@ function useHash() {
 
 export function App() {
   // the account merge question can come up on any page right after signing in
-  return <><Routes /><MergeDialog /></>;
+  return <><Routes /><MergeDialog /><FeedbackDialog /></>;
 }
 
 function Routes() {

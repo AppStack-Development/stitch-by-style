@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 import { t } from '../lib/i18n';
 import { Icon } from '../components/Icon';
 import { LangSwitch } from '../components/LangSwitch';
+import { FeedbackLink } from '../components/FeedbackDialog';
+import { feedbackEnabled } from '../lib/feedback';
 
 /** Contact address for privacy requests. Leave empty until there is a real one. */
 const CONTACT_EMAIL = 'admin@appstack-dev.io';
@@ -29,8 +31,8 @@ export function Privacy() {
           <h1>{t('นโยบายความเป็นส่วนตัว', 'Privacy notice')}</h1>
           <p className="hint">{t('ปรับปรุงล่าสุด 19 พ.ย. 2569', 'Last updated 19 Nov 2026')}</p>
           <p className="privacy-lead">{t(
-            'ประกาศนี้อธิบายว่าเราเก็บและใช้ข้อมูลส่วนบุคคลของคุณอย่างไร ตามพระราชบัญญัติคุ้มครองข้อมูลส่วนบุคคล พ.ศ. 2562 (PDPA) สรุปสั้น ๆ: ถ้าไม่เข้าสู่ระบบ เราไม่เก็บข้อมูลอะไรของคุณเลย',
-            'This notice explains how we collect and use your personal data, in line with Thailand’s Personal Data Protection Act (PDPA). In short: if you don’t sign in, we don’t collect anything about you.',
+            'ประกาศนี้อธิบายว่าเราเก็บและใช้ข้อมูลส่วนบุคคลของคุณอย่างไร ตามพระราชบัญญัติคุ้มครองข้อมูลส่วนบุคคล พ.ศ. 2562 (PDPA) สรุปสั้น ๆ: ถ้าไม่เข้าสู่ระบบ เราไม่เก็บข้อมูลส่วนบุคคลของคุณ นอกจากข้อความที่คุณเลือกส่งมาเอง และเรานับสถิติการใช้งานแบบไม่ระบุตัวตน',
+            'This notice explains how we collect and use your personal data, in line with Thailand’s Personal Data Protection Act (PDPA). In short: if you don’t sign in, we don’t collect personal data about you, except feedback you choose to send us; we also count anonymous usage statistics.',
           )}</p>
 
           <Sec title={t('ใครดูแลบริการนี้', 'Who runs this service')}>
@@ -41,6 +43,20 @@ export function Privacy() {
           <Sec title={t('ใช้งานโดยไม่มีบัญชี', 'Using it without an account')}>
             <p>{t('บัญชีเป็นตัวเลือกเสริม ถ้าไม่เข้าสู่ระบบ ลาย ความคืบหน้า และรายการด้ายทั้งหมดจะเก็บไว้ในเบราว์เซอร์บนเครื่องของคุณเท่านั้น ไม่ถูกส่งมาที่เรา',
               'Accounts are optional. If you don’t sign in, your patterns, progress and thread list stay only in the browser on your device and are never sent to us.')}</p>
+          </Sec>
+
+          <Sec title={t('สถิติการใช้งาน (ไม่ระบุตัวตน)', 'Usage statistics (anonymous)')}>
+            <p>{t('เราใช้ Vercel Web Analytics นับว่ามีการเปิดหน้าไหนกี่ครั้ง เช่น หน้าแรก หรือขั้นตอนของ “สร้างลายจากรูป” พร้อมข้อมูลทั่วไปอย่างประเทศ ประเภทอุปกรณ์ และเบราว์เซอร์ เพื่อดูว่าส่วนไหนใช้ง่ายหรือยาก',
+              'We use Vercel Web Analytics to count how often each screen is opened — for example the home page or the steps of “Pattern from a photo” — with general details such as country, device type and browser, to see which parts are easy or hard to use.')}</p>
+            <ul>
+              <li>{t('ไม่ใช้คุกกี้ และไม่เก็บข้อมูลที่ระบุตัวคุณได้', 'No cookies, and nothing that identifies you')}</li>
+              <li>{t('ไม่ส่งรูป ลาย หรือรหัสลายของคุณ (ที่อยู่หน้าถูกตัดรหัสลายออกก่อนนับ)', 'Your photos, patterns and pattern ids are never sent (ids are removed from the page address before counting)')}</li>
+            </ul>
+          </Sec>
+
+          <Sec title={t('เมื่อคุณส่งความคิดเห็น', 'When you send feedback')}>
+            <p>{t('ถ้าคุณกด “ส่งความคิดเห็น” เราจะเก็บ: ข้อความและประเภทที่คุณเลือก หน้าที่คุณอยู่ ภาษา ประเภทอุปกรณ์และความกว้างหน้าจอ อีเมลเฉพาะเมื่อคุณติ๊กให้ติดต่อกลับ และรหัสบัญชีถ้าคุณเข้าสู่ระบบอยู่ เราใช้ข้อมูลนี้เพื่อปรับปรุงและแก้ปัญหาของแอป และตอบกลับเมื่อคุณขอ',
+              'If you use “Send feedback”, we keep: your message and the type you chose, the screen you were on, your language, device type and screen width, your email only if you ask for a reply, and your account id if you’re signed in. We use this to improve and fix the app, and to reply when you ask.')}</p>
           </Sec>
 
           <Sec title={t('ข้อมูลที่เราเก็บ (เฉพาะเมื่อเข้าสู่ระบบ)', 'What we collect (only when you sign in)')}>
@@ -69,11 +85,15 @@ export function Privacy() {
           <Sec title={t('ข้อมูลเก็บไว้ที่ไหน', 'Where it’s stored')}>
             <p>{t('ข้อมูลในบัญชีเก็บไว้กับ Supabase ผู้ให้บริการฐานข้อมูลบนคลาวด์ ซึ่งเซิร์ฟเวอร์อาจอยู่นอกประเทศไทย ส่วนการเข้าสู่ระบบดำเนินการโดย Google ผู้ให้บริการทั้งสองรายใช้ข้อมูลเพื่อให้บริการนี้แทนเราเท่านั้น',
               'Account data is stored with Supabase, a cloud database provider whose servers may be outside Thailand. Sign-in is handled by Google. Both act only to provide this service on our behalf.')}</p>
+            <p>{t('ความคิดเห็นที่ส่งมาเก็บไว้กับ Supabase เช่นกัน ส่วนสถิติการใช้งานแบบไม่ระบุตัวตนประมวลผลโดย Vercel ผู้ให้บริการโฮสต์เว็บไซต์',
+              'Feedback is also stored with Supabase. Anonymous usage statistics are processed by Vercel, which hosts the website.')}</p>
           </Sec>
 
           <Sec title={t('เก็บไว้นานแค่ไหน', 'How long we keep it')}>
             <p>{t('จนกว่าคุณจะลบข้อมูลนั้น หรือลบบัญชี เมื่อลบบัญชี ข้อมูลทั้งหมดในระบบจะถูกลบถาวร',
               'Until you delete it or delete your account. Deleting your account permanently removes all of its data from our systems.')}</p>
+            <p>{t('ความคิดเห็นเก็บไว้จนกว่าเราจะจัดการเสร็จ หรือไม่เกิน 2 ปี ถ้าต้องการให้ลบความคิดเห็นที่เคยส่ง ติดต่อเราตามช่องทางด้านล่าง',
+              'Feedback is kept until we’ve dealt with it, for at most 2 years. To have feedback you sent deleted, contact us using the details below.')}</p>
           </Sec>
 
           <Sec title={t('สิทธิของคุณ', 'Your rights')}>
@@ -92,7 +112,8 @@ export function Privacy() {
           <Sec title={t('ติดต่อเรา', 'Contact')}>
             {CONTACT_EMAIL ? (
               <p>{t('มีคำถามเรื่องข้อมูลส่วนบุคคล ติดต่อ AppStack Development ได้ที่', 'For questions about your personal data, contact AppStack Development at')}{' '}
-                <a className="acct-link" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></p>
+                <a className="acct-link" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>{' '}
+                {feedbackEnabled && <>{t('หรือ', 'or')} <FeedbackLink /></>}</p>
             ) : (
               <p>{t(<>สิทธิส่วนใหญ่ใช้ได้เองทันทีที่<AccountLink>หน้าบัญชี</AccountLink> หากมีคำถามอื่น ติดต่อผู้ดูแลเว็บไซต์ (AppStack Development) ผ่านช่องทางติดต่อหรือส่งความคิดเห็นของเว็บไซต์</>,
                 <>You can use most of your rights yourself on the <AccountLink>Account page</AccountLink>. For anything else, contact the site owner (AppStack Development) through the site’s contact or feedback channel.</>)}</p>

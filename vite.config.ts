@@ -60,6 +60,8 @@ self.addEventListener('fetch', (e) => {
     );
     return;
   }
+  // Vercel Web Analytics: always straight to the network, never cached
+  if (url.pathname.startsWith('/_vercel/')) return;
   if (url.origin === self.location.origin) {
     e.respondWith(
       caches.match(req).then((hit) => hit || fetch(req).then((res) => {
