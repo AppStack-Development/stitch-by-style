@@ -18,6 +18,9 @@ import { SampleGallery } from '../components/SampleGallery';
 import { FeedbackLink } from '../components/FeedbackDialog';
 import { useStash } from '../lib/stash';
 import { PATTERNS_PULLED } from '../lib/sync';
+import { communityEnabled, listPosts, myLikes, type Post } from '../lib/community';
+import { useCloud } from '../lib/cloud';
+import { PostCard } from '../components/PostCard';
 
 /**
  * Card art drawn from the real heart-keychain template, so every hole sits exactly
@@ -69,6 +72,50 @@ function TemplateArt() {
   return <svg viewBox={`-3 -3 ${cols * s + 6} ${rows * s + 6}`}>{cells}</svg>;
 }
 
+/** The newest community patterns, with a way into the full gallery. */
+function CommunityPreview() {
+  const cloud = useCloud();
+  const [posts, setPosts] = useState<Post[] | null>(null);
+  const [liked, setLiked] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    if (!communityEnabled) return;
+    let live = true;
+    listPosts({ limit: 4 }).then((r) => { if (live) setPosts(r.posts); }).catch(() => { if (live) setPosts([]); });
+    return () => { live = false; };
+  }, []);
+  // keyed on ids only, so a like being saved isn't overwritten by a re-fetch
+  const idKey = (posts ?? []).map((p) => p.id).join(',');
+  useEffect(() => {
+    if (!idKey) return;
+    let live = true;
+    myLikes(idKey.split(',')).then((s) => { if (live) setLiked(s); }).catch(() => { /* hearts just show empty */ });
+    return () => { live = false; };
+  }, [idKey, cloud.user?.id]);
+  if (!communityEnabled) return null;
+  const onLike = (id: string) => (on: boolean, count: number) => {
+    setLiked((s) => { const n = new Set(s); if (on) n.add(id); else n.delete(id); return n; });
+    setPosts((ps) => ps && ps.map((p) => (p.id === id ? { ...p, likeCount: count } : p)));
+  };
+  return (
+    <section className="samples community-strip">
+      <div className="section-head">
+        <h2>{t('ลายจากชุมชน', 'Community patterns')} <small>{t('ลายที่ผู้ใช้แชร์ · ลองปักหรือแก้เป็นลายของคุณได้', 'Shared by users · stitch them or make them yours')}</small></h2>
+        <a className="btn sm ghost" href="#/community"><Icon name="people" size={15} /> {t('ดูทั้งหมด', 'See all')}</a>
+      </div>
+      {posts && !posts.length ? (
+        <a className="community-empty" href="#/community">
+          <b>{t('ยังไม่มีลายจากชุมชน', 'No community patterns yet')}</b>
+          <span>{t('แชร์ลายของคุณเป็นคนแรก →', 'Be the first to share yours →')}</span>
+        </a>
+      ) : (
+        <div className="sample-grid">
+          {(posts ?? []).map((p) => <PostCard key={p.id} post={p} liked={liked.has(p.id)} onLike={onLike(p.id)} />)}
+        </div>
+      )}
+    </section>
+  );
+}
+
 export function Home() {
   const [items, setItems] = useState<Pattern[]>(() => listPatterns());
   const fileRef = useRef<HTMLInputElement>(null);
@@ -92,7 +139,7 @@ export function Home() {
         throw new Error(t('ไฟล์นี้ไม่ใช่ไฟล์ลาย (.json) ที่ส่งออกจาก Stitch by Style', 'This is not a pattern file (.json) exported from Stitch by Style'));
       }
       const p = normalizePattern(raw);
-      const copy = { ...p, id: uid(), updatedAt: Date.now() };
+      const copy = { ...p, id: uid(), postId: undefined, updatedAt: Date.now() };
       savePattern(copy);
       navigate(`#/edit/${copy.id}`);
     } catch (e) {
@@ -101,7 +148,8 @@ export function Home() {
   };
 
   const duplicate = (p: Pattern) => {
-    savePattern({ ...p, id: uid(), name: p.name + t(' (สำเนา)', ' (copy)'), createdAt: Date.now(), updatedAt: Date.now() });
+    // a copy is not the shared post itself
+    savePattern({ ...p, id: uid(), postId: undefined, name: p.name + t(' (สำเนา)', ' (copy)'), createdAt: Date.now(), updatedAt: Date.now() });
     refresh();
   };
 
@@ -176,6 +224,7 @@ export function Home() {
       </section>
 
       <SampleGallery />
+      <CommunityPreview />
 
       <section className="my-patterns">
         <div className="section-head">

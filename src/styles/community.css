@@ -1,0 +1,111 @@
+/* community gallery: src/pages/Community.tsx, CommunityPost.tsx, components/PostCard.tsx, PublishDialog.tsx */
+
+/* same centred column and side margin as every other page (see consistency.css) */
+.community-main { max-width: var(--page-max); margin: 0 auto; padding: 28px var(--page-x) 0; display: flex; flex-direction: column; gap: 18px; }
+.community-intro { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; }
+.community-intro h1 { font-size: 28px; }
+.community-intro p { margin: 6px 0 0; max-width: 60ch; line-height: 1.55; }
+.community-intro .btn { flex-shrink: 0; }
+.community-filters { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; }
+.community-msg { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; padding: 20px; background: var(--paper); border: 1px dashed var(--line-2); border-radius: var(--radius); }
+.community-msg p { margin: 0; }
+.community-more { display: flex; justify-content: center; }
+.post-skeleton { min-height: 280px; background: linear-gradient(90deg, #f3efe7 0%, #faf7f1 50%, #f3efe7 100%) 0 0 / 200% 100%; animation: post-shimmer 1.2s linear infinite; }
+@keyframes post-shimmer { to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) { .post-skeleton { animation: none; } }
+.post-wait { width: 60%; height: 60%; border-radius: 10px; background: #00000008; }
+.post-wait.lg { width: 100%; height: 300px; }
+
+/* cards (sample-card base lives in samples.css) */
+.post-card .sample-body h3 a { color: inherit; }
+.post-card .sample-body h3 a:hover { color: var(--brand); text-decoration: underline; }
+.post-card .sample-body h3 { overflow-wrap: anywhere; }
+.post-by { font-size: 12.5px; color: var(--ink-2); display: flex; align-items: center; flex-wrap: wrap; gap: 4px 6px; }
+.post-by b { font-weight: 600; color: var(--ink); overflow-wrap: anywhere; }
+.team-badge { font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 999px; background: #243b6b14; color: var(--brand); }
+.post-foot { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 6px 12px 12px; }
+.like-btn { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line-2); background: var(--paper); color: var(--ink-2); border-radius: 999px; cursor: pointer; font: inherit; font-weight: 600; font-variant-numeric: tabular-nums; }
+.like-btn.sm { height: var(--ctl-sm); padding: 0 12px; font-size: 13px; }
+.like-btn.md { height: var(--ctl); padding: 0 14px; font-size: 14px; }
+.like-btn:hover { border-color: var(--thread); color: var(--thread); }
+.like-btn.on { background: #c72b3b12; border-color: #c72b3b55; color: var(--thread); }
+.like-btn.on svg path { fill: currentColor; }
+
+/* home page strip */
+.community-strip .section-head .btn { flex-shrink: 0; }
+.community-empty { display: flex; flex-direction: column; gap: 4px; padding: 18px 20px; border: 1px dashed var(--line-2); border-radius: var(--radius); background: var(--paper); color: var(--ink); }
+.community-empty span { color: var(--brand); font-weight: 600; }
+.community-empty:hover { border-color: var(--brand); }
+
+/* post page (layout from .shared-body in styles.css) */
+.post-info h1 { font-size: 26px; overflow-wrap: anywhere; }
+.post-info > p { margin: 0; }
+.post-info .post-by { font-size: 14px; }
+.post-mine { padding: 10px 12px; border-radius: 10px; background: #243b6b0d; font-size: 13.5px; color: var(--ink); line-height: 1.5; }
+.post-credit { font-size: 13.5px; color: var(--ink-2); }
+.post-desc { line-height: 1.6; white-space: pre-line; overflow-wrap: anywhere; }
+.post-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.diff-text { font-weight: 600; }
+.diff-text.easy { color: var(--ok); }
+.diff-text.medium { color: #b35c00; }
+.diff-text.hard { color: var(--err); }
+.post-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.post-actions .btn { flex: 1 1 180px; justify-content: center; height: var(--ctl); }
+.post-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.post-threads h3 { font-size: 15px; display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+.post-threads h3 small { font-size: 12.5px; color: var(--ink-3); font-weight: 400; }
+.sym-chip.own { border-color: #2f7d4f66; }
+.post-license { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 4px; }
+.link-btn.inline { min-height: 0; padding: 0; font-size: inherit; font-weight: 600; gap: 4px; }
+
+/* publish + report dialogs (shared bits from feedback.css) */
+.modal.publish-dialog { width: min(560px, 100%); }
+.modal.report-dialog { width: min(480px, 100%); }
+.fb-field input:not([type]), .fb-field input[type="text"] {
+  width: 100%; height: var(--ctl); padding: 0 12px; border: 1px solid var(--line-2); border-radius: 10px; background: var(--paper); color: var(--ink); font-size: 15px;
+}
+.fb-field textarea:disabled, .fb-field input:disabled { opacity: .6; }
+.fb-field > span small { color: var(--ink-3); font-size: 12px; margin-left: 4px; }
+.publish-form .fb-field textarea { min-height: 84px; }
+.publish-head { display: flex; align-items: center; gap: 12px; }
+.publish-head > div { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; }
+.publish-head b { overflow-wrap: anywhere; }
+.pick-thumb { flex-shrink: 0; width: 64px; height: 64px; display: grid; place-items: center; border-radius: 10px; background: repeating-conic-gradient(#f2ede4 0 25%, #f8f5ef 0 50%) 0 0 / 12px 12px; overflow: hidden; }
+.pick-thumb canvas { max-width: 56px; max-height: 56px; width: auto !important; height: auto !important; }
+.publish-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.publish-tags .chip { cursor: pointer; font: inherit; font-size: 13px; }
+.publish-mode { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border-radius: 10px; background: #243b6b0a; }
+.publish-agree { font-size: 14px; line-height: 1.5; }
+/* beat the global `label > input:not(...) { width: 100% }` (styles.css), which also catches radios */
+.publish-dialog label.check > input[type], .report-dialog label.check > input[type] { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; }
+.publish-pick > p { margin: 0; }
+.pick-list { display: flex; flex-direction: column; gap: 6px; }
+.pick-item { display: flex; align-items: center; gap: 12px; padding: 6px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); cursor: pointer; text-align: left; font: inherit; color: var(--ink); }
+.pick-item:hover { border-color: var(--brand); }
+.pick-name { flex: 1; min-width: 0; font-weight: 600; overflow-wrap: anywhere; }
+.pick-tag { flex-shrink: 0; font-size: 12px; font-weight: 600; color: var(--ok); padding: 2px 8px; border-radius: 999px; background: #2f7d4f14; }
+.report-reasons { display: flex; flex-direction: column; gap: 10px; }
+
+/* account page: patterns I've shared */
+.acct-name-row { display: flex; align-items: flex-end; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.acct-name-row .fb-field { flex: 1 1 220px; }
+.acct-name-row .btn { height: var(--ctl); flex-shrink: 0; }
+.shared-list { list-style: none; margin: 12px 0 0; padding: 0; display: flex; flex-direction: column; }
+.shared-list li { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+.shared-list li .btn { flex-shrink: 0; }
+.shared-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.shared-title { font-weight: 600; color: var(--ink); overflow-wrap: anywhere; }
+.shared-title:hover { color: var(--brand); text-decoration: underline; }
+.shared-meta { display: inline-flex; align-items: center; gap: 4px; color: var(--ink-3); font-size: 13px; flex-wrap: wrap; }
+.shared-hidden { margin-left: 6px; font-weight: 600; color: #b35c00; }
+
+@media (max-width: 600px) {
+  .community-main { padding-top: 20px; }
+  .community-intro h1 { font-size: 22px; }
+  .community-intro .btn { width: 100%; justify-content: center; }
+  .community-filters .seg { width: 100%; }
+  .community-filters .seg button { flex: 1; }
+  .post-foot { padding: 6px 10px 10px; }
+  .post-foot .btn { display: none; } /* the picture and title already open the pattern; keep just the heart */
+  .post-info h1 { font-size: 22px; }
+}

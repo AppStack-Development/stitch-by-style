@@ -10,6 +10,7 @@ import { navigate } from '../App';
 import { FeedbackLink } from '../components/FeedbackDialog';
 import { detectInApp, externalUrl, canOpenExternally, type InAppInfo } from '../lib/inAppBrowser';
 import { trackStep } from '../lib/analytics';
+import { communityEnabled, getMyCreator, myPosts, saveMyCreator, unpublish, type Post } from '../lib/community';
 
 const errText = (e: unknown) => (e as Error)?.message || t('เกิดข้อผิดพลาด ลองอีกครั้ง', 'Something went wrong. Please try again.');
 
@@ -222,6 +223,99 @@ function SignedOut({ error }: { error: string }) {
   );
 }
 
+/** "ลายที่ฉันแชร์": your public name and the patterns you shared to the community. */
+function MyShared() {
+  const [posts, setPosts] = useState<Post[] | null>(null);
+  const [savedName, setSavedName] = useState<string | null>(null);
+  const [name, setName] = useState('');
+  const [nameState, setNameState] = useState<'idle' | 'saving' | 'saved'>('idle');
+  const [busy, setBusy] = useState<string | null>(null);
+  const [err, setErr] = useState('');
+
+  useEffect(() => {
+    let live = true;
+    Promise.all([myPosts(), getMyCreator()])
+      .then(([ps, creator]) => {
+        if (!live) return;
+        setPosts(ps);
+        setSavedName(creator?.name ?? null);
+        setName(creator?.name ?? '');
+      })
+      .catch((e) => { if (live) { setErr(errText(e)); setPosts([]); } });
+    return () => { live = false; };
+  }, []);
+
+  const saveName = async () => {
+    setNameState('saving');
+    setErr('');
+    try {
+      await saveMyCreator(name);
+      setSavedName(name.trim());
+      setNameState('saved');
+    } catch (e) {
+      setErr(errText(e));
+      setNameState('idle');
+    }
+  };
+  const takeDown = async (post: Post) => {
+    if (!confirm(t(`ถอน “${post.title}” ออกจากชุมชน? ลายในเครื่องของคุณยังอยู่ แต่หัวใจทั้งหมดจะหายไป`,
+      `Take “${post.title}” down from the community? Your own copy stays, but its likes are lost.`))) return;
+    setBusy(post.id);
+    setErr('');
+    try {
+      await unpublish(post.id);
+      setPosts((ps) => ps && ps.filter((p) => p.id !== post.id));
+    } catch (e) {
+      setErr(errText(e));
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  return (
+    <section className="acct-card acct-shared">
+      <h3><Icon name="people" size={18} /> {t('ลายที่ฉันแชร์', 'Patterns I’ve shared')}</h3>
+      {savedName !== null && (
+        <div className="acct-name-row">
+          <label className="fb-field">
+            <span>{t('ชื่อที่แสดงในชุมชน', 'Display name in the community')}</span>
+            <input value={name} maxLength={40} onChange={(e) => { setName(e.target.value); setNameState('idle'); }} />
+          </label>
+          <button className="btn" onClick={saveName} disabled={!name.trim() || name.trim() === savedName || nameState === 'saving'}>
+            {nameState === 'saving' ? t('กำลังบันทึก…', 'Saving…') : nameState === 'saved' ? t('บันทึกแล้ว', 'Saved') : t('บันทึกชื่อ', 'Save name')}
+          </button>
+        </div>
+      )}
+      {posts === null && <p className="muted">{t('กำลังโหลด…', 'Loading…')}</p>}
+      {posts && !posts.length && (
+        <p className="muted">{t(<>ยังไม่ได้แชร์ลาย เปิดลายในหน้าแก้ไข แล้วกด <b>ส่งออก / แชร์ → แชร์ในชุมชน</b> · <a className="acct-link" href="#/community">ดูลายจากชุมชน</a></>,
+          <>You haven’t shared any patterns. Open one in the editor and choose <b>Export / share → Share with the community</b> · <a className="acct-link" href="#/community">Browse community patterns</a></>)}</p>
+      )}
+      {posts && posts.length > 0 && (
+        <ul className="shared-list">
+          {posts.map((p) => (
+            <li key={p.id}>
+              <div className="shared-text">
+                <a className="shared-title" href={`#/c/${p.id}`}>{p.title}</a>
+                <span className="shared-meta">
+                  <Icon name="heart" size={14} /> {p.likeCount.toLocaleString()}
+                  {' · '}{new Date(p.createdAt).toLocaleDateString(locale, { day: 'numeric', month: 'short', year: '2-digit' })}
+                  {p.status !== 'published' && <span className="shared-hidden">{t('ซ่อนไว้ รอตรวจสอบ', 'Hidden for review')}</span>}
+                </span>
+              </div>
+              <button className="btn sm ghost" onClick={() => takeDown(p)} disabled={busy === p.id}>
+                {busy === p.id ? t('กำลังถอน…', 'Removing…') : t('ถอนออก', 'Take down')}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      {err && <p className="error small">{err}</p>}
+      <p className="hint">{t('อัปเดตลายที่แชร์ได้จากหน้าแก้ไขลาย ด้วยเมนูเดิม', 'To update a shared pattern, use the same menu in the editor.')}</p>
+    </section>
+  );
+}
+
 function SyncLine({ sync, lastSync, error }: { sync: string; lastSync: number | null; error: string }) {
   if (sync === 'syncing') return <span><i className="sync-dot syncing" /> {t('กำลังซิงก์…', 'Syncing…')}</span>;
   if (sync === 'error') return <span className="error"><i className="sync-dot error" /> {t('ซิงก์ไม่สำเร็จ', 'Sync failed')}{error ? `: ${error}` : ''}</span>;
@@ -292,6 +386,8 @@ function SignedIn() {
         </div>
         <p className="hint">{t('ลายและรายการด้ายจะซิงก์ให้อัตโนมัติเมื่อมีการเปลี่ยนแปลง', 'Patterns and your thread list sync automatically when they change.')}</p>
       </section>
+
+      {communityEnabled && <MyShared />}
 
       <section className="acct-card">
         <h3><Icon name="file" size={18} /> {t('ข้อมูลของคุณ', 'Your data')}</h3>

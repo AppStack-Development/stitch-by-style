@@ -1,0 +1,270 @@
+import type { Pattern } from '../types';
+import { client, cloudEnabled, getCloud } from './cloud';
+import { decodeShare, encodeShare } from './share';
+import { computeStats } from './stats';
+import { listPatterns, savePattern } from './storage';
+import { uid } from './threads';
+import { t } from './i18n';
+
+/**
+ * Community gallery ("ลายจากชุมชน"): patterns people chose to share publicly.
+ * Tables and permissions: supabase/migrations/0003_community.sql · design: docs/community-gallery.md
+ *
+ * Browsing works signed out; sharing, likes and "my shared patterns" need an account.
+ * A shared post is a snapshot (encodeShare: no progress); the local pattern remembers it as `postId`.
+ */
+export const communityEnabled = cloudEnabled;
+
+export type PostBase = 'aida' | 'print3d';
+export type PostSort = 'new' | 'popular';
+export type ReportReason = 'copyright' | 'inappropriate' | 'spam' | 'other';
+
+export const TAGS: { id: string; label: () => string }[] = [
+  { id: 'animals', label: () => t('สัตว์', 'Animals') },
+  { id: 'flowers', label: () => t('ดอกไม้ ต้นไม้', 'Flowers & plants') },
+  { id: 'cute', label: () => t('การ์ตูน น่ารัก', 'Cute & cartoon') },
+  { id: 'letters', label: () => t('ตัวอักษร ชื่อ', 'Letters & names') },
+  { id: 'festival', label: () => t('เทศกาล', 'Holidays') },
+  { id: 'food', label: () => t('อาหาร ขนม', 'Food') },
+  { id: 'geometric', label: () => t('ลวดลาย', 'Geometric') },
+  { id: 'other', label: () => t('อื่น ๆ', 'Other') },
+];
+export const tagLabel = (id: string) => TAGS.find((x) => x.id === id)?.label() ?? id;
+
+export interface Post {
+  id: string;
+  title: string;
+  description: string;
+  base: PostBase;
+  difficulty: 'easy' | 'medium' | 'hard';
+  colors: number;
+  stitches: number;
+  cols: number;
+  rows: number;
+  templateName: string | null;
+  tags: string[];
+  data: string;
+  remixOf: string | null;
+  status: 'published' | 'hidden' | 'removed';
+  likeCount: number;
+  createdAt: string;
+  updatedAt: string;
+  author: { id: string; name: string; official: boolean };
+}
+
+const COLUMNS = 'id, title, description, base, difficulty, colors, stitches, cols, rows, template_name, tags, data, remix_of, status, like_count, created_at, updated_at, author, creators(display_name, official)';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function toPost(r: any): Post {
+  return {
+    id: r.id, title: r.title, description: r.description ?? '', base: r.base, difficulty: r.difficulty,
+    colors: r.colors, stitches: r.stitches, cols: r.cols, rows: r.rows, templateName: r.template_name,
+    tags: r.tags ?? [], data: r.data, remixOf: r.remix_of, status: r.status, likeCount: r.like_count,
+    createdAt: r.created_at, updatedAt: r.updated_at,
+    author: { id: r.author, name: r.creators?.display_name ?? t('ไม่ระบุชื่อ', 'Unknown'), official: !!r.creators?.official },
+  };
+}
+
+/** Turn database / network errors into something a person can act on. */
+function friendly(e: unknown): Error {
+  const msg = (e as { message?: string })?.message ?? String(e);
+  if (navigator.onLine === false || /Failed to fetch|NetworkError|Load failed/i.test(msg)) {
+    return new Error(t('ไม่มีอินเทอร์เน็ต ลองใหม่เมื่อออนไลน์', 'You’re offline. Try again when you’re online.'));
+  }
+  if (/share limit/i.test(msg)) return new Error(t('วันนี้แชร์ครบ 10 ลายแล้ว พรุ่งนี้แชร์ต่อได้', 'You’ve shared 10 patterns today. You can share more tomorrow.'));
+  return new Error(msg);
+}
+
+async function run<T>(fn: () => PromiseLike<{ data: T; error: unknown }>): Promise<T> {
+  let res;
+  try { res = await fn(); } catch (e) { throw friendly(e); }
+  if (res.error) throw friendly(res.error);
+  return res.data;
+}
+
+const PAGE = 24;
+
+/** One page of published posts. */
+export async function listPosts(opts: { base?: PostBase; sort?: PostSort; page?: number; limit?: number } = {}): Promise<{ posts: Post[]; more: boolean }> {
+  const c = await client();
+  const limit = opts.limit ?? PAGE;
+  const from = (opts.page ?? 0) * limit;
+  const rows = await run(() => {
+    let q = c.from('posts').select(COLUMNS).eq('status', 'published');
+    if (opts.base) q = q.eq('base', opts.base);
+    q = opts.sort === 'popular'
+      ? q.order('like_count', { ascending: false }).order('created_at', { ascending: false })
+      : q.order('created_at', { ascending: false });
+    // ask for one extra row to know whether there is another page
+    return q.range(from, from + limit);
+  });
+  const posts = (rows ?? []).map(toPost);
+  return { posts: posts.slice(0, limit), more: posts.length > limit };
+}
+
+/** A single post (published, or your own hidden one); null when it doesn't exist or was removed. */
+export async function getPost(id: string): Promise<Post | null> {
+  const c = await client();
+  const row = await run(() => c.from('posts').select(COLUMNS).eq('id', id).maybeSingle());
+  return row ? toPost(row) : null;
+}
+
+/** The pattern inside a post. */
+export function postPattern(post: Post): Promise<Pattern> {
+  return decodeShare(post.data).then((p) => ({ ...p, name: post.title }));
+}
+
+function me() {
+  const u = getCloud().user;
+  if (!u) throw new Error(t('ต้องเข้าสู่ระบบก่อน', 'Please sign in first'));
+  return u;
+}
+
+// ---------- your public name ----------
+
+export interface Creator { name: string; official: boolean }
+
+export async function getMyCreator(): Promise<Creator | null> {
+  const u = me();
+  const c = await client();
+  const row = await run(() => c.from('creators').select('display_name, official').eq('user_id', u.id).maybeSingle());
+  const r = row as { display_name: string; official: boolean } | null;
+  return r ? { name: r.display_name, official: r.official } : null;
+}
+
+export async function saveMyCreator(name: string): Promise<void> {
+  const u = me();
+  const clean = name.trim().slice(0, 40);
+  if (!clean) throw new Error(t('ใส่ชื่อที่แสดงก่อน', 'Enter a display name first'));
+  const c = await client();
+  const existing = await getMyCreator();
+  if (existing) await run(() => c.from('creators').update({ display_name: clean }).eq('user_id', u.id));
+  else await run(() => c.from('creators').insert({ user_id: u.id, display_name: clean }));
+}
+
+// ---------- sharing ----------
+
+export interface PublishMeta { title: string; description: string; tags: string[] }
+
+/** Facts shown on cards, worked out from the pattern itself. */
+function facts(p: Pattern) {
+  const st = computeStats(p);
+  return {
+    base: (p.details.baseType === 'print3d' || p.mode === 'template' ? 'print3d' : 'aida') as PostBase,
+    difficulty: p.details.difficulty,
+    colors: Math.max(1, st.colors.filter((c) => c.count > 0).length),
+    stitches: st.total,
+    cols: p.cols, rows: p.rows,
+    template_name: p.templateName ?? null,
+  };
+}
+
+/** Why a pattern can't be shared yet, or null when it can. */
+export function cannotShare(p: Pattern): string | null {
+  if (computeStats(p).total === 0) return t('ลายนี้ยังว่างอยู่ ลงสีก่อนค่อยแชร์', 'This pattern is still empty. Add some stitches first.');
+  return null;
+}
+
+/** Your own post for this pattern, if it was shared from this account and still exists. */
+export async function myPostFor(p: Pattern): Promise<Post | null> {
+  if (!p.postId) return null;
+  const u = me();
+  const post = await getPost(p.postId);
+  return post && post.author.id === u.id ? post : null;
+}
+
+/** Share a pattern, or replace the post it was shared as. Returns the saved pattern and the post id. */
+export async function publishPattern(p: Pattern, meta: PublishMeta, replace: boolean): Promise<{ postId: string; pattern: Pattern }> {
+  const u = me();
+  const c = await client();
+  const title = meta.title.trim().slice(0, 80) || p.name;
+  const fields = {
+    ...facts(p),
+    title,
+    description: meta.description.trim().slice(0, 1000),
+    tags: meta.tags.slice(0, 3),
+    data: await encodeShare({ ...p, name: title }),
+  };
+  let postId: string;
+  if (replace && p.postId) {
+    await run(() => c.from('posts').update(fields).eq('id', p.postId!).eq('author', u.id));
+    postId = p.postId;
+  } else {
+    const row = await run(() => c.from('posts').insert({ ...fields, author: u.id, remix_of: p.remixOf?.id ?? null }).select('id').single());
+    postId = (row as { id: string }).id;
+  }
+  // remember the link on the local pattern (syncs to the account like any other edit)
+  const pattern = { ...p, postId, updatedAt: Date.now() };
+  savePattern(pattern);
+  return { postId, pattern };
+}
+
+/** Take a post down for good (the row is deleted, not hidden). */
+export async function unpublish(postId: string): Promise<void> {
+  const u = me();
+  const c = await client();
+  await run(() => c.from('posts').delete().eq('id', postId).eq('author', u.id));
+  // forget the link on any local pattern that pointed to it
+  for (const p of listPatterns()) if (p.postId === postId) savePattern({ ...p, postId: undefined, updatedAt: Date.now() });
+}
+
+export async function myPosts(): Promise<Post[]> {
+  const u = me();
+  const c = await client();
+  const rows = await run(() => c.from('posts').select(COLUMNS).eq('author', u.id).order('created_at', { ascending: false }));
+  return (rows ?? []).map(toPost);
+}
+
+/** Everything about you in the community tables, for "Download my data". */
+export async function myCommunityData(): Promise<{ creator: Creator | null; posts: Omit<Post, 'data'>[] }> {
+  const [creator, posts] = await Promise.all([getMyCreator(), myPosts()]);
+  return { creator, posts: posts.map(({ data: _data, ...rest }) => rest) };
+}
+
+// ---------- likes ----------
+
+/** Which of these posts you have liked (empty when signed out). */
+export async function myLikes(ids: string[]): Promise<Set<string>> {
+  const u = getCloud().user;
+  if (!u || !ids.length) return new Set();
+  const c = await client();
+  const rows = await run(() => c.from('post_likes').select('post_id').eq('user_id', u.id).in('post_id', ids));
+  return new Set(((rows ?? []) as { post_id: string }[]).map((r) => r.post_id));
+}
+
+export async function setLike(postId: string, on: boolean): Promise<void> {
+  const u = me();
+  const c = await client();
+  if (on) {
+    await run(() => c.from('post_likes').upsert({ post_id: postId, user_id: u.id }, { onConflict: 'post_id,user_id', ignoreDuplicates: true }));
+  } else {
+    await run(() => c.from('post_likes').delete().eq('post_id', postId).eq('user_id', u.id));
+  }
+}
+
+// ---------- reports ----------
+
+export async function reportPost(postId: string, reason: ReportReason, note: string): Promise<void> {
+  const c = await client();
+  const u = getCloud().user;
+  await run(() => c.from('post_reports').insert({ post_id: postId, reason, note: note.trim().slice(0, 1000), reporter: u?.id ?? null }));
+}
+
+// ---------- taking a copy ----------
+
+/** The local copy previously taken from this post, if any (so "Stitch it" twice doesn't make two). */
+export function localCopyOf(postId: string): Pattern | undefined {
+  return listPatterns().find((p) => p.remixOf?.id === postId && !p.postId);
+}
+
+/** Save a post as a new local pattern that credits the original. */
+export async function takeCopy(post: Post): Promise<Pattern> {
+  const p = await postPattern(post);
+  const now = Date.now();
+  const copy: Pattern = {
+    ...p, id: uid(), createdAt: now, updatedAt: now, postId: undefined,
+    remixOf: { id: post.id, title: post.title, author: post.author.name },
+  };
+  if (!savePattern(copy)) throw new Error(t('บันทึกไม่สำเร็จ พื้นที่ในเบราว์เซอร์อาจเต็ม', 'Could not save. Browser storage may be full.'));
+  return copy;
+}

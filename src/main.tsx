@@ -13,6 +13,7 @@ import './styles/threads.css';
 import './styles/quick.css';
 import './styles/account.css';
 import './styles/feedback.css';
+import './styles/community.css';
 import './styles/consistency.css';
 
 // arrived from LINE's "open in browser" link: tidy the address before anything reads it

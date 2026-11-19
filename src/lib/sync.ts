@@ -5,6 +5,7 @@ import { loadStash, saveStash, STASH_EVENT } from './stash';
 import { normalizePattern } from './pattern';
 import { mergeProgress, sameDesign } from './progress';
 import { lang } from './i18n';
+import { myCommunityData } from './community';
 
 /**
  * Account sync, local-first: this device's localStorage stays the working copy and the account is a
@@ -278,6 +279,8 @@ export async function exportMyData(): Promise<Blob> {
     profile,
     patterns: (patterns ?? []).map((r) => r.data),
     threads: stash?.codes ?? [],
+    // public name and shared patterns (community gallery); null if those tables aren't reachable
+    community: await myCommunityData().catch(() => null),
   };
   return new Blob([JSON.stringify(out, null, 1)], { type: 'application/json' });
 }

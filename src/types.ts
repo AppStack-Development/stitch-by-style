@@ -70,6 +70,10 @@ export interface Pattern {
   createdAt: number;
   updatedAt: number;
   progress?: Progress;
+  /** set when this pattern has been shared to the community gallery (posts.id) */
+  postId?: string;
+  /** set on a copy taken from the community gallery, so a re-share credits the original */
+  remixOf?: { id: string; title: string; author: string };
 }
 
 export type Tool = 'pencil' | 'eraser' | 'fill' | 'picker' | 'line' | 'rect' | 'hole' | 'pan';
