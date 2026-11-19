@@ -18,7 +18,7 @@ export interface Sample {
   make: () => Pattern;
 }
 
-type Legend = Record<string, string>; // char -> DMC code
+export type Legend = Record<string, string>; // char -> DMC code
 
 function palette(legend: Legend) {
   const pal: Pattern['palette'] = [];
@@ -33,7 +33,7 @@ function palette(legend: Legend) {
 
 const AUTHOR = 'Stitch by Style';
 
-function fabric(o: { name: string; description: string; tags: string[]; difficulty: PatternDetails['difficulty']; art: string[]; legend: Legend }): Pattern {
+export function fabric(o: { name: string; description: string; tags: string[]; difficulty: PatternDetails['difficulty']; art: string[]; legend: Legend }): Pattern {
   const m = 3; // empty fabric around the design
   const cols = o.art[0].length + m * 2, rows = o.art.length + m * 2;
   const p = createPattern({
@@ -49,10 +49,10 @@ function fabric(o: { name: string; description: string; tags: string[]; difficul
 }
 
 /** A stitch hole: its depth from the frame (1 = next to it), offset from the stitch area's centre, and position inside the area's bounding box. */
-interface Cell { x: number; y: number; d: number; dx: number; dy: number; bx: number; by: number; bw: number; bh: number }
+export interface Cell { x: number; y: number; d: number; dx: number; dy: number; bx: number; by: number; bw: number; bh: number }
 
 /** Paint a template's stitch holes; `paint` returns a legend char or '.' for no stitch. */
-function onTemplate(o: { name: string; description: string; tags: string[]; difficulty: PatternDetails['difficulty']; template: string; w: number; h: number; legend: Legend; paint: (c: Cell, maxD: number) => string }): Pattern {
+export function onTemplate(o: { name: string; description: string; tags: string[]; difficulty: PatternDetails['difficulty']; template: string; w: number; h: number; legend: Legend; paint: (c: Cell, maxD: number) => string }): Pattern {
   const tpl = TEMPLATES.find((x) => x.id === o.template)!;
   const b = tpl.build(o.w, o.h);
   const pitch = 3;
