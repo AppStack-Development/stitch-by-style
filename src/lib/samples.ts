@@ -3,6 +3,7 @@ import { createPattern } from './pattern';
 import { TEMPLATES, freeMask } from './templates';
 import { DMC_LIBRARY, makeThread } from './threads';
 import { t } from './i18n';
+import { APP_NAME } from './brand';
 
 /**
  * Ready-made sample patterns for new users (seasonal: Christmas / New Year).
@@ -31,7 +32,7 @@ function palette(legend: Legend) {
   return { pal, index };
 }
 
-const AUTHOR = 'Cross Stitch Lab';
+const AUTHOR = APP_NAME;
 
 export function fabric(o: { name: string; description: string; tags: string[]; difficulty: PatternDetails['difficulty']; art: string[]; legend: Legend }): Pattern {
   const m = 3; // empty fabric around the design

@@ -6,11 +6,12 @@ import { computeProgress, mergeProgress, sameDesign } from '../lib/progress';
 import { uid } from '../lib/threads';
 import { Thumb } from '../components/Thumb';
 import { Icon } from '../components/Icon';
-import { LogoMark } from '../components/LogoMark';
+import { LogoMark, Wordmark } from '../components/LogoMark';
 import { LangSwitch } from '../components/LangSwitch';
 import { AccountButton } from '../components/AccountButton';
 import { navigate } from '../App';
 import { t, locale } from '../lib/i18n';
+import { APP_NAME } from '../lib/brand';
 
 const fmtWhen = (ts: number) =>
   new Date(ts).toLocaleString(locale, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
@@ -52,7 +53,7 @@ export function TransferView({ data }: { data: string }) {
   return (
     <div className="shared">
       <header className="site-head">
-        <a className="brand" href="#/" aria-label={t('Cross Stitch Lab หน้าแรก', 'Cross Stitch Lab home')}><LogoMark size={36} /><span className="wordmark">Cross Stitch Lab</span></a>
+        <a className="brand" href="#/" aria-label={t(`${APP_NAME} หน้าแรก`, `${APP_NAME} home`)}><LogoMark size={32} className="logo-mark" /><Wordmark /></a>
         <div className="spacer" /><AccountButton /><LangSwitch />
       </header>
       <div className="shared-body">

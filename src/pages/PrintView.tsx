@@ -8,6 +8,8 @@ import { Thumb } from '../components/Thumb';
 import { Icon } from '../components/Icon';
 import { ownsThread, shoppingListText, threadNeeds, useStash } from '../lib/stash';
 import { t, locale } from '../lib/i18n';
+import { APP_NAME } from '../lib/brand';
+import { Wordmark } from '../components/LogoMark';
 
 interface Props {
   pattern: Pattern;
@@ -105,7 +107,7 @@ export function PrintView({ pattern: p, backHref = '#/', onBack }: Props) {
               {d.tags.length > 0 && <> · {d.tags.map((tag) => '#' + tag).join(' ')}</>}
             </p>
           </div>
-          <span className="sheet-brand">Cross Stitch Lab</span>
+          <Wordmark className="sheet-brand" />
         </header>
         <div className="sheet-cover">
           <div className="sheet-thumb"><Thumb pattern={p} max={260} view="stitch" /></div>

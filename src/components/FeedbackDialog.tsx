@@ -3,6 +3,7 @@ import { canSendFeedback, feedbackEnabled, onOpenFeedback, openFeedback, sendFee
 import { useCloud } from '../lib/cloud';
 import { t } from '../lib/i18n';
 import { Icon } from './Icon';
+import { APP_NAME } from '../lib/brand';
 
 const KINDS: { id: FeedbackKind; label: () => string; hint: () => string }[] = [
   { id: 'idea', label: () => t('ไอเดีย', 'Idea'), hint: () => t('อยากให้เพิ่มหรือปรับอะไร', 'What would you like added or changed?') },
@@ -74,7 +75,7 @@ export function FeedbackDialog() {
           <div className="fb-body fb-done">
             <Icon name="check" size={28} />
             <p><b>{t('ขอบคุณมาก ได้รับข้อความแล้ว', 'Thank you — we got your message.')}</b></p>
-            <p className="muted">{reply ? t('ถ้ามีคำถามเพิ่มเติม เราจะตอบกลับทางอีเมล', 'If we have questions, we’ll reply by email.') : t('ทุกข้อความช่วยให้ Cross Stitch Lab ดีขึ้น', 'Every message helps make Cross Stitch Lab better.')}</p>
+            <p className="muted">{reply ? t('ถ้ามีคำถามเพิ่มเติม เราจะตอบกลับทางอีเมล', 'If we have questions, we’ll reply by email.') : t(`ทุกข้อความช่วยให้ ${APP_NAME} ดีขึ้น`, `Every message helps make ${APP_NAME} better.`)}</p>
           </div>
         ) : (
           <div className="fb-body">

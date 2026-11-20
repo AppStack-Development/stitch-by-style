@@ -2,7 +2,7 @@ import type { Pattern } from '../types';
 import { fabric, onTemplate, type Legend } from '../lib/samples';
 
 /**
- * Patterns the Cross Stitch Lab team shares in the community gallery (not seasonal, unlike lib/samples.ts).
+ * Patterns the XStitch.Design team shares in the community gallery (not seasonal, unlike lib/samples.ts).
  * Not part of the app bundle: nothing imports this file. To preview or publish, in the dev server's
  * browser console while signed in with the team account:
  *   const m = await import('/src/dev/teamPatterns.ts'); await m.publishTeamPatterns();
@@ -232,12 +232,12 @@ export const TEAM_PATTERNS: TeamPattern[] = [
 
 // ---------- "ภูตน้อย" series: the team's own original little monsters (not based on any existing character) ----------
 
-const FUFU = { title: 'ภูตน้อย ฟูฟู', description: 'ภูตเมฆปุยตัวกลมแก้มชมพู ลอยไปไหนมีรุ้งสามสีตามหลัง ลายแรกของชุดภูตน้อยจากทีม Cross Stitch Lab' };
-const BAITOEY = { title: 'ภูตน้อย ใบเตย', description: 'กระต่ายหูใบไม้ ทัดดอกไม้สีชมพูไว้บนหัว ชอบนอนกลางสวน ชุดภูตน้อยจากทีม Cross Stitch Lab' };
-const KONHIN = { title: 'ภูตน้อย ก้อนหิน', description: 'เต่าตัวจิ๋วที่มีผลึกสีฟ้างอกบนกระดอง เดินช้าแต่ใจดี ชุดภูตน้อยจากทีม Cross Stitch Lab' };
-const FAICHAI = { title: 'ภูตน้อย ไฟฉาย', description: 'หิ่งห้อยตัวกลมปีกใส หางเรืองแสงสีเหลืองนำทางในคืนมืด ชุดภูตน้อยจากทีม Cross Stitch Lab' };
-const PLADAO = { title: 'ภูตน้อย ปลาดาว', description: 'ปลาดาวสีส้มอมชมพูใส่หมวกฟางไปเที่ยวทะเล ชุดภูตน้อยจากทีม Cross Stitch Lab' };
-const MOKKWAN = { title: 'ภูตน้อย หมอกควัน', description: 'ผีน้อยขี้อายแอบมองอยู่หลังก้อนเมฆ แก้มแดงทุกครั้งที่มีคนทัก ชุดภูตน้อยจากทีม Cross Stitch Lab' };
+const FUFU = { title: 'ภูตน้อย ฟูฟู', description: 'ภูตเมฆปุยตัวกลมแก้มชมพู ลอยไปไหนมีรุ้งสามสีตามหลัง ลายแรกของชุดภูตน้อยจากทีม XStitch.Design' };
+const BAITOEY = { title: 'ภูตน้อย ใบเตย', description: 'กระต่ายหูใบไม้ ทัดดอกไม้สีชมพูไว้บนหัว ชอบนอนกลางสวน ชุดภูตน้อยจากทีม XStitch.Design' };
+const KONHIN = { title: 'ภูตน้อย ก้อนหิน', description: 'เต่าตัวจิ๋วที่มีผลึกสีฟ้างอกบนกระดอง เดินช้าแต่ใจดี ชุดภูตน้อยจากทีม XStitch.Design' };
+const FAICHAI = { title: 'ภูตน้อย ไฟฉาย', description: 'หิ่งห้อยตัวกลมปีกใส หางเรืองแสงสีเหลืองนำทางในคืนมืด ชุดภูตน้อยจากทีม XStitch.Design' };
+const PLADAO = { title: 'ภูตน้อย ปลาดาว', description: 'ปลาดาวสีส้มอมชมพูใส่หมวกฟางไปเที่ยวทะเล ชุดภูตน้อยจากทีม XStitch.Design' };
+const MOKKWAN = { title: 'ภูตน้อย หมอกควัน', description: 'ผีน้อยขี้อายแอบมองอยู่หลังก้อนเมฆ แก้มแดงทุกครั้งที่มีคนทัก ชุดภูตน้อยจากทีม XStitch.Design' };
 
 const MONSTER_TAGS = ['characters', 'cute'];
 
@@ -412,10 +412,10 @@ export async function publishTeamPatterns(opts: { dryRun?: boolean } = {}) {
 }
 
 /**
- * One-off after the rename to Cross Stitch Lab: rewrite the designer name stored inside each of the team's
+ * One-off after a rename (Stitch by Style → Cross Stitch Lab → XStitch.Design): rewrite the designer name stored inside each of the team's
  * shared patterns. Only `data` changes; titles, likes and links stay. Run signed in as the team account.
  */
-export async function renameTeamAuthor(from = 'Stitch by Style', to = 'Cross Stitch Lab', opts: { dryRun?: boolean } = {}) {
+export async function renameTeamAuthor(from = 'Cross Stitch Lab', to = 'XStitch.Design', opts: { dryRun?: boolean } = {}) {
   const { client, getCloud } = await import('../lib/cloud');
   const { decodeShare, encodeShare } = await import('../lib/share');
   const u = getCloud().user;

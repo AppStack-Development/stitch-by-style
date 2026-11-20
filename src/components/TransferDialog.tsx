@@ -5,6 +5,7 @@ import { transferUrl } from '../lib/share';
 import { computeProgress } from '../lib/progress';
 import { Icon } from './Icon';
 import { t } from '../lib/i18n';
+import { SITE_HOST } from '../lib/brand';
 
 interface Props {
   pattern: Pattern;
@@ -103,7 +104,7 @@ export function TransferDialog({ pattern, onClose }: Props) {
               <li>{t('ปักเสร็จแล้วส่งกลับมาด้วยวิธีเดียวกัน ระบบจะรวมความคืบหน้าให้', 'When you’re done, send it back the same way and your progress will be merged')}</li>
             </ol>
             {modules > 105 && <p className="hint">{t('QR ค่อนข้างละเอียด กด QR เพื่อขยายเต็มจอจะสแกนง่ายขึ้น', 'This QR code is quite dense. Tap it to go full screen for easier scanning.')}</p>}
-            {isLocalHost() && <p className="error small">{t(<>ตอนนี้เปิดจาก {location.host} ซึ่งมือถือเข้าไม่ได้ ใช้จากเว็บจริง cross-stitch-lab.vercel.app</>, <>You’re on {location.host}, which a phone can’t reach. Use the live site cross-stitch-lab.vercel.app</>)}</p>}
+            {isLocalHost() && <p className="error small">{t(<>ตอนนี้เปิดจาก {location.host} ซึ่งมือถือเข้าไม่ได้ ใช้จากเว็บจริง {SITE_HOST}</>, <>You’re on {location.host}, which a phone can’t reach. Use the live site {SITE_HOST}</>)}</p>}
           </div>
         </div>
         <footer className="modal-foot">

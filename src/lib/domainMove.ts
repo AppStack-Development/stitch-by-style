@@ -1,23 +1,30 @@
 import { deflateSync, inflateSync, strFromU8, strToU8 } from 'fflate';
+import { SITE_ORIGIN } from './brand';
 
 /**
- * The app moved from stitch-by-style.vercel.app to cross-stitch-lab.vercel.app (renamed to Cross Stitch Lab).
+ * The app has moved twice: stitch-by-style.vercel.app → cross-stitch-lab.vercel.app → xstitch-design.vercel.app
+ * (see brand.ts). Both old addresses stay attached to the project and run this code.
  *
  * Patterns, threads and settings live in each site's own browser storage, so a plain redirect would leave
- * them behind. Instead, the first visit to the old address packs this browser's data into the link
+ * them behind. Instead, the first visit to an old address packs this browser's data into the link
  * (after the #, which never reaches a server) and opens the same page on the new address, which unpacks it.
- * Later visits to the old address just redirect. The old copy is never deleted.
+ * Later visits just redirect. An old copy is never deleted.
  *
- * Sign-in tokens are not carried over: people sign in again on the new address, and their account
- * data syncs as usual.
+ * Someone whose data already moved from the first address to the second gets sent through the second one,
+ * so it can carry that data on. Sign-in tokens are not carried over: people sign in again on the new
+ * address, and their account data syncs as usual.
  */
-export const OLD_HOST = 'stitch-by-style.vercel.app';
-export const NEW_ORIGIN = 'https://cross-stitch-lab.vercel.app';
+export const NEW_ORIGIN = SITE_ORIGIN;
+/** Old address → where to send a visitor whose data already left it. */
+const OLD_HOSTS: Record<string, string> = {
+  'stitch-by-style.vercel.app': 'https://cross-stitch-lab.vercel.app',
+  'cross-stitch-lab.vercel.app': NEW_ORIGIN,
+};
 
 const MOVED_KEY = 'sbs:moved';
 const ROUTE = '#/move/';
-/** Keys that stay behind: sign-in tokens, and one-off markers. */
-const SKIP = /^sbs:(auth|auth-return|moved|open-feedback)$/;
+/** Keys that stay behind: sign-in tokens and half-finished sign-ins, and one-off markers. */
+const SKIP = /^sbs:(auth.*|moved|open-feedback)$/;
 /** Very large data can't travel in a link reliably; those visitors keep using the old address (see App). */
 const MAX_LINK = 1_500_000;
 
@@ -43,11 +50,14 @@ export let stuckOnOldDomain = false;
  * page is leaving, so the caller can skip starting the app.
  */
 export function leaveOldDomain(): boolean {
-  if (location.hostname !== OLD_HOST) return false;
+  const after = OLD_HOSTS[location.hostname];
+  if (!after) return false;
   const to = location.hash && location.hash !== '#' ? location.hash : '#/';
   const path = location.pathname === '/' ? '/' : location.pathname;
+  let next = NEW_ORIGIN;
   try {
-    if (!localStorage.getItem(MOVED_KEY)) {
+    if (localStorage.getItem(MOVED_KEY)) next = after;
+    else {
       const link = moveLink(NEW_ORIGIN, to);
       if (link && link.length > MAX_LINK) {
         stuckOnOldDomain = true;
@@ -62,7 +72,7 @@ export function leaveOldDomain(): boolean {
   } catch {
     // storage blocked: nothing to carry, just go
   }
-  location.replace(NEW_ORIGIN + path + location.search + to);
+  location.replace(next + path + location.search + to);
   return true;
 }
 

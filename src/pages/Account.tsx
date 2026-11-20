@@ -15,6 +15,7 @@ import { amModerator, openPostCount } from '../lib/moderation';
 import { useStash } from '../lib/stash';
 import { DMC_LIBRARY } from '../lib/threads';
 import { STATUS_LABEL as ORDER_STATUS, baht, isClosed, myOrders, ordersEnabled, type Order } from '../lib/orders';
+import { APP_SLUG } from '../lib/brand';
 
 const errText = (e: unknown) => (e as Error)?.message || t('เกิดข้อผิดพลาด ลองอีกครั้ง', 'Something went wrong. Please try again.');
 
@@ -447,7 +448,7 @@ function SignedIn() {
     setExporting(true);
     setErr('');
     try {
-      downloadBlob(await exportMyData(), `cross-stitch-lab-data-${today()}.json`);
+      downloadBlob(await exportMyData(), `${APP_SLUG}-data-${today()}.json`);
     } catch (e) {
       setErr(errText(e));
     } finally {

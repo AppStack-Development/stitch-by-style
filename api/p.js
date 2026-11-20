@@ -10,14 +10,14 @@ export async function GET(request) {
   const target = validId(id) ? `/#/c/${id}` : '/#/community';
   const post = validId(id) ? await fetchPost(id).catch(() => null) : null;
 
-  const title = post ? `${post.title} · Cross Stitch Lab` : 'ลายจากชุมชน · Cross Stitch Lab';
+  const title = post ? `${post.title} · XStitch.Design` : 'ลายจากชุมชน · XStitch.Design';
   const by = post?.creators?.display_name ? `โดย ${post.creators.display_name}` : '';
   const facts = post
     ? [post.base === 'print3d' ? (post.template_name || 'ชิ้นงาน 3D') : 'ผ้า Aida', DIFF[post.difficulty] ?? '', `${post.colors} สี`, `${Number(post.stitches).toLocaleString('en-US')} ฝีเข็ม`].filter(Boolean).join(' · ')
     : '';
   const description = post
     ? [post.description?.trim(), [by, facts].filter(Boolean).join(' · '), 'เปิดดู ลองปัก หรือแก้เป็นลายของคุณได้ฟรี'].filter(Boolean).join(' — ').slice(0, 300)
-    : 'ลายปักครอสติชที่ผู้ใช้ Cross Stitch Lab แชร์ไว้ ลองปักหรือแก้เป็นลายของคุณได้ฟรี';
+    : 'ลายปักครอสติชที่ผู้ใช้ XStitch.Design แชร์ไว้ ลองปักหรือแก้เป็นลายของคุณได้ฟรี';
   // the image URL changes when the pattern is updated, so previews refresh
   const image = post ? `${SITE}/api/og?id=${id}&v=${encodeURIComponent(post.updated_at ?? '')}` : `${SITE}/og-image.png`;
   const canonical = post ? `${SITE}/p/${id}` : `${SITE}/#/community`;
@@ -31,7 +31,7 @@ export async function GET(request) {
 <meta name="description" content="${escapeHtml(description)}">
 <link rel="canonical" href="${escapeHtml(canonical)}">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="Cross Stitch Lab">
+<meta property="og:site_name" content="XStitch.Design">
 <meta property="og:locale" content="th_TH">
 <meta property="og:title" content="${escapeHtml(post ? post.title : 'ลายจากชุมชน')}">
 <meta property="og:description" content="${escapeHtml(description)}">
@@ -40,7 +40,7 @@ export async function GET(request) {
 <meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="${escapeHtml(post ? `ลายปัก ${post.title}` : 'Cross Stitch Lab')}">
+<meta property="og:image:alt" content="${escapeHtml(post ? `ลายปัก ${post.title}` : 'XStitch.Design')}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${escapeHtml(post ? post.title : 'ลายจากชุมชน')}">
 <meta name="twitter:description" content="${escapeHtml(description)}">

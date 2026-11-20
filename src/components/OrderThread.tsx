@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { listMessages, sendMessage, type OrderMessage } from '../lib/orders';
 import { t, locale } from '../lib/i18n';
 import { Icon } from './Icon';
+import { APP_NAME } from '../lib/brand';
 
 const when = (iso: string) => new Date(iso).toLocaleString(locale, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
@@ -56,7 +57,7 @@ export function OrderThread({ orderId, asTeam }: { orderId: number; asTeam: bool
             const own = m.fromTeam === asTeam;
             return (
               <li key={m.id} className={own ? 'own' : ''}>
-                <span className="order-msg-who">{m.fromTeam ? t('ทีม Cross Stitch Lab', 'Cross Stitch Lab team') : asTeam ? t('ลูกค้า', 'Customer') : t('คุณ', 'You')} · {when(m.createdAt)}</span>
+                <span className="order-msg-who">{m.fromTeam ? t(`ทีม ${APP_NAME}`, `${APP_NAME} team`) : asTeam ? t('ลูกค้า', 'Customer') : t('คุณ', 'You')} · {when(m.createdAt)}</span>
                 <p>{m.body}</p>
               </li>
             );

@@ -2,6 +2,7 @@ import type { Pattern, ViewMode } from '../types';
 import { contrastText, shade } from './threads';
 import { computeStats } from './stats';
 import { t as tr } from './i18n';
+import { APP_NAME } from './brand';
 
 export type Drawable = Pick<Pattern, 'cols' | 'rows' | 'mask' | 'cells' | 'palette'> & {
   details?: Pick<Pattern['details'], 'filamentColor' | 'baseType'>;
@@ -226,6 +227,6 @@ export function exportPng(p: Pattern, view: ViewMode): Promise<Blob> {
   });
   ctx.fillStyle = '#9aa0ad';
   ctx.font = `400 13px ${FONT}`;
-  ctx.fillText(tr('สร้างด้วย Cross Stitch Lab', 'Made with Cross Stitch Lab'), 40, H - 16);
+  ctx.fillText(tr(`สร้างด้วย ${APP_NAME}`, `Made with ${APP_NAME}`), 40, H - 16);
   return new Promise((res, rej) => c.toBlob((b) => (b ? res(b) : rej(new Error('PNG failed'))), 'image/png'));
 }

@@ -6,6 +6,7 @@ import { normalizePattern } from './pattern';
 import { mergeProgress, sameDesign } from './progress';
 import { lang } from './i18n';
 import { myCommunityData } from './community';
+import { APP_NAME } from './brand';
 
 /**
  * Account sync, local-first: this device's localStorage stays the working copy and the account is a
@@ -273,7 +274,7 @@ export async function exportMyData(): Promise<Blob> {
   ]);
   if (error) throw error;
   const out = {
-    app: 'Cross Stitch Lab',
+    app: APP_NAME,
     exportedAt: new Date().toISOString(),
     account: { email: user.email, name: user.name },
     profile,

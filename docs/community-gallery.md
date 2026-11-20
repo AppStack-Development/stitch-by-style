@@ -1,7 +1,7 @@
 # พื้นที่แชร์ผลงาน (Community gallery) — แบบร่างการออกแบบ
 
 > **สถานะ:** รอบแรกทำเสร็จ 19 พ.ย. 2569 (เจ้าของสินค้าเลือกทำก่อนผลทดสอบรอบ 2) · ตาราง `0003_community.sql` รันบน Supabase แล้ว
-> และแชร์ลายตัวอย่าง 8 ลายในนาม “Stitch by Style” (ป้าย “จากทีม”) · โค้ด: `src/lib/community.ts`, `src/pages/Community*.tsx`, `src/components/PublishDialog.tsx`
+> และแชร์ลายตัวอย่าง 8 ลายในนาม “XStitch.Design” (เดิมชื่อ Stitch by Style) (ป้าย “จากทีม”) · โค้ด: `src/lib/community.ts`, `src/pages/Community*.tsx`, `src/components/PublishDialog.tsx`
 >
 > **ตรวจการแจ้งปัญหาในแอป:** `#/moderation` (การ์ด “ดูแลชุมชน” ในหน้าบัญชี) สำหรับบัญชีใน `public.moderators`
 > (`0004_moderation.sql`) กด ไม่มีปัญหา / ซ่อนไว้ / นำออก แล้วการแจ้งของลายนั้นปิดทั้งหมด ผู้ออกแบบเปลี่ยนสถานะลายเองไม่ได้
@@ -151,7 +151,7 @@ create table public.post_reports (
 
 ## 7. ไม่ให้หน้าว่างวันแรก
 
-- แชร์ลายตัวอย่างทั้ง 8 ลายในนามบัญชีทางการ “Stitch by Style” (ป้าย “จากทีม”)
+- แชร์ลายตัวอย่างทั้ง 8 ลายในนามบัญชีทางการ “XStitch.Design” (เดิมชื่อ Stitch by Style) (ป้าย “จากทีม”)
 - ชวนผู้ทดสอบรอบ 2 ที่บอกว่าอยากแชร์ ให้ลองแชร์ก่อนเปิดตัว
 - ตั้งเป้าเปิดหน้าเมื่อมีอย่างน้อย 20 ลาย
 

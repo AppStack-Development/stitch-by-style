@@ -14,6 +14,7 @@
 /* Home on very narrow phones: with the install button showing too, brand + 4 buttons don't fit with the wordmark */
 @media (max-width: 360px) {
   .home .site-head:has(.account-btn):has(.install-btn) .wordmark { display: none; }
+  .home .site-head:has(.account-btn):has(.install-btn) .brand .logo-mark { display: block; }
 }
 
 .account-av { position: relative; display: inline-grid; place-items: center; }

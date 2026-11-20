@@ -21,6 +21,7 @@ import { FeedbackDialog } from './components/FeedbackDialog';
 import { loadPattern } from './lib/storage';
 import { NEW_ORIGIN, stuckOnOldDomain } from './lib/domainMove';
 import { t } from './lib/i18n';
+import { SITE_HOST } from './lib/brand';
 
 export function navigate(hash: string) {
   location.hash = hash;
@@ -48,8 +49,8 @@ export function App() {
 function MovedNotice() {
   return (
     <div className="moved-notice" role="status">
-      {t(<>เราย้ายไปที่ <a href={NEW_ORIGIN}>cross-stitch-lab.vercel.app</a> แล้ว ลายในเครื่องนี้มีมากเกินกว่าจะย้ายให้อัตโนมัติ <a href="#/account">เข้าสู่ระบบ</a> เพื่อเก็บลายไว้ในบัญชี แล้วเข้าสู่ระบบอีกครั้งที่เว็บใหม่</>,
-        <>We’ve moved to <a href={NEW_ORIGIN}>cross-stitch-lab.vercel.app</a>. This browser has too many patterns to carry over automatically: <a href="#/account">sign in</a> to keep them in your account, then sign in again on the new site.</>)}
+      {t(<>เราย้ายไปที่ <a href={NEW_ORIGIN}>{SITE_HOST}</a> แล้ว ลายในเครื่องนี้มีมากเกินกว่าจะย้ายให้อัตโนมัติ <a href="#/account">เข้าสู่ระบบ</a> เพื่อเก็บลายไว้ในบัญชี แล้วเข้าสู่ระบบอีกครั้งที่เว็บใหม่</>,
+        <>We’ve moved to <a href={NEW_ORIGIN}>{SITE_HOST}</a>. This browser has too many patterns to carry over automatically: <a href="#/account">sign in</a> to keep them in your account, then sign in again on the new site.</>)}
     </div>
   );
 }

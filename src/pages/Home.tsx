@@ -7,7 +7,7 @@ import { computeStats } from '../lib/stats';
 import { computeProgress } from '../lib/progress';
 import { Thumb } from '../components/Thumb';
 import { Icon } from '../components/Icon';
-import { LogoMark } from '../components/LogoMark';
+import { LogoMark, Wordmark } from '../components/LogoMark';
 import { navigate } from '../App';
 import { useInstall } from '../lib/pwa';
 import { TEMPLATES } from '../lib/templates';
@@ -20,6 +20,7 @@ import { PATTERNS_PULLED } from '../lib/sync';
 import { communityEnabled, listPosts, myLikes, type Post } from '../lib/community';
 import { useCloud } from '../lib/cloud';
 import { PostCard } from '../components/PostCard';
+import { APP_NAME } from '../lib/brand';
 
 /**
  * Card art drawn from the real heart-keychain template, so every hole sits exactly
@@ -134,7 +135,7 @@ export function Home() {
       try {
         raw = JSON.parse(await f.text());
       } catch {
-        throw new Error(t('ไฟล์นี้ไม่ใช่ไฟล์ลาย (.json) ที่ส่งออกจาก Cross Stitch Lab', 'This is not a pattern file (.json) exported from Cross Stitch Lab'));
+        throw new Error(t(`ไฟล์นี้ไม่ใช่ไฟล์ลาย (.json) ที่ส่งออกจาก ${APP_NAME}`, `This is not a pattern file (.json) exported from ${APP_NAME}`));
       }
       const p = normalizePattern(raw);
       const copy = { ...p, id: uid(), postId: undefined, updatedAt: Date.now() };
@@ -154,7 +155,7 @@ export function Home() {
   return (
     <div className="home">
       <header className="site-head">
-        <a className="brand" href="#/" aria-label={t('Cross Stitch Lab หน้าแรก', 'Cross Stitch Lab home')}><LogoMark size={36} /><span className="wordmark">Cross Stitch Lab</span></a>
+        <a className="brand" href="#/" aria-label={t(`${APP_NAME} หน้าแรก`, `${APP_NAME} home`)}><LogoMark size={32} className="logo-mark" /><Wordmark /></a>
         <div className="spacer" />
         {(inst.canPrompt || inst.iosManual) && (
           <button className="btn install-btn" onClick={() => (inst.canPrompt ? inst.install() : setIosHelp(!iosHelp))} title={t('ติดตั้งเป็นแอปบนหน้าจอโฮม ใช้งานได้แม้ออฟไลน์', 'Install as an app on your home screen; works offline')}>
@@ -261,7 +262,7 @@ export function Home() {
       </section>
 
       <footer className="site-foot">
-        <span>Cross Stitch Lab · AppStack Development</span>
+        <span>{APP_NAME} · AppStack Development</span>
         <span className="spacer" />
         <a href="#/guide">{t('คู่มือ', 'Guide')}</a>
         <a href="#/privacy">{t('นโยบายความเป็นส่วนตัว', 'Privacy')}</a>

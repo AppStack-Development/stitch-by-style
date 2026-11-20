@@ -17,7 +17,7 @@ import './styles/feedback.css';
 import './styles/community.css';
 import './styles/consistency.css';
 
-// the app moved to cross-stitch-lab.vercel.app: bring data from the old address, or leave it
+// the app moves to xstitch-design.vercel.app: bring data from the old address, or leave it
 arriveFromOldDomain();
 if (!leaveOldDomain()) start();
 

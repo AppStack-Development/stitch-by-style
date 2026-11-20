@@ -6,12 +6,13 @@ import { uid, contrastText } from '../lib/threads';
 import { computeStats } from '../lib/stats';
 import { Thumb } from '../components/Thumb';
 import { Icon } from '../components/Icon';
-import { LogoMark } from '../components/LogoMark';
+import { LogoMark, Wordmark } from '../components/LogoMark';
 import { PrintView } from './PrintView';
 import { LangSwitch } from '../components/LangSwitch';
 import { AccountButton } from '../components/AccountButton';
 import { navigate } from '../App';
 import { t } from '../lib/i18n';
+import { APP_NAME } from '../lib/brand';
 
 export function SharedView({ data }: { data: string }) {
   const [p, setP] = useState<Pattern | null>(null);
@@ -38,7 +39,7 @@ export function SharedView({ data }: { data: string }) {
   return (
     <div className="shared">
       <header className="site-head">
-        <a className="brand" href="#/" aria-label={t('Cross Stitch Lab หน้าแรก', 'Cross Stitch Lab home')}><LogoMark size={36} /><span className="wordmark">Cross Stitch Lab</span></a>
+        <a className="brand" href="#/" aria-label={t(`${APP_NAME} หน้าแรก`, `${APP_NAME} home`)}><LogoMark size={32} className="logo-mark" /><Wordmark /></a>
         <div className="spacer" /><AccountButton /><LangSwitch />
       </header>
       <div className="shared-body">

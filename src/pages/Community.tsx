@@ -8,6 +8,7 @@ import { AccountButton } from '../components/AccountButton';
 import { PostCard } from '../components/PostCard';
 import { PublishDialog } from '../components/PublishDialog';
 import { FeedbackLink } from '../components/FeedbackDialog';
+import { APP_NAME } from '../lib/brand';
 
 type Filter = 'all' | PostBase;
 
@@ -87,8 +88,8 @@ export function Community({ tag: initialTag }: { tag?: string }) {
         <section className="community-intro">
           <div>
             <h1>{t('ลายจากชุมชน', 'Community patterns')}</h1>
-            <p className="muted">{t('ลายที่ผู้ใช้ Cross Stitch Lab แชร์ไว้ กดลองปักหรือเอาไปแก้เป็นลายของคุณได้เลย ไม่ต้องเข้าสู่ระบบ',
-              'Patterns shared by Cross Stitch Lab users. Stitch one or make it your own; no account needed.')}</p>
+            <p className="muted">{t(`ลายที่ผู้ใช้ ${APP_NAME} แชร์ไว้ กดลองปักหรือเอาไปแก้เป็นลายของคุณได้เลย ไม่ต้องเข้าสู่ระบบ`,
+              `Patterns shared by ${APP_NAME} users. Stitch one or make it your own; no account needed.`)}</p>
           </div>
           {communityEnabled && (
             <button className="btn primary" onClick={() => setSharing(true)}><Icon name="send" size={16} /> {t('แชร์ลายของคุณ', 'Share your pattern')}</button>

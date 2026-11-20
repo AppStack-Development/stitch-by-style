@@ -1,0 +1,23 @@
+{
+  "description": "XStitch.Design mark: one big cross stitch with a fabric hole at each end. The '\\' stitch goes down first (under) and the '/' crosses on top (over), the way a cross stitch is worked. Unit space is the 1x1 tile. Shared by LogoMark.tsx and scripts/make-icons.mjs.",
+  "tile": {
+    "background": "#243b6b",
+    "hole": "#3a5287",
+    "under": "#fbf7f0",
+    "over": "#f09595"
+  },
+  "light": {
+    "hole": "#d8cfbe",
+    "under": "#243b6b",
+    "over": "#c72b3b"
+  },
+  "geometry": {
+    "tileRadius": 0.22,
+    "from": 0.281,
+    "to": 0.719,
+    "stroke": 0.102,
+    "holeInset": 0.266,
+    "holeRadius": 0.025,
+    "minStrokePx": 1.4
+  }
+}

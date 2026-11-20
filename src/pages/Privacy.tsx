@@ -4,6 +4,7 @@ import { Icon } from '../components/Icon';
 import { LangSwitch } from '../components/LangSwitch';
 import { FeedbackLink } from '../components/FeedbackDialog';
 import { feedbackEnabled } from '../lib/feedback';
+import { APP_NAME } from '../lib/brand';
 
 /** Contact address for privacy requests. Leave empty until there is a real one. */
 const CONTACT_EMAIL = 'admin@appstack-dev.io';
@@ -36,8 +37,8 @@ export function Privacy() {
           )}</p>
 
           <Sec title={t('ใครดูแลบริการนี้', 'Who runs this service')}>
-            <p>{t('Cross Stitch Lab ดำเนินการโดย AppStack Development ซึ่งเป็นผู้ควบคุมข้อมูลส่วนบุคคลของคุณ',
-              'Cross Stitch Lab is operated by AppStack Development, the data controller for your personal data.')}</p>
+            <p>{t(`${APP_NAME} ดำเนินการโดย AppStack Development ซึ่งเป็นผู้ควบคุมข้อมูลส่วนบุคคลของคุณ`,
+              `${APP_NAME} is operated by AppStack Development, the data controller for your personal data.`)}</p>
           </Sec>
 
           <Sec title={t('ใช้งานโดยไม่มีบัญชี', 'Using it without an account')}>

@@ -1,6 +1,6 @@
 {
-  "name": "Cross Stitch Lab",
-  "short_name": "Cross Stitch Lab",
+  "name": "XStitch.Design",
+  "short_name": "XStitch",
   "description": "ออกแบบและติดตามการปักลายบนผ้าและชิ้นงานพิมพ์ 3 มิติ · Design and track cross-stitch patterns for fabric and 3D prints",
   "id": "./",
   "start_url": "./",

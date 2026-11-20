@@ -81,10 +81,15 @@ textarea { resize: vertical; }
 .site-head { display: flex; align-items: center; gap: 12px; padding: 14px 28px; border-bottom: 1px solid var(--line); background: var(--bg); position: sticky; top: 0; z-index: 5; }
 .site-head h2 { font-size: 18px; }
 .brand { display: flex; align-items: center; gap: 10px; color: var(--brand); }
-.brand svg { flex-shrink: 0; border-radius: 9px; box-shadow: 0 1px 2px #1f2a4426; }
-/* pixel wordmark: with line-height 1, Pixelify Sans' cap height is centred on the line box,
-   so flex centring lines the capitals up with the mark's centre (cap height ~0.64em ~ half the mark) */
-.wordmark { font-family: 'Pixelify Sans', 'IBM Plex Sans Thai', system-ui, sans-serif; font-size: 28px; font-weight: 600; line-height: 1; letter-spacing: .01em; white-space: nowrap; }
+.brand svg { flex-shrink: 0; }
+/* cross-stitched wordmark (components/LogoMark.tsx Wordmark): --wm-cell is one stitch in px. Its box has two
+   descender rows under the capitals, so a top margin of two cells centres the capitals on the header line */
+.wordmark { --wm-cell: 3px; display: block; flex-shrink: 0; height: calc(var(--wm-cell) * 9); width: calc(var(--wm-cols) * var(--wm-cell)); margin-top: calc(var(--wm-cell) * 2); overflow: visible; }
+.wordmark .wm-x, .sheet-brand .wm-x { stroke: var(--thread); }
+.wordmark .wm-mid, .sheet-brand .wm-mid { stroke: #243b6b; }
+.wordmark .wm-tail, .sheet-brand .wm-tail { stroke: #8a93a6; }
+/* the separate mark only shows where the wordmark is hidden (see account.css) */
+.brand .logo-mark { display: none; }
 
 /* home */
 .home { padding-bottom: 60px; }
@@ -321,7 +326,7 @@ label.check small { color: var(--ink-3); }
 .sheet-head h1 { font-size: 24px; }
 .sheet-head p { margin: 4px 0 0; font-size: 12.5px; }
 .sheet-head.small { align-items: baseline; font-size: 13px; border-bottom-width: 1px; }
-.sheet-brand { font-family: 'Pixelify Sans', system-ui, sans-serif; font-weight: 600; font-size: 13px; line-height: 1; color: #243b6b; white-space: nowrap; }
+.sheet-brand { --wm-cell: 1.5px; display: block; height: calc(var(--wm-cell) * 9); width: calc(var(--wm-cols) * var(--wm-cell)); overflow: visible; }
 .sheet-cover { display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: start; }
 .sheet-thumb { padding: 8px; border: 1px solid #ddd; border-radius: 8px; display: grid; place-items: center; min-width: 120px; }
 .info-table { border-collapse: collapse; font-size: 12.5px; width: 100%; }
@@ -470,8 +475,8 @@ kbd { font-family: 'IBM Plex Mono', monospace; font-size: 12px; padding: 1px 6px
   .site-head { gap: 6px; padding: 10px 12px; }
   .site-head .btn { padding: 7px 10px; }
   .brand { gap: 8px; }
-  .wordmark { font-size: 22px; }
-  .brand svg { width: 32px; height: 32px; }
+  .wordmark { --wm-cell: 2.6px; }
+  .brand .logo-mark { width: 32px; height: 32px; }
   .lang-switch svg { display: none; }
 }
 
@@ -504,6 +509,6 @@ kbd { font-family: 'IBM Plex Mono', monospace; font-size: 12px; padding: 1px 6px
   .site-head .btn { padding: 7px; }
   .site-head .lang-switch { padding: 7px 5px; }
   .brand { gap: 7px; }
-  .brand svg { width: 30px; height: 30px; }
-  .wordmark { font-size: 18px; }
+  .brand .logo-mark { width: 30px; height: 30px; }
+  .wordmark { --wm-cell: 2.3px; }
 }
