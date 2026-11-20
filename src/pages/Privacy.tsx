@@ -30,7 +30,7 @@ export function Privacy() {
       <main className="privacy-main">
         <article className="privacy-doc">
           <h1>{t('นโยบายความเป็นส่วนตัว', 'Privacy notice')}</h1>
-          <p className="hint">{t('ปรับปรุงล่าสุด 19 พ.ย. 2569', 'Last updated 19 Nov 2026')}</p>
+          <p className="hint">{t('ปรับปรุงล่าสุด 21 พ.ย. 2569', 'Last updated 21 Nov 2026')}</p>
           <p className="privacy-lead">{t(
             'ประกาศนี้อธิบายว่าเราเก็บและใช้ข้อมูลส่วนบุคคลของคุณอย่างไร ตามพระราชบัญญัติคุ้มครองข้อมูลส่วนบุคคล พ.ศ. 2562 (PDPA) สรุปสั้น ๆ: ถ้าไม่เข้าสู่ระบบ เราไม่เก็บข้อมูลส่วนบุคคลของคุณ นอกจากข้อความที่คุณเลือกส่งมาเอง และเรานับสถิติการใช้งานแบบไม่ระบุตัวตน',
             'This notice explains how we collect and use your personal data, in line with Thailand’s Personal Data Protection Act (PDPA). In short: if you don’t sign in, we don’t collect personal data about you, except feedback you choose to send us; we also count anonymous usage statistics.',
@@ -65,6 +65,8 @@ export function Privacy() {
               'Ordering needs an account. When you order, we keep: a copy of the pattern (without your stitching progress), your options and the price, the recipient’s name, phone number and delivery address, the messages you write to the team, your payment slip image, and the tracking number, all linked to your account.')}</p>
             <p>{t('ข้อมูลนี้เห็นได้เฉพาะคุณและทีมงาน เราใช้เพื่อตรวจการชำระเงิน ผลิต จัดส่ง และดูแลหลังการขายเท่านั้น ที่อยู่และเบอร์โทรจะส่งต่อให้บริษัทขนส่งเฉพาะที่จำเป็นต่อการส่งพัสดุ รูปสลิปเก็บแบบส่วนตัว ไม่มีลิงก์สาธารณะ',
               'Only you and our team can see it. We use it only to check payment, make and ship your piece, and look after you afterwards. Your name, address and phone number go to the delivery company only as needed to deliver the parcel. Slip images are stored privately, with no public link.')}</p>
+            <p>{t('เราส่งอีเมลแจ้งความคืบหน้าของออเดอร์ไปที่อีเมลบัญชี Google ของคุณ เช่น ได้รับออเดอร์ ยืนยันการชำระเงิน จัดส่งแล้วพร้อมเลขพัสดุ และเมื่อทีมตอบข้อความ อีเมลมีรหัสออเดอร์ ชื่อลาย ยอดเงิน เลขพัสดุ และข้อความจากทีม ไม่มีที่อยู่หรือเบอร์โทร อีเมลส่งผ่าน Resend ผู้ให้บริการส่งอีเมล ซึ่งเซิร์ฟเวอร์อาจอยู่นอกประเทศไทย',
+              'We email updates about your order to your Google account’s address: order received, payment confirmed, shipped with tracking number, and when the team replies. The emails include the order code, pattern name, amount, tracking number and the team’s message, never your address or phone number. They’re sent through Resend, an email delivery provider whose servers may be outside Thailand.')}</p>
             <p>{t('ข้อมูลการสั่งซื้อเก็บไว้ไม่เกิน 2 ปี เพื่อดูแลหลังการขายและทำบัญชี แม้คุณลบบัญชีแล้ว ออเดอร์จะยังอยู่ในระบบแต่ไม่ผูกกับบัญชีอีกต่อไป ถ้าต้องการให้ลบเร็วกว่านั้น ติดต่อเราตามช่องทางด้านล่าง',
               'Order records are kept for at most 2 years, for after-sales care and bookkeeping. If you delete your account, your orders stay but are no longer linked to it. To have them deleted sooner, contact us using the details below.')}</p>
           </Sec>
@@ -106,6 +108,7 @@ export function Privacy() {
           <Sec title={t('ข้อมูลเก็บไว้ที่ไหน', 'Where it’s stored')}>
             <p>{t('ข้อมูลในบัญชีเก็บไว้กับ Supabase ผู้ให้บริการฐานข้อมูลบนคลาวด์ ซึ่งเซิร์ฟเวอร์อาจอยู่นอกประเทศไทย ส่วนการเข้าสู่ระบบดำเนินการโดย Google ผู้ให้บริการทั้งสองรายใช้ข้อมูลเพื่อให้บริการนี้แทนเราเท่านั้น',
               'Account data is stored with Supabase, a cloud database provider whose servers may be outside Thailand. Sign-in is handled by Google. Both act only to provide this service on our behalf.')}</p>
+            <p>{t('อีเมลแจ้งเรื่องออเดอร์ส่งผ่าน Resend ซึ่งใช้ข้อมูลเพื่อส่งอีเมลแทนเราเท่านั้น', 'Order emails are delivered by Resend, which uses the data only to deliver them on our behalf.')}</p>
             <p>{t('ความคิดเห็นที่ส่งมาเก็บไว้กับ Supabase เช่นกัน ส่วนสถิติการใช้งานแบบไม่ระบุตัวตนประมวลผลโดย Vercel ผู้ให้บริการโฮสต์เว็บไซต์',
               'Feedback is also stored with Supabase. Anonymous usage statistics are processed by Vercel, which hosts the website.')}</p>
           </Sec>
