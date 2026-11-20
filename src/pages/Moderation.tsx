@@ -21,11 +21,14 @@ type Tab = 'open' | 'handled' | 'orders';
 
 const when = (iso: string) => new Date(iso).toLocaleString(locale, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
-/** "ดูแลชุมชน": the report queue for moderators. Everyone else sees a short "not allowed" note. */
-export function Moderation() {
+/**
+ * "หน้าทีม" (#/moderation, #/moderation/orders): community reports and production orders, for the team.
+ * Everyone else sees a short "not allowed" note.
+ */
+export function Moderation({ startTab }: { startTab?: Tab } = {}) {
   const cloud = useCloud();
   const [allowed, setAllowed] = useState<boolean | null>(null);
-  const [tab, setTab] = useState<Tab>('open');
+  const [tab, setTab] = useState<Tab>(startTab ?? 'open');
   const [items, setItems] = useState<ReviewItem[] | null>(null);
   const [openCount, setOpenCount] = useState<number | null>(null);
   const [err, setErr] = useState('');
@@ -68,7 +71,7 @@ export function Moderation() {
   else if (!allowed) {
     body = (
       <div className="community-msg">
-        <p><b>{t('หน้านี้สำหรับทีมงานที่ดูแลชุมชน', 'This page is for the team that looks after the community')}</b></p>
+        <p><b>{t('หน้านี้สำหรับทีมงาน (ดูแลชุมชนและออเดอร์)', 'This page is for the team (community reports and orders)')}</b></p>
         <p className="muted">{cloud.status === 'signed-in'
           ? t('บัญชีนี้ไม่มีสิทธิ์ตรวจการแจ้งปัญหา', 'This account can’t review reports.')
           : t('เข้าสู่ระบบด้วยบัญชีทีมงานก่อน', 'Sign in with a team account first.')}</p>
@@ -113,7 +116,7 @@ export function Moderation() {
     <div className="community-page">
       <header className="site-head">
         <a className="icon-btn" href="#/account" title={t('กลับไปหน้าบัญชี', 'Back to account')} aria-label={t('กลับไปหน้าบัญชี', 'Back to account')}><Icon name="back" /></a>
-        <h2><Icon name="flag" size={18} /> {t('ดูแลชุมชน', 'Moderation')}</h2>
+        <h2><Icon name="flag" size={18} /> {t('หน้าทีม', 'Team')}</h2>
         <div className="spacer" />
         <LangSwitch />
       </header>
@@ -281,8 +284,8 @@ function PricingEditor() {
   };
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) => setVals({ ...vals, [k]: e.target.value });
   return (
-    <details className="order-pricing">
-      <summary><Icon name="edit" size={15} /> {t('ราคาและช่องทางชำระเงิน', 'Prices and payment')}{!saved.promptpay_id && <span className="status-chip hidden">{t('ยังไม่ตั้งพร้อมเพย์', 'PromptPay not set')}</span>}</summary>
+    <details className="order-pricing" open={!saved.promptpay_id || undefined}>
+      <summary><Icon name="edit" size={15} /> {t('ราคาและช่องทางชำระเงิน', 'Prices and payment')}{!saved.promptpay_id && <span className="status-chip hidden">{t('ยังไม่ตั้งพร้อมเพย์', 'PromptPay not set')}</span>}<span className="order-pricing-edit">{t('แก้ไข', 'Edit')}</span></summary>
       <table className="order-price-table">
         <thead><tr><th>{t('บาท/ชิ้น', 'THB per piece')}</th>{SIZE_LIMITS.map(([s, mm]) => <th key={s}>{s} <small>≤{mm / 10} {t('ซม.', 'cm')}</small></th>)}</tr></thead>
         <tbody>

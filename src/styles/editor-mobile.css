@@ -175,3 +175,5 @@
   .progress-pill { flex-shrink: 0; }
   .progress-pill .bar { display: none; } /* the percentage stays; the bar is in the side panel */
 }
+/* old STL import warning (components/StlImportNote.tsx) uses the coach card with a warm edge */
+.coach.coach-warn { border-left: 4px solid #e9a21b; }

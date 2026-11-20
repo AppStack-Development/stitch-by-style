@@ -250,3 +250,12 @@
   .order-ship { grid-template-columns: 1fr; }
   .order-pay-fields { grid-template-columns: 1fr; }
 }
+/* order dialog: accept the order terms */
+.order-dialog label.order-agree { display: flex; flex-direction: row; align-items: flex-start; gap: 8px; font-size: 14px; color: var(--ink); }
+.order-dialog label.order-agree > input[type] { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; accent-color: var(--brand); }
+.order-agree a { color: var(--brand); font-weight: 600; }
+/* team page: make the prices panel read as something to open */
+.order-pricing summary { list-style: none; }
+.order-pricing summary::-webkit-details-marker { display: none; }
+.order-pricing-edit { margin-left: auto; font-size: 13px; font-weight: 600; color: var(--brand); padding: 4px 10px; border: 1px solid var(--line-2); border-radius: 8px; }
+.order-pricing[open] .order-pricing-edit { display: none; }

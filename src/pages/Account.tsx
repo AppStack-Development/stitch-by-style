@@ -308,7 +308,7 @@ function ModeratorCard() {
   if (!mod) return null;
   return (
     <section className="acct-card acct-mod">
-      <h3><Icon name="flag" size={18} /> {t('ดูแลชุมชน', 'Moderation')}</h3>
+      <h3><Icon name="flag" size={18} /> {t('หน้าทีม', 'Team')}</h3>
       <p className="muted">
         {count === null ? t('กำลังนับการแจ้ง…', 'Counting reports…')
           : count === 0 ? t('ไม่มีการแจ้งปัญหาที่รอตรวจ', 'No reports waiting for review.')
@@ -316,6 +316,7 @@ function ModeratorCard() {
       </p>
       <div className="btn-row">
         <a className={'btn' + (count ? ' primary' : '')} href="#/moderation"><Icon name="flag" size={16} /> {t('ตรวจการแจ้งปัญหา', 'Review reports')}{count ? ` (${count})` : ''}</a>
+        <a className="btn" href="#/moderation/orders"><Icon name="cube" size={16} /> {t('ออเดอร์และราคา', 'Orders and prices')}</a>
       </div>
     </section>
   );

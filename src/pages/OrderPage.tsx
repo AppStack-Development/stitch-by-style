@@ -127,6 +127,7 @@ function OrderView({ order: o, onChanged }: { order: Order; onChanged: () => voi
         <h4>{t('จัดส่งถึง', 'Deliver to')}</h4>
         <p className="order-addr">{o.address.name} · {o.address.phone}<br />{o.address.address} {o.address.postcode}</p>
         {o.note && <><h4>{t('ข้อความตอนสั่ง', 'Your note')}</h4><p className="review-note">{o.note}</p></>}
+        <p className="hint"><a className="acct-link" href="#/order-terms">{t('เงื่อนไขการสั่งซื้อ', 'Order terms')}</a>{o.termsVersion && t(` · ยอมรับฉบับ ${o.termsVersion}`, ` · accepted version ${o.termsVersion}`)}</p>
       </section>
 
       <section className="order-card-box">

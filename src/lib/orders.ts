@@ -13,6 +13,9 @@ import { lang, t } from './i18n';
 
 export const ordersEnabled = cloudEnabled;
 
+/** Version of the order terms (pages/OrderTerms.tsx) a new order agrees to; stored on every order. */
+export const ORDER_TERMS_VERSION = '2026-11-21';
+
 export type Product = 'blank' | 'kit' | 'stitched';
 export type Size = 'S' | 'M' | 'L';
 export type OrderStatus = 'awaiting_payment' | 'payment_review' | 'paid' | 'in_production' | 'shipped' | 'done' | 'cancelled';
@@ -142,6 +145,7 @@ function friendly(message: string): string {
   if (/too many messages/.test(message)) return t('ส่งข้อความหลายครั้งแล้วในชั่วโมงนี้ ลองใหม่อีกสักครู่', 'You’ve sent many messages this hour. Try again later.');
   if (/piece too large/.test(message)) return t('ชิ้นนี้ใหญ่เกินที่เราพิมพ์ได้', 'This piece is larger than we can print.');
   if (/no price set/.test(message)) return t('ยังไม่ได้ตั้งราคาสำหรับแบบนี้ ลองเลือกแบบอื่น', 'This option has no price yet. Try another one.');
+  if (/terms not accepted/.test(message)) return t('ต้องยอมรับเงื่อนไขการสั่งซื้อก่อน', 'Please accept the order terms first.');
   if (/cannot be cancelled/.test(message)) return t('ยกเลิกได้เฉพาะออเดอร์ที่ยังไม่ได้ชำระเงิน', 'Only unpaid orders can be cancelled.');
   if (navigator.onLine === false) return t('ไม่มีอินเทอร์เน็ต ลองใหม่เมื่อออนไลน์', 'You’re offline. Try again when you’re online.');
   return message;
@@ -163,6 +167,7 @@ export async function placeOrder(p: Pattern, o: OrderOptions): Promise<string> {
     quantity: Math.min(20, Math.max(1, Math.round(o.quantity))), note: o.note.trim().slice(0, 1000), lang,
     ship_name: o.address.name.trim().slice(0, 100), ship_phone: o.address.phone.trim(),
     ship_address: o.address.address.trim().slice(0, 500), ship_postcode: o.address.postcode.trim(),
+    terms_version: ORDER_TERMS_VERSION,
   };
   // a clash of two random codes is very unlikely; try once more if it happens
   for (let attempt = 0; attempt < 2; attempt++) {
@@ -185,9 +190,11 @@ export interface Order {
   unit: number; shipping: number; total: number;
   status: OrderStatus; slipPath: string | null; slipAt: string | null; paidAt: string | null;
   trackingCarrier: string; trackingNo: string; shippedAt: string | null; closedAt: string | null;
+  /** version of the order terms agreed to when ordering */
+  termsVersion: string;
 }
 
-const ORDER_COLS = 'id, code, created_at, updated_at, user_id, title, template_name, cols, rows, pitch_mm, size, colors, stitches, data, product, plastic_color, quantity, note, ship_name, ship_phone, ship_address, ship_postcode, unit_thb, shipping_thb, total_thb, status, slip_path, slip_at, paid_at, tracking_carrier, tracking_no, shipped_at, closed_at';
+const ORDER_COLS = 'id, code, created_at, updated_at, user_id, title, template_name, cols, rows, pitch_mm, size, colors, stitches, data, product, plastic_color, quantity, note, ship_name, ship_phone, ship_address, ship_postcode, unit_thb, shipping_thb, total_thb, status, slip_path, slip_at, paid_at, tracking_carrier, tracking_no, shipped_at, closed_at, terms_version';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function toOrder(r: any): Order {
@@ -200,6 +207,7 @@ function toOrder(r: any): Order {
     unit: r.unit_thb, shipping: r.shipping_thb, total: r.total_thb,
     status: r.status, slipPath: r.slip_path, slipAt: r.slip_at, paidAt: r.paid_at,
     trackingCarrier: r.tracking_carrier, trackingNo: r.tracking_no, shippedAt: r.shipped_at, closedAt: r.closed_at,
+    termsVersion: r.terms_version ?? '',
   };
 }
 

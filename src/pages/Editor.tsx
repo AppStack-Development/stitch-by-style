@@ -13,6 +13,7 @@ import { TransferDialog } from '../components/TransferDialog';
 import { TextDialog } from '../components/TextDialog';
 import { ToolSheet, type SheetSection } from '../components/ToolSheet';
 import { EditorTip, type CoachTarget } from '../components/EditorTip';
+import { StlImportNote } from '../components/StlImportNote';
 
 // three.js is large: load the 3D preview only when its tab is opened
 const Preview3D = lazy(() => import('../components/Preview3D').then((m) => ({ default: m.Preview3D })));
@@ -387,6 +388,7 @@ export function Editor({ id }: { id: string }) {
           </footer>
           {toast && <div className="toast">{toast}</div>}
           <EditorTip onTarget={setCoach} />
+          {!coach && <StlImportNote pattern={p} />}
         </section>
 
         <aside className="side">

@@ -80,6 +80,7 @@ function OrderForm({ pattern, onClose }: { pattern: Pattern; onClose: () => void
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
   const [tried, setTried] = useState(false);
+  const [agree, setAgree] = useState(false);
 
   const blocked = cannotOrder(pattern);
   const size = sizeOf(pattern);
@@ -102,7 +103,7 @@ function OrderForm({ pattern, onClose }: { pattern: Pattern; onClose: () => void
 
   const order = async () => {
     setTried(true);
-    if (!canOrder || addrErr || colorErr) return;
+    if (!canOrder || addrErr || colorErr || !agree) return;
     setBusy(true);
     setErr('');
     try {
@@ -205,6 +206,12 @@ function OrderForm({ pattern, onClose }: { pattern: Pattern; onClose: () => void
         {!price && !blocked && !err && <p className="muted small">{t('กำลังโหลดราคา…', 'Loading prices…')}</p>}
         <p className="hint">{t('กดสั่งแล้วจะไปที่หน้าออเดอร์ เพื่อชำระเงินผ่านพร้อมเพย์และแนบสลิป ทีมเริ่มผลิตหลังตรวจสลิปแล้ว ปกติส่งภายใน 5–7 วันทำการ',
           'After ordering you’ll go to the order page to pay by PromptPay and attach the slip. We start once the payment is checked; it usually ships within 5–7 working days.')}</p>
+        <label className="check order-agree">
+          <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
+          <span>{t(<>ฉันอ่านและยอมรับ <a href="#/order-terms" target="_blank" rel="noopener">เงื่อนไขการสั่งซื้อ</a> แล้ว</>,
+            <>I’ve read and accept the <a href="#/order-terms" target="_blank" rel="noopener">order terms</a></>)}</span>
+        </label>
+        {tried && !agree && <p className="error small">{t('ติ๊กยอมรับเงื่อนไขการสั่งซื้อก่อน', 'Tick to accept the order terms first')}</p>}
         {err && <p className="error small">{err}</p>}
       </div>
       <footer className="modal-foot fb-foot">

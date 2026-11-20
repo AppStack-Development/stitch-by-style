@@ -231,7 +231,7 @@ export function Home() {
             const pr = p.progress ? computeProgress(p) : null;
             return (
               <article key={p.id} className="card">
-                <a className="card-thumb" href={`#/edit/${p.id}`}><Thumb pattern={p} max={150} view="stitch" /></a>
+                <a className="card-thumb" href={`#/edit/${p.id}`} tabIndex={-1} aria-hidden="true"><Thumb pattern={p} max={150} view="stitch" /></a>
                 <div className="card-body">
                   <a className="card-title" href={`#/edit/${p.id}`}>{p.name}</a>
                   <div className="card-meta">
