@@ -1,5 +1,7 @@
 # ตั้งค่าระบบบัญชี (Supabase + Google) / Accounts setup
 
+> **เปลี่ยนชื่อ (20 พ.ย. 2569):** แอปชื่อ Cross Stitch Lab ที่ https://cross-stitch-lab.vercel.app (โดเมนเดิม stitch-by-style.vercel.app ยังอยู่และส่งผู้ใช้ไปโดเมนใหม่พร้อมข้อมูลในเครื่อง ดู src/lib/domainMove.ts) ชื่อโปรเจกต์ Supabase / Google Cloud ยังเป็น `stitch-by-style`
+>
 > **สถานะ (19 พ.ย. 2569):** ตั้งค่าเสร็จแล้ว — Supabase project `stitch-by-style` (AppStack-Dev, Singapore),
 > Google Cloud project `stitch-by-style` (appstack-dev.io, OAuth client "Stitch by Style web", In production).
 > ค่าสาธารณะอยู่ใน `.env.production` แล้ว เอกสารนี้เก็บไว้สำหรับตั้งค่าใหม่หรือย้ายโปรเจกต์
@@ -30,11 +32,11 @@
 2. **Google Auth Platform → Branding** (หรือ OAuth consent screen)
    - User type: **External**
    - App name: `Stitch by Style`, support email และ developer contact เป็นอีเมลของบริษัท
-   - App home page: `https://stitch-by-style.vercel.app`
-   - Privacy policy: `https://stitch-by-style.vercel.app/#/privacy`
+   - App home page: `https://cross-stitch-lab.vercel.app`
+   - Privacy policy: `https://cross-stitch-lab.vercel.app/#/privacy`
    - Scopes: ใช้แค่ค่าพื้นฐาน `openid`, `email`, `profile` (ไม่ต้องขอ scope อื่น)
 3. **Clients → Create client** → Application type: **Web application**
-   - Authorized JavaScript origins: `https://stitch-by-style.vercel.app` และ `http://localhost:5173`
+   - Authorized JavaScript origins: `https://cross-stitch-lab.vercel.app` และ `http://localhost:5173`
    - Authorized redirect URIs: `https://<project-ref>.supabase.co/auth/v1/callback`
      (คัดลอก URL นี้ได้จาก Supabase → Authentication → Sign In / Providers → Google)
    - กด Create แล้วเก็บ **Client ID** และ **Client secret**
@@ -44,8 +46,8 @@
 
 1. Supabase → **Authentication → Sign In / Providers → Google** → Enable → วาง Client ID และ Client secret → Save
 2. Supabase → **Authentication → URL Configuration**
-   - Site URL: `https://stitch-by-style.vercel.app`
-   - Redirect URLs: `https://stitch-by-style.vercel.app/**` และ `http://localhost:5173/**`
+   - Site URL: `https://cross-stitch-lab.vercel.app`
+   - Redirect URLs: `https://cross-stitch-lab.vercel.app/**` และ `http://localhost:5173/**`
 
 ## 4. เปิดใช้ในเว็บ
 

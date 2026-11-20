@@ -64,3 +64,7 @@
 /* print toolbar */
 .print-toolbar .seg button { min-height: calc(var(--ctl) - 2px); }
 .print-toolbar select { min-height: var(--ctl); }
+
+/* old address only: data too big to move by link (App.tsx MovedNotice) */
+.moved-notice { padding: 10px var(--page-x); background: #f2b33d33; color: var(--ink); font-size: 14px; line-height: 1.5; text-align: center; }
+.moved-notice a { color: var(--brand); font-weight: 600; }

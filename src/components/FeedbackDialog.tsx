@@ -74,7 +74,7 @@ export function FeedbackDialog() {
           <div className="fb-body fb-done">
             <Icon name="check" size={28} />
             <p><b>{t('ขอบคุณมาก ได้รับข้อความแล้ว', 'Thank you — we got your message.')}</b></p>
-            <p className="muted">{reply ? t('ถ้ามีคำถามเพิ่มเติม เราจะตอบกลับทางอีเมล', 'If we have questions, we’ll reply by email.') : t('ทุกข้อความช่วยให้ Stitch by Style ดีขึ้น', 'Every message helps make Stitch by Style better.')}</p>
+            <p className="muted">{reply ? t('ถ้ามีคำถามเพิ่มเติม เราจะตอบกลับทางอีเมล', 'If we have questions, we’ll reply by email.') : t('ทุกข้อความช่วยให้ Cross Stitch Lab ดีขึ้น', 'Every message helps make Cross Stitch Lab better.')}</p>
           </div>
         ) : (
           <div className="fb-body">

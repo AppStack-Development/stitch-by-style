@@ -17,7 +17,7 @@ interface Props {
  * trailing the thread. Drawn as SVG in a 100x100 box; strokes keep a minimum on-screen width so
  * small sizes stay legible, and the hole grid is left out below 24 px.
  */
-export function LogoMark({ size = 36, className, title = 'Stitch by Style' }: Props) {
+export function LogoMark({ size = 36, className, title = 'Cross Stitch Lab' }: Props) {
   const S = 100;
   const cell = (S * g.span) / ROWS;
   const x0 = S * g.x0, y0 = S * g.y0;

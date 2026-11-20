@@ -142,7 +142,7 @@ function svg() {
   const thread = 'M' + L.thread.map(([x, y]) => `${f(x)} ${f(y)}`).join('L');
   const shaft = 'M' + L.outline.map(([a, n]) => `${f(a)} ${f(n)}`).join('L') + 'Z';
   const ea = f(L.L * N.eyeAt), w = f(L.w);
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${S} ${S}"><title>Stitch by Style</title>` +
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${S} ${S}"><title>Cross Stitch Lab</title>` +
     `<defs><clipPath id="t"><rect width="${S}" height="${S}" rx="${f(G.tileRadius)}"/></clipPath>` +
     `<linearGradient id="n" gradientUnits="userSpaceOnUse" x1="0" y1="${-w}" x2="0" y2="${w}"><stop offset="0" stop-color="${colors.needleLight}"/><stop offset=".4" stop-color="${colors.needleMid}"/><stop offset="1" stop-color="${colors.needleDark}"/></linearGradient></defs>` +
     `<rect width="${S}" height="${S}" rx="${f(G.tileRadius)}" fill="${colors.tile}"/><g clip-path="url(#t)">` +

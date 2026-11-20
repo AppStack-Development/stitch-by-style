@@ -87,8 +87,8 @@ export function Community({ tag: initialTag }: { tag?: string }) {
         <section className="community-intro">
           <div>
             <h1>{t('ลายจากชุมชน', 'Community patterns')}</h1>
-            <p className="muted">{t('ลายที่ผู้ใช้ Stitch by Style แชร์ไว้ กดลองปักหรือเอาไปแก้เป็นลายของคุณได้เลย ไม่ต้องเข้าสู่ระบบ',
-              'Patterns shared by Stitch by Style users. Stitch one or make it your own; no account needed.')}</p>
+            <p className="muted">{t('ลายที่ผู้ใช้ Cross Stitch Lab แชร์ไว้ กดลองปักหรือเอาไปแก้เป็นลายของคุณได้เลย ไม่ต้องเข้าสู่ระบบ',
+              'Patterns shared by Cross Stitch Lab users. Stitch one or make it your own; no account needed.')}</p>
           </div>
           {communityEnabled && (
             <button className="btn primary" onClick={() => setSharing(true)}><Icon name="send" size={16} /> {t('แชร์ลายของคุณ', 'Share your pattern')}</button>

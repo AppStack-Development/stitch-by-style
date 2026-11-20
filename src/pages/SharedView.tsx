@@ -38,7 +38,7 @@ export function SharedView({ data }: { data: string }) {
   return (
     <div className="shared">
       <header className="site-head">
-        <a className="brand" href="#/" aria-label={t('Stitch by Style หน้าแรก', 'Stitch by Style home')}><LogoMark size={36} /><span className="wordmark">Stitch by Style</span></a>
+        <a className="brand" href="#/" aria-label={t('Cross Stitch Lab หน้าแรก', 'Cross Stitch Lab home')}><LogoMark size={36} /><span className="wordmark">Cross Stitch Lab</span></a>
         <div className="spacer" /><AccountButton /><LangSwitch />
       </header>
       <div className="shared-body">

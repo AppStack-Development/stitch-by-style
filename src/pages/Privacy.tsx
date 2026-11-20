@@ -36,8 +36,8 @@ export function Privacy() {
           )}</p>
 
           <Sec title={t('ใครดูแลบริการนี้', 'Who runs this service')}>
-            <p>{t('Stitch by Style ดำเนินการโดย AppStack Development ซึ่งเป็นผู้ควบคุมข้อมูลส่วนบุคคลของคุณ',
-              'Stitch by Style is operated by AppStack Development, the data controller for your personal data.')}</p>
+            <p>{t('Cross Stitch Lab ดำเนินการโดย AppStack Development ซึ่งเป็นผู้ควบคุมข้อมูลส่วนบุคคลของคุณ',
+              'Cross Stitch Lab is operated by AppStack Development, the data controller for your personal data.')}</p>
           </Sec>
 
           <Sec title={t('ใช้งานโดยไม่มีบัญชี', 'Using it without an account')}>

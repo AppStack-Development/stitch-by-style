@@ -129,11 +129,11 @@ export async function lastAddress(): Promise<Address | null> {
   return data ? { name: data.ship_name, phone: data.ship_phone, address: data.ship_address, postcode: data.ship_postcode } : null;
 }
 
-/** SBS- + 6 characters that are easy to read aloud and type (no 0/O, 1/I). */
+/** CSL- + 6 characters that are easy to read aloud and type (no 0/O, 1/I). */
 function newCode(): string {
   const abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
   const rnd = crypto.getRandomValues(new Uint8Array(6));
-  return 'SBS-' + Array.from(rnd, (b) => abc[b % abc.length]).join('');
+  return 'CSL-' + Array.from(rnd, (b) => abc[b % abc.length]).join('');
 }
 
 /** Turns the database's own error words into something a customer can act on. */

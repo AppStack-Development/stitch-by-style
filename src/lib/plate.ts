@@ -55,7 +55,7 @@ export function buildPlate(p: PlateSource, thickness: number, holeRatio: number)
 }
 
 /** Encode triangle positions as a binary STL file. */
-export function toBinaryStl(pos: Float32Array, name = 'stitch-by-style'): Blob {
+export function toBinaryStl(pos: Float32Array, name = 'cross-stitch-lab'): Blob {
   const triCount = pos.length / 9;
   const buf = new ArrayBuffer(84 + triCount * 50);
   const dv = new DataView(buf);

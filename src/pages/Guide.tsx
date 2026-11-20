@@ -60,7 +60,7 @@ function useSections(): Section[] {
       id: 'start', title: t('เริ่มต้นใช้งาน', 'Getting started'), icon: 'info',
       body: t(
         <>
-          <p>Stitch by Style ใช้ออกแบบลายปักแบบครอสติช (cross stitch) ทั้งบน<b>ผ้า Aida</b> และบน<b>ชิ้นงานพิมพ์ 3 มิติ</b>ที่เจาะรูไว้ให้ปัก เช่น พวงกุญแจ ที่คั่นหนังสือ หรือฝากล่อง</p>
+          <p>Cross Stitch Lab ใช้ออกแบบลายปักแบบครอสติช (cross stitch) ทั้งบน<b>ผ้า Aida</b> และบน<b>ชิ้นงานพิมพ์ 3 มิติ</b>ที่เจาะรูไว้ให้ปัก เช่น พวงกุญแจ ที่คั่นหนังสือ หรือฝากล่อง</p>
           <ol>
             <li>ที่หน้าแรก กด <b>“สร้างลายจากรูป”</b> (<Go to="quick">ง่ายที่สุด</Go>) หรือเลือกโหมดขั้นสูง <b>“ออกแบบอิสระ”</b> / <b>“ใช้โมเดลแม่แบบ”</b> หรือลอง<b>ลายตัวอย่าง</b> และ<Go to="community">ลายจากชุมชน</Go>ที่คนอื่นแชร์ไว้</li>
             <li>เติมสีลงในช่องด้วยเครื่องมือวาด หรือแปลงจากรูปภาพ</li>
@@ -71,7 +71,7 @@ function useSections(): Section[] {
           <Note>ลายบันทึกอัตโนมัติไว้ใน<b>เบราว์เซอร์ของเครื่องนี้</b> ถ้าเข้าสู่ระบบ (ไม่บังคับ) จะซิงก์ไปทุกเครื่องด้วย ดูวิธีย้ายเครื่องและสำรองข้อมูลได้ที่ <Go to="data">การเก็บข้อมูล</Go></Note>
         </>,
         <>
-          <p>Stitch by Style lets you design cross stitch patterns for both <b>Aida fabric</b> and <b>3D-printed pieces</b> with stitch holes, such as keychains, bookmarks or box lids.</p>
+          <p>Cross Stitch Lab lets you design cross stitch patterns for both <b>Aida fabric</b> and <b>3D-printed pieces</b> with stitch holes, such as keychains, bookmarks or box lids.</p>
           <ol>
             <li>On the home page, tap <b>“Pattern from a photo”</b> (<Go to="quick">the easiest way</Go>), pick an advanced mode, <b>“Free design”</b> or <b>“Use a template”</b>, or try a <b>sample pattern</b> or one of the <Go to="community">community patterns</Go> others have shared.</li>
             <li>Fill in the cells with the drawing tools, or convert an image.</li>
@@ -135,7 +135,7 @@ function useSections(): Section[] {
       id: 'community', title: t('ลายจากชุมชน', 'Community patterns'), icon: 'people',
       body: t(
         <>
-          <p>ลายที่ผู้ใช้ Stitch by Style แชร์ไว้ให้ทุกคนใช้ เปิดได้จาก <b>“ลายจากชุมชน”</b> บนหน้าแรก (กด “ดูทั้งหมด”) ดูและปักได้โดย<b>ไม่ต้องเข้าสู่ระบบ</b></p>
+          <p>ลายที่ผู้ใช้ Cross Stitch Lab แชร์ไว้ให้ทุกคนใช้ เปิดได้จาก <b>“ลายจากชุมชน”</b> บนหน้าแรก (กด “ดูทั้งหมด”) ดูและปักได้โดย<b>ไม่ต้องเข้าสู่ระบบ</b></p>
           <ul>
             <li>กรองลายบนผ้า / ชิ้นงาน 3D และหมวด เช่น สัตว์ เทศกาล หรือเรียงตาม “หัวใจมากสุด”</li>
             <li><b>ลองปัก</b> บันทึกสำเนาไว้ในเครื่องแล้วเปิดโหมดปักทันที ครั้งต่อไปปุ่มจะเป็น “ปักต่อ”</li>
@@ -148,7 +148,7 @@ function useSections(): Section[] {
           <Tip>เจอลายที่เป็นงานของคนอื่นหรือไม่เหมาะสม กด <b>“แจ้งปัญหา”</b> ท้ายหน้าลาย ทีมงานจะตรวจภายใน 7 วัน</Tip>
         </>,
         <>
-          <p>Patterns Stitch by Style users have shared for everyone. Open them from <b>“Community patterns”</b> on the home page (tap “See all”). You can browse and stitch them <b>without an account</b>.</p>
+          <p>Patterns Cross Stitch Lab users have shared for everyone. Open them from <b>“Community patterns”</b> on the home page (tap “See all”). You can browse and stitch them <b>without an account</b>.</p>
           <ul>
             <li>Filter by fabric / 3D prints and by category, such as animals or holidays, or sort by “Most liked”.</li>
             <li><b>Stitch it</b> saves a copy on this device and opens Stitch mode right away; next time the button says “Continue stitching”.</li>

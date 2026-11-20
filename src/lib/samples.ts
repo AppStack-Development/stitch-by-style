@@ -31,7 +31,7 @@ function palette(legend: Legend) {
   return { pal, index };
 }
 
-const AUTHOR = 'Stitch by Style';
+const AUTHOR = 'Cross Stitch Lab';
 
 export function fabric(o: { name: string; description: string; tags: string[]; difficulty: PatternDetails['difficulty']; art: string[]; legend: Legend }): Pattern {
   const m = 3; // empty fabric around the design

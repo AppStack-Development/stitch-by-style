@@ -447,7 +447,7 @@ function SignedIn() {
     setExporting(true);
     setErr('');
     try {
-      downloadBlob(await exportMyData(), `stitch-by-style-data-${today()}.json`);
+      downloadBlob(await exportMyData(), `cross-stitch-lab-data-${today()}.json`);
     } catch (e) {
       setErr(errText(e));
     } finally {

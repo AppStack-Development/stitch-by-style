@@ -105,7 +105,7 @@ export function PrintView({ pattern: p, backHref = '#/', onBack }: Props) {
               {d.tags.length > 0 && <> · {d.tags.map((tag) => '#' + tag).join(' ')}</>}
             </p>
           </div>
-          <span className="sheet-brand">Stitch by Style</span>
+          <span className="sheet-brand">Cross Stitch Lab</span>
         </header>
         <div className="sheet-cover">
           <div className="sheet-thumb"><Thumb pattern={p} max={260} view="stitch" /></div>

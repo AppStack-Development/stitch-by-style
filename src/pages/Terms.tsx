@@ -28,8 +28,8 @@ export function Terms() {
           <h1>{t('ข้อกำหนดการแชร์ลายในชุมชน', 'Terms for sharing in the community')}</h1>
           <p className="hint">{t('ปรับปรุงล่าสุด 19 พ.ย. 2569', 'Last updated 19 Nov 2026')}</p>
           <p className="privacy-lead">{t(
-            'ข้อกำหนดนี้ใช้เมื่อคุณแชร์ลายใน “ลายจากชุมชน” ของ Stitch by Style หรือนำลายจากชุมชนไปใช้ ถ้าแค่ออกแบบและเก็บลายไว้ใช้เอง ข้อกำหนดนี้ไม่เกี่ยวกับคุณ',
-            'These terms apply when you share a pattern in Stitch by Style’s community gallery, or use a pattern from it. If you only design patterns for yourself, they don’t apply to you.',
+            'ข้อกำหนดนี้ใช้เมื่อคุณแชร์ลายใน “ลายจากชุมชน” ของ Cross Stitch Lab หรือนำลายจากชุมชนไปใช้ ถ้าแค่ออกแบบและเก็บลายไว้ใช้เอง ข้อกำหนดนี้ไม่เกี่ยวกับคุณ',
+            'These terms apply when you share a pattern in Cross Stitch Lab’s community gallery, or use a pattern from it. If you only design patterns for yourself, they don’t apply to you.',
           )}</p>
 
           <Sec title={t('เมื่อคุณแชร์ลาย คุณยืนยันว่า', 'When you share a pattern, you confirm that')}>

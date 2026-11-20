@@ -2,7 +2,7 @@ import type { Pattern } from '../types';
 import { fabric, onTemplate, type Legend } from '../lib/samples';
 
 /**
- * Patterns the Stitch by Style team shares in the community gallery (not seasonal, unlike lib/samples.ts).
+ * Patterns the Cross Stitch Lab team shares in the community gallery (not seasonal, unlike lib/samples.ts).
  * Not part of the app bundle: nothing imports this file. To preview or publish, in the dev server's
  * browser console while signed in with the team account:
  *   const m = await import('/src/dev/teamPatterns.ts'); await m.publishTeamPatterns();
@@ -232,12 +232,12 @@ export const TEAM_PATTERNS: TeamPattern[] = [
 
 // ---------- "ภูตน้อย" series: the team's own original little monsters (not based on any existing character) ----------
 
-const FUFU = { title: 'ภูตน้อย ฟูฟู', description: 'ภูตเมฆปุยตัวกลมแก้มชมพู ลอยไปไหนมีรุ้งสามสีตามหลัง ลายแรกของชุดภูตน้อยจากทีม Stitch by Style' };
-const BAITOEY = { title: 'ภูตน้อย ใบเตย', description: 'กระต่ายหูใบไม้ ทัดดอกไม้สีชมพูไว้บนหัว ชอบนอนกลางสวน ชุดภูตน้อยจากทีม Stitch by Style' };
-const KONHIN = { title: 'ภูตน้อย ก้อนหิน', description: 'เต่าตัวจิ๋วที่มีผลึกสีฟ้างอกบนกระดอง เดินช้าแต่ใจดี ชุดภูตน้อยจากทีม Stitch by Style' };
-const FAICHAI = { title: 'ภูตน้อย ไฟฉาย', description: 'หิ่งห้อยตัวกลมปีกใส หางเรืองแสงสีเหลืองนำทางในคืนมืด ชุดภูตน้อยจากทีม Stitch by Style' };
-const PLADAO = { title: 'ภูตน้อย ปลาดาว', description: 'ปลาดาวสีส้มอมชมพูใส่หมวกฟางไปเที่ยวทะเล ชุดภูตน้อยจากทีม Stitch by Style' };
-const MOKKWAN = { title: 'ภูตน้อย หมอกควัน', description: 'ผีน้อยขี้อายแอบมองอยู่หลังก้อนเมฆ แก้มแดงทุกครั้งที่มีคนทัก ชุดภูตน้อยจากทีม Stitch by Style' };
+const FUFU = { title: 'ภูตน้อย ฟูฟู', description: 'ภูตเมฆปุยตัวกลมแก้มชมพู ลอยไปไหนมีรุ้งสามสีตามหลัง ลายแรกของชุดภูตน้อยจากทีม Cross Stitch Lab' };
+const BAITOEY = { title: 'ภูตน้อย ใบเตย', description: 'กระต่ายหูใบไม้ ทัดดอกไม้สีชมพูไว้บนหัว ชอบนอนกลางสวน ชุดภูตน้อยจากทีม Cross Stitch Lab' };
+const KONHIN = { title: 'ภูตน้อย ก้อนหิน', description: 'เต่าตัวจิ๋วที่มีผลึกสีฟ้างอกบนกระดอง เดินช้าแต่ใจดี ชุดภูตน้อยจากทีม Cross Stitch Lab' };
+const FAICHAI = { title: 'ภูตน้อย ไฟฉาย', description: 'หิ่งห้อยตัวกลมปีกใส หางเรืองแสงสีเหลืองนำทางในคืนมืด ชุดภูตน้อยจากทีม Cross Stitch Lab' };
+const PLADAO = { title: 'ภูตน้อย ปลาดาว', description: 'ปลาดาวสีส้มอมชมพูใส่หมวกฟางไปเที่ยวทะเล ชุดภูตน้อยจากทีม Cross Stitch Lab' };
+const MOKKWAN = { title: 'ภูตน้อย หมอกควัน', description: 'ผีน้อยขี้อายแอบมองอยู่หลังก้อนเมฆ แก้มแดงทุกครั้งที่มีคนทัก ชุดภูตน้อยจากทีม Cross Stitch Lab' };
 
 const MONSTER_TAGS = ['characters', 'cute'];
 
@@ -407,6 +407,30 @@ export async function publishTeamPatterns(opts: { dryRun?: boolean } = {}) {
     const { error } = await c.from('posts').insert(row);
     out.push({ title: tp.title, result: error ? `error: ${error.message}` : 'shared' });
     await new Promise((r) => setTimeout(r, 300));
+  }
+  return out;
+}
+
+/**
+ * One-off after the rename to Cross Stitch Lab: rewrite the designer name stored inside each of the team's
+ * shared patterns. Only `data` changes; titles, likes and links stay. Run signed in as the team account.
+ */
+export async function renameTeamAuthor(from = 'Stitch by Style', to = 'Cross Stitch Lab', opts: { dryRun?: boolean } = {}) {
+  const { client, getCloud } = await import('../lib/cloud');
+  const { decodeShare, encodeShare } = await import('../lib/share');
+  const u = getCloud().user;
+  if (!u) throw new Error('sign in with the team account first');
+  const c = await client();
+  const { data: rows, error } = await c.from('posts').select('id, title, data').eq('author', u.id);
+  if (error) throw new Error(error.message);
+  const out: { title: string; result: string }[] = [];
+  for (const r of (rows ?? []) as { id: string; title: string; data: string }[]) {
+    const p = await decodeShare(r.data);
+    if (p.details.author !== from) { out.push({ title: r.title, result: `left as "${p.details.author}"` }); continue; }
+    if (opts.dryRun) { out.push({ title: r.title, result: 'would rename' }); continue; }
+    const data = await encodeShare({ ...p, details: { ...p.details, author: to } });
+    const { error: e } = await c.from('posts').update({ data }).eq('id', r.id).eq('author', u.id);
+    out.push({ title: r.title, result: e ? `error: ${e.message}` : 'renamed' });
   }
   return out;
 }

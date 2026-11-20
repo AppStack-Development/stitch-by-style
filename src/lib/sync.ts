@@ -273,7 +273,7 @@ export async function exportMyData(): Promise<Blob> {
   ]);
   if (error) throw error;
   const out = {
-    app: 'Stitch by Style',
+    app: 'Cross Stitch Lab',
     exportedAt: new Date().toISOString(),
     account: { email: user.email, name: user.name },
     profile,

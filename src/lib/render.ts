@@ -226,6 +226,6 @@ export function exportPng(p: Pattern, view: ViewMode): Promise<Blob> {
   });
   ctx.fillStyle = '#9aa0ad';
   ctx.font = `400 13px ${FONT}`;
-  ctx.fillText(tr('สร้างด้วย Stitch by Style', 'Made with Stitch by Style'), 40, H - 16);
+  ctx.fillText(tr('สร้างด้วย Cross Stitch Lab', 'Made with Cross Stitch Lab'), 40, H - 16);
   return new Promise((res, rej) => c.toBlob((b) => (b ? res(b) : rej(new Error('PNG failed'))), 'image/png'));
 }

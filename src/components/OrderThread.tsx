@@ -56,7 +56,7 @@ export function OrderThread({ orderId, asTeam }: { orderId: number; asTeam: bool
             const own = m.fromTeam === asTeam;
             return (
               <li key={m.id} className={own ? 'own' : ''}>
-                <span className="order-msg-who">{m.fromTeam ? t('ทีม Stitch by Style', 'Stitch by Style team') : asTeam ? t('ลูกค้า', 'Customer') : t('คุณ', 'You')} · {when(m.createdAt)}</span>
+                <span className="order-msg-who">{m.fromTeam ? t('ทีม Cross Stitch Lab', 'Cross Stitch Lab team') : asTeam ? t('ลูกค้า', 'Customer') : t('คุณ', 'You')} · {when(m.createdAt)}</span>
                 <p>{m.body}</p>
               </li>
             );

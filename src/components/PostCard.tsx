@@ -20,7 +20,7 @@ export function usePostPattern(post: Post | null): Pattern | null {
   return p;
 }
 
-/** "จากทีม" badge for the official Stitch by Style account. */
+/** "จากทีม" badge for the official Cross Stitch Lab account. */
 export function TeamBadge() {
   return <span className="team-badge">{t('จากทีม', 'Team')}</span>;
 }

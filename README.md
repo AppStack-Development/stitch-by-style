@@ -1,4 +1,4 @@
-# Stitch by Style
+# Cross Stitch Lab
 
 เว็บสำหรับออกแบบลายปัก (cross stitch / stitch embroidery) บนผ้า Aida และชิ้นงานพิมพ์ 3 มิติที่เจาะรูไว้ให้ปัก
 

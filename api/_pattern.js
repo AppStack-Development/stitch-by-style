@@ -7,7 +7,7 @@ import zlib from 'node:zlib';
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://pokdpqxnwrotzcokrkah.supabase.co';
 const SUPABASE_KEY = process.env.SUPABASE_KEY || 'sb_publishable_-rIX4lDj5gODo8PjY6GTeA_-m0Ve_n-';
 
-export const SITE = 'https://stitch-by-style.vercel.app';
+export const SITE = 'https://cross-stitch-lab.vercel.app';
 
 /** Post ids are short lowercase hex (see 0003_community.sql); anything else is rejected before any request. */
 export const validId = (id) => typeof id === 'string' && /^[a-z0-9]{6,32}$/.test(id);

@@ -134,7 +134,7 @@ export function Home() {
       try {
         raw = JSON.parse(await f.text());
       } catch {
-        throw new Error(t('ไฟล์นี้ไม่ใช่ไฟล์ลาย (.json) ที่ส่งออกจาก Stitch by Style', 'This is not a pattern file (.json) exported from Stitch by Style'));
+        throw new Error(t('ไฟล์นี้ไม่ใช่ไฟล์ลาย (.json) ที่ส่งออกจาก Cross Stitch Lab', 'This is not a pattern file (.json) exported from Cross Stitch Lab'));
       }
       const p = normalizePattern(raw);
       const copy = { ...p, id: uid(), postId: undefined, updatedAt: Date.now() };
@@ -154,7 +154,7 @@ export function Home() {
   return (
     <div className="home">
       <header className="site-head">
-        <a className="brand" href="#/" aria-label={t('Stitch by Style หน้าแรก', 'Stitch by Style home')}><LogoMark size={36} /><span className="wordmark">Stitch by Style</span></a>
+        <a className="brand" href="#/" aria-label={t('Cross Stitch Lab หน้าแรก', 'Cross Stitch Lab home')}><LogoMark size={36} /><span className="wordmark">Cross Stitch Lab</span></a>
         <div className="spacer" />
         {(inst.canPrompt || inst.iosManual) && (
           <button className="btn install-btn" onClick={() => (inst.canPrompt ? inst.install() : setIosHelp(!iosHelp))} title={t('ติดตั้งเป็นแอปบนหน้าจอโฮม ใช้งานได้แม้ออฟไลน์', 'Install as an app on your home screen; works offline')}>
@@ -261,7 +261,7 @@ export function Home() {
       </section>
 
       <footer className="site-foot">
-        <span>Stitch by Style · AppStack Development</span>
+        <span>Cross Stitch Lab · AppStack Development</span>
         <span className="spacer" />
         <a href="#/guide">{t('คู่มือ', 'Guide')}</a>
         <a href="#/privacy">{t('นโยบายความเป็นส่วนตัว', 'Privacy')}</a>

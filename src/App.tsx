@@ -19,6 +19,7 @@ import { OrderPage } from './pages/OrderPage';
 import { MergeDialog } from './components/MergeDialog';
 import { FeedbackDialog } from './components/FeedbackDialog';
 import { loadPattern } from './lib/storage';
+import { NEW_ORIGIN, stuckOnOldDomain } from './lib/domainMove';
 import { t } from './lib/i18n';
 
 export function navigate(hash: string) {
@@ -40,7 +41,17 @@ function useHash() {
 
 export function App() {
   // the account merge question can come up on any page right after signing in
-  return <><Routes /><MergeDialog /><FeedbackDialog /></>;
+  return <>{stuckOnOldDomain && <MovedNotice />}<Routes /><MergeDialog /><FeedbackDialog /></>;
+}
+
+/** Only on the old address when this browser has too much data to carry over in a link. */
+function MovedNotice() {
+  return (
+    <div className="moved-notice" role="status">
+      {t(<>เราย้ายไปที่ <a href={NEW_ORIGIN}>cross-stitch-lab.vercel.app</a> แล้ว ลายในเครื่องนี้มีมากเกินกว่าจะย้ายให้อัตโนมัติ <a href="#/account">เข้าสู่ระบบ</a> เพื่อเก็บลายไว้ในบัญชี แล้วเข้าสู่ระบบอีกครั้งที่เว็บใหม่</>,
+        <>We’ve moved to <a href={NEW_ORIGIN}>cross-stitch-lab.vercel.app</a>. This browser has too many patterns to carry over automatically: <a href="#/account">sign in</a> to keep them in your account, then sign in again on the new site.</>)}
+    </div>
+  );
 }
 
 function Routes() {
