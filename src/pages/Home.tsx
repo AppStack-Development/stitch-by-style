@@ -10,7 +10,7 @@ import { Icon } from '../components/Icon';
 import { LogoMark, Wordmark } from '../components/LogoMark';
 import { navigate } from '../App';
 import { useInstall } from '../lib/pwa';
-import { TEMPLATES } from '../lib/templates';
+import { TEMPLATES, templateLabel } from '../lib/templates';
 import { t, locale } from '../lib/i18n';
 import { LangSwitch } from '../components/LangSwitch';
 import { AccountButton } from '../components/AccountButton';
@@ -21,6 +21,8 @@ import { communityEnabled, listPosts, myLikes, type Post } from '../lib/communit
 import { useCloud } from '../lib/cloud';
 import { PostCard } from '../components/PostCard';
 import { APP_NAME } from '../lib/brand';
+
+const colorCount = (n: number) => t(`${n} สี`, `${n} ${n === 1 ? 'color' : 'colors'}`);
 
 /**
  * Card art drawn from the real heart-keychain template, so every hole sits exactly
@@ -235,7 +237,7 @@ export function Home() {
                 <div className="card-body">
                   <a className="card-title" href={`#/edit/${p.id}`}>{p.name}</a>
                   <div className="card-meta">
-                    {p.templateName ?? t('ออกแบบอิสระ', 'Free design')} · {p.cols}×{p.rows} · {t(`${st.colors.filter((c) => c.count).length} สี`, `${st.colors.filter((c) => c.count).length} colors`)}
+                    {templateLabel(p.templateName) ?? t('ออกแบบอิสระ', 'Free design')} · {p.cols}×{p.rows} · {colorCount(st.colors.filter((c) => c.count).length)}
                   </div>
                   {pr && pr.total > 0 && (
                     <div className="card-progress" title={t(`ปักแล้ว ${pr.done}/${pr.total} ฝีเข็ม`, `${pr.done}/${pr.total} stitches done`)}>

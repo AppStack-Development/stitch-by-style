@@ -9,6 +9,7 @@ import { useCloud } from '../lib/cloud';
 import { decodeShare } from '../lib/share';
 import { trackStep } from '../lib/analytics';
 import { t, locale } from '../lib/i18n';
+import { templateLabel } from '../lib/templates';
 import { Thumb } from '../components/Thumb';
 import { Icon } from '../components/Icon';
 import { AccountButton } from '../components/AccountButton';
@@ -111,7 +112,7 @@ function OrderView({ order: o, onChanged }: { order: Order; onChanged: () => voi
           </a>
           <div>
             <b>{o.title}</b>
-            <p className="muted small">{o.templateName ?? '3D'} · {cm(w)} × {cm(h)} {t('ซม.', 'cm')} · {SIZE_LABEL[o.size]()}</p>
+            <p className="muted small">{templateLabel(o.templateName) ?? '3D'} · {cm(w)} × {cm(h)} {t('ซม.', 'cm')} · {SIZE_LABEL[o.size]()}</p>
             <ul className="order-facts">
               <li><span>{t('แบบ', 'Product')}</span><b>{productName(o.product)}</b></li>
               <li><span>{t('สีพลาสติก', 'Plastic')}</span><b>{o.plasticColor || '–'}</b></li>

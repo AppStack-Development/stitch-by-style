@@ -3,6 +3,7 @@ import type { Post } from '../lib/community';
 import { amModerator, decide, recentlyHandled, reviewQueue, DECISION_LABEL, REASON_LABEL, type Decision, type ReviewItem } from '../lib/moderation';
 import { useCloud } from '../lib/cloud';
 import { t, locale } from '../lib/i18n';
+import { templateLabel } from '../lib/templates';
 import { Thumb } from '../components/Thumb';
 import { Icon } from '../components/Icon';
 import { LangSwitch } from '../components/LangSwitch';
@@ -16,6 +17,7 @@ import { OrderThread } from '../components/OrderThread';
 import { SlipPeek } from './OrderPage';
 import { decodeShare, downloadBlob, safeFilename } from '../lib/share';
 import { buildPlate, toBinaryStl } from '../lib/plate';
+import { computeStats } from '../lib/stats';
 
 type Tab = 'open' | 'handled' | 'orders';
 
@@ -257,7 +259,10 @@ function PricingEditor() {
     let live = true;
     loadPricing().then((p) => {
       if (!live) return;
-      const v: Record<string, string> = { shipping: String(p.shipping), promptpay_id: p.promptpayId, promptpay_name: p.promptpayName };
+      const v: Record<string, string> = {
+        shipping: String(p.shipping), promptpay_id: p.promptpayId, promptpay_name: p.promptpayName,
+        stitch_rate: Number.isFinite(p.stitchRateSatang) ? (p.stitchRateSatang / 100).toFixed(2) : '',
+      };
       for (const pr of PRODUCTS) for (const [s] of SIZE_LIMITS) v[`price:${pr.id}:${s}`] = String(p.prices[`${pr.id}:${s}`] ?? '');
       setVals(v);
       setSaved(v);
@@ -267,6 +272,7 @@ function PricingEditor() {
   if (!vals) return msg ? <p className="error small">{msg}</p> : null;
   const changed = Object.keys(vals).filter((k) => vals[k] !== saved[k]);
   const badNumber = Object.keys(vals).some((k) => (k.startsWith('price:') || k === 'shipping') && !/^[0-9]{1,6}$/.test(vals[k].trim()));
+  const badRate = !/^[0-9]{1,2}(\.[0-9]{1,2})?$/.test(vals.stitch_rate.trim());
   const ppDigits = vals.promptpay_id.replace(/[^0-9]/g, '');
   const badPP = !!vals.promptpay_id.trim() && !promptPayPayload(vals.promptpay_id, 1);
   const save = async () => {
@@ -290,23 +296,27 @@ function PricingEditor() {
         <thead><tr><th>{t('บาท/ชิ้น', 'THB per piece')}</th>{SIZE_LIMITS.map(([s, mm]) => <th key={s}>{s} <small>≤{mm / 10} {t('ซม.', 'cm')}</small></th>)}</tr></thead>
         <tbody>
           {PRODUCTS.map((pr) => (
-            <tr key={pr.id}><th>{pr.name()}</th>
+            <tr key={pr.id}><th>{pr.name()}{pr.id === 'stitched' && <small> {t('(ราคาตั้งต้น)', '(starting price)')}</small>}</th>
               {SIZE_LIMITS.map(([s]) => <td key={s}><input inputMode="numeric" value={vals[`price:${pr.id}:${s}`]} onChange={set(`price:${pr.id}:${s}`)} aria-label={`${pr.name()} ${s}`} /></td>)}
             </tr>
           ))}
         </tbody>
       </table>
       <div className="order-pay-fields">
+        <label className="fb-field"><span>{t('ปักเสร็จ: ค่าปักต่อฝีเข็ม (บาท)', 'Fully stitched: per stitch (THB)')}</span><input inputMode="decimal" value={vals.stitch_rate} onChange={set('stitch_rate')} /></label>
         <label className="fb-field"><span>{t('ค่าจัดส่ง (บาท/ออเดอร์)', 'Shipping (THB per order)')}</span><input inputMode="numeric" value={vals.shipping} onChange={set('shipping')} /></label>
         <label className="fb-field"><span>{t('พร้อมเพย์ (เบอร์มือถือหรือเลขผู้เสียภาษี)', 'PromptPay (mobile or tax id)')}</span><input inputMode="numeric" value={vals.promptpay_id} onChange={set('promptpay_id')} autoComplete="off" /></label>
         <label className="fb-field"><span>{t('ชื่อบัญชีที่ลูกค้าจะเห็น', 'Account name customers see')}</span><input value={vals.promptpay_name} maxLength={100} onChange={set('promptpay_name')} /></label>
       </div>
+      <p className="hint">{t('ปักเสร็จคิดราคา = ราคาตั้งต้นตามขนาด + ค่าปักต่อฝีเข็ม × จำนวนฝีเข็มของลาย แล้วปัดขึ้นให้ลงท้ายด้วย 9 เช่น 159 + 0.30 × 214 = 223.2 → 229 บาท',
+        'Fully stitched = the starting price for the size + the per-stitch rate × the pattern’s stitches, rounded up to end in 9, e.g. 159 + 0.30 × 214 = 223.2 → 229.')}</p>
       <p className="hint">{t('ราคาใหม่ใช้กับออเดอร์ที่สั่งหลังบันทึก ออเดอร์เดิมคงราคาเดิม พร้อมเพย์จะเห็นได้เฉพาะผู้ใช้ที่เข้าสู่ระบบ',
         'New prices apply to orders placed after saving; existing orders keep theirs. Only signed-in users can see the PromptPay details.')}</p>
       {badNumber && <p className="error small">{t('ราคาต้องเป็นตัวเลขเต็ม', 'Prices must be whole numbers')}</p>}
+      {badRate && <p className="error small">{t('ค่าปักต่อฝีเข็มต้องเป็นตัวเลข ทศนิยมไม่เกิน 2 ตำแหน่ง เช่น 0.30', 'The per-stitch rate must be a number with up to 2 decimals, e.g. 0.30')}</p>}
       {badPP && <p className="error small">{t('พร้อมเพย์ต้องเป็นเบอร์มือถือ 10 หลัก หรือเลข 13 หลัก', 'PromptPay must be a 10-digit mobile number or a 13-digit id')}</p>}
       <div className="btn-row">
-        <button className="btn primary sm" onClick={save} disabled={busy || !changed.length || badNumber || badPP}>{busy ? t('กำลังบันทึก…', 'Saving…') : t('บันทึกราคา', 'Save')}</button>
+        <button className="btn primary sm" onClick={save} disabled={busy || !changed.length || badNumber || badRate || badPP}>{busy ? t('กำลังบันทึก…', 'Saving…') : t('บันทึกราคา', 'Save')}</button>
         {msg && <span className="hint">{msg}</span>}
       </div>
     </details>
@@ -355,6 +365,8 @@ function OrderCard({ order }: { order: Order }) {
   };
   // the size the customer paid for, checked against the pattern itself
   const real = p ? sizeOf(p) : null;
+  // the stitch count the price was based on (fully stitched), checked the same way
+  const realStitches = p ? computeStats(p).total : null;
   const { w, h } = p ? pieceMm(p) : pieceMm(o);
 
   return (
@@ -368,8 +380,9 @@ function OrderCard({ order }: { order: Order }) {
           <span className={`status-chip ${o.status === 'cancelled' ? 'removed' : o.status === 'done' ? 'published' : 'hidden'}`}>{ORDER_STATUS[o.status]()}</span>
           <span className="review-when">{when2(o.createdAt)}</span>
         </div>
-        <div className="post-by"><b>{o.title}</b> <span className="muted">· {o.templateName ?? '3D'} · {cm(w)} × {cm(h)} {t('ซม.', 'cm')} · {t(`${o.colors} สี`, `${o.colors} colors`)}</span></div>
+        <div className="post-by"><b>{o.title}</b> <span className="muted">· {templateLabel(o.templateName) ?? '3D'} · {cm(w)} × {cm(h)} {t('ซม.', 'cm')} · {t(`${o.colors} สี`, `${o.colors} ${o.colors === 1 ? 'color' : 'colors'}`)}</span></div>
         {real && real !== o.size && <p className="error small">{t(`ขนาดในลายเป็น ${real} แต่ออเดอร์คิดราคาเป็น ${o.size}`, `The pattern is size ${real} but the order was priced as ${o.size}`)}</p>}
+        {realStitches !== null && realStitches !== o.stitches && <p className="error small">{t(`ลายนี้มี ${realStitches.toLocaleString()} ฝีเข็ม แต่ออเดอร์บันทึกไว้ ${o.stitches.toLocaleString()} ฝีเข็ม ตรวจราคาก่อนยืนยันรับเงิน`, `The pattern has ${realStitches.toLocaleString()} stitches but the order says ${o.stitches.toLocaleString()}; check the price before confirming payment`)}</p>}
         <ul className="order-facts">
           <li><span>{t('แบบ', 'Product')}</span><b>{productName(o.product)}</b></li>
           <li><span>{t('สีพลาสติก', 'Plastic')}</span><b>{o.plasticColor || '–'}</b></li>

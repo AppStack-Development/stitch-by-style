@@ -136,6 +136,16 @@ export function MyThreads() {
           <label htmlFor="th-quick-in">{t('เพิ่มหลายสีพร้อมกัน', 'Add several at once')}</label>
           <div className="th-quick-row">
             <input id="th-quick-in" value={quick} onChange={(e) => setQuick(e.target.value)} autoComplete="off" autoCapitalize="off" spellCheck={false}
+              onPaste={(e) => {
+                // a one-line box drops line breaks, so a pasted column of codes (310⏎321) would run together as 310321
+                const text = e.clipboardData.getData('text');
+                if (!/[\r\n\t]/.test(text)) return;
+                e.preventDefault();
+                const el = e.currentTarget;
+                const pasted = text.replace(/[\r\n\t]+/g, ' ').trim();
+                const start = el.selectionStart ?? quick.length, end = el.selectionEnd ?? quick.length;
+                setQuick(`${quick.slice(0, start)}${start > 0 && !/\s$/.test(quick.slice(0, start)) ? ' ' : ''}${pasted}${quick.slice(end)}`);
+              }}
               placeholder={t('พิมพ์หรือวางรหัส DMC เช่น 310, 321 666 B5200', 'Type or paste DMC codes, e.g. 310, 321 666 B5200')} />
             <button className="btn primary" type="submit" disabled={!quick.trim()}><Icon name="plus" size={16} /> {t('เพิ่ม', 'Add')}</button>
           </div>

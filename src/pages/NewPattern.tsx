@@ -41,6 +41,8 @@ export function NewPattern({ mode }: { mode: 'free' | 'template' }) {
 const FREE_DEF = { cols: 40, rows: 40, base: 'aida' as BaseType, count: 14, pitch: 3 };
 /** starting values of the template form (size comes from the chosen template) */
 const TPL_DEF = { pitch: 3, holeRatio: 0.55, thick: 2 };
+/** a typed number kept inside [lo, hi]; empty, zero or nonsense falls back to the default */
+const within = (v: number, lo: number, hi: number, def: number) => (Number.isFinite(v) && v > 0 ? Math.min(hi, Math.max(lo, v)) : def);
 
 function FreeForm() {
   const [name, setName] = useState(t('ลายใหม่', 'New pattern'));
@@ -90,7 +92,7 @@ function FreeForm() {
           </label>
         )}
         {(base === 'print3d' || base === 'other') && (
-          <label><FieldHead label={t('ระยะห่างระหว่างช่อง (มม.)', 'Cell spacing (mm)')}><DefaultTag value={pitch} def={FREE_DEF.pitch} onReset={() => setPitch(FREE_DEF.pitch)} /></FieldHead><input type="number" step={0.1} min={0.8} value={pitch} onChange={(e) => setPitch(+e.target.value || 3)} /></label>
+          <label><FieldHead label={t('ระยะห่างระหว่างช่อง (มม.)', 'Cell spacing (mm)')}><DefaultTag value={pitch} def={FREE_DEF.pitch} onReset={() => setPitch(FREE_DEF.pitch)} /></FieldHead><input type="number" step={0.1} min={0.8} max={10} value={pitch} onChange={(e) => setPitch(within(+e.target.value, 0.8, 10, 3))} /></label>
         )}
         <p className="hint">{t(<>ขนาดชิ้นงานจริง ≈ {(cols * pitchMm).toFixed(0)} × {(rows * pitchMm).toFixed(0)} มม.</>, <>Finished size ≈ {(cols * pitchMm).toFixed(0)} × {(rows * pitchMm).toFixed(0)} mm</>)} · {needleHint(pitchMm)}</p>
         <button className="btn primary lg" onClick={create}>{t('สร้างลาย', 'Create pattern')} <Icon name="check" size={16} /></button>
@@ -161,7 +163,8 @@ function TemplatePicker() {
         const analyses = analyzeParts(parts);
         const best = bestPart(analyses);
         setStl({
-          file: f.name, parts, analyses, sel: best, auto: analyses.map((a) => a.result?.pitchMm ?? 0),
+          // a single part that failed stays selected, so its pitch can be set by hand and analysed again
+          file: f.name, parts, analyses, sel: best >= 0 ? best : parts.length === 1 ? 0 : -1, auto: analyses.map((a) => a.result?.pitchMm ?? 0),
           err: best < 0 ? (parts.length > 1 ? t(`ไม่พบรูสำหรับปักในทั้ง ${parts.length} ชิ้นของไฟล์นี้`, `No stitch holes found in any of the ${parts.length} parts in this file`) : analyses[0].error) : '',
         });
         setName('');
@@ -264,7 +267,8 @@ function TemplatePicker() {
             {stlRes && (
               <p className="ok">{t(<>พบ {stlRes.holeCount.toLocaleString()} รู · ตาราง {stlRes.cols}×{stlRes.rows} · ชิ้นงาน {stlRes.widthMm.toFixed(1)}×{stlRes.heightMm.toFixed(1)} มม. · แผ่นหนา {stlRes.thicknessMm} มม.</>, <>Found {stlRes.holeCount.toLocaleString()} holes · grid {stlRes.cols}×{stlRes.rows} · piece {stlRes.widthMm.toFixed(1)}×{stlRes.heightMm.toFixed(1)} mm · {stlRes.thicknessMm} mm thick</>)}</p>
             )}
-            {stlRes && (
+            {/* shown even when the analysis failed, so a pitch can be typed in (the error asks for exactly that) */}
+            {stl && stl.sel >= 0 && (
               <div className="row2 end">
                 <label><FieldHead label={t('ระยะห่างรู (มม.)', 'Hole pitch (mm)')}>
                   {autoPitch > 0 && <DefaultTag kind="suggested" reason={t(`วัดจากโมเดลได้ ${autoPitch} มม.`, `measured from the model: ${autoPitch} mm`)}
@@ -294,8 +298,8 @@ function TemplatePicker() {
               </label>
             )}
             <div className="row2">
-              <label><FieldHead label={t('ระยะห่างรู (มม.)', 'Hole pitch (mm)')}><DefaultTag value={pitch} def={TPL_DEF.pitch} onReset={() => setPitch(TPL_DEF.pitch)} /></FieldHead><input type="number" step={0.1} min={1} max={8} value={pitch} onChange={(e) => setPitch(+e.target.value || 3)} /></label>
-              <label><FieldHead label={t('ความหนา (มม.)', 'Thickness (mm)')}><DefaultTag value={thick} def={TPL_DEF.thick} onReset={() => setThick(TPL_DEF.thick)} /></FieldHead><input type="number" step={0.2} min={0.6} max={8} value={thick} onChange={(e) => setThick(+e.target.value || 2)} /></label>
+              <label><FieldHead label={t('ระยะห่างรู (มม.)', 'Hole pitch (mm)')}><DefaultTag value={pitch} def={TPL_DEF.pitch} onReset={() => setPitch(TPL_DEF.pitch)} /></FieldHead><input type="number" step={0.1} min={1} max={8} value={pitch} onChange={(e) => setPitch(within(+e.target.value, 1, 8, 3))} /></label>
+              <label><FieldHead label={t('ความหนา (มม.)', 'Thickness (mm)')}><DefaultTag value={thick} def={TPL_DEF.thick} onReset={() => setThick(TPL_DEF.thick)} /></FieldHead><input type="number" step={0.2} min={0.6} max={8} value={thick} onChange={(e) => setThick(within(+e.target.value, 0.6, 8, 2))} /></label>
             </div>
           </>
         )}

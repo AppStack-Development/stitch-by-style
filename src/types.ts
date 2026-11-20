@@ -74,6 +74,8 @@ export interface Pattern {
   postId?: string;
   /** set on a copy taken from the community gallery, so a re-share credits the original */
   remixOf?: { id: string; title: string; author: string };
+  /** set on a copy of a built-in sample (lib/samples.ts id), so opening that sample again reopens this copy */
+  sampleId?: string;
 }
 
 export type Tool = 'pencil' | 'eraser' | 'fill' | 'picker' | 'line' | 'rect' | 'hole' | 'pan';

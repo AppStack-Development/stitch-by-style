@@ -2,13 +2,14 @@ import { useEffect, useMemo, useState } from 'react';
 import type { Pattern } from '../types';
 import {
   PLASTIC_COLORS, PRODUCTS, SIZE_LABEL, addressProblem, baht, cannotOrder, cm, emptyAddress, lastAddress, loadPricing,
-  pieceMm, placeOrder, quote, sizeOf, type Address, type Pricing, type Product,
+  pieceMm, placeOrder, quote, sizeOf, unitPrice, type Address, type Pricing, type Product,
 } from '../lib/orders';
 import { signInWithGoogle, useCloud } from '../lib/cloud';
 import { detectInApp } from '../lib/inAppBrowser';
 import { computeStats } from '../lib/stats';
 import { trackStep } from '../lib/analytics';
 import { t } from '../lib/i18n';
+import { templateLabel } from '../lib/templates';
 import { navigate } from '../App';
 import { Thumb } from './Thumb';
 import { Icon } from './Icon';
@@ -96,7 +97,7 @@ function OrderForm({ pattern, onClose }: { pattern: Pattern; onClose: () => void
   }, []);
 
   const plastic = color === 'other' ? otherColor : color;
-  const price = pricing && size ? quote(pricing, product, size, qty) : null;
+  const price = pricing && size ? quote(pricing, product, size, stats.total, qty) : null;
   const addrErr = addressProblem(addr);
   const colorErr = color === 'other' && !otherColor.trim() ? t('บอกสีที่ต้องการ', 'Say which color you want') : null;
   const canOrder = !blocked && !!price && !busy;
@@ -125,7 +126,7 @@ function OrderForm({ pattern, onClose }: { pattern: Pattern; onClose: () => void
           <span className="pick-thumb"><Thumb pattern={pattern} max={64} view="stitch" /></span>
           <div>
             <b>{pattern.name}</b>
-            <span className="muted small">{pattern.templateName ?? t('ชิ้นงาน 3D', '3D piece')} · {cm(w)} × {cm(h)} {t('ซม.', 'cm')} · {t(`${used} สี`, `${used} colors`)}</span>
+            <span className="muted small">{templateLabel(pattern.templateName) ?? t('ชิ้นงาน 3D', '3D piece')} · {cm(w)} × {cm(h)} {t('ซม.', 'cm')} · {t(`${used} สี`, `${used} ${used === 1 ? 'color' : 'colors'}`)}</span>
             {size && <span className="muted small">{SIZE_LABEL[size]()}</span>}
           </div>
         </div>
@@ -135,13 +136,13 @@ function OrderForm({ pattern, onClose }: { pattern: Pattern; onClose: () => void
           <span>{t('อยากได้แบบไหน', 'What would you like?')}</span>
           <div className="order-products" role="radiogroup" aria-label={t('แบบสินค้า', 'Product')}>
             {PRODUCTS.map((p) => {
-              const each = pricing && size ? pricing.prices[`${p.id}:${size}`] : undefined;
+              const each = pricing && size ? unitPrice(pricing, p.id, size, stats.total) : undefined;
               return (
                 <label key={p.id} className={'order-product' + (product === p.id ? ' on' : '')}>
                   <input type="radio" name="product" checked={product === p.id} onChange={() => setProduct(p.id)} />
                   <span>
                     <b>{p.name()}{each !== undefined && Number.isFinite(each) && <em className="order-each">{baht(each)}</em>}</b>
-                    <small>{p.desc()}</small>
+                    <small>{p.desc()}{p.id === 'stitched' && ` ${t(`ราคาตามจำนวนฝีเข็ม (ลายนี้ ${stats.total.toLocaleString()} ฝีเข็ม)`, `Priced by stitch count (${stats.total.toLocaleString()} stitches in this pattern)`)}`}</small>
                   </span>
                 </label>
               );

@@ -9,6 +9,7 @@ import { buildPlate, toBinaryStl } from '../lib/plate';
 import { downloadBlob, safeFilename } from '../lib/share';
 import { trackStep } from '../lib/analytics';
 import { t, locale } from '../lib/i18n';
+import { templateLabel } from '../lib/templates';
 import { navigate } from '../App';
 import { Thumb } from '../components/Thumb';
 import { Icon } from '../components/Icon';
@@ -161,7 +162,7 @@ export function CommunityPost({ id }: { id: string }) {
             </div>
           )}
           <p className="hint">
-            {post.templateName ?? (post.base === 'aida' ? t('ผ้า Aida', 'Aida fabric') : t('ชิ้นงาน 3D', '3D print'))}
+            {templateLabel(post.templateName) ?? (post.base === 'aida' ? t('ผ้า Aida', 'Aida fabric') : t('ชิ้นงาน 3D', '3D print'))}
             {' · '}<span className={`diff-text ${post.difficulty}`}>{DIFFICULTY_LABEL[post.difficulty]}</span>
             {' · '}{post.cols}×{post.rows} {t('ช่อง', 'cells')}
             {stats && <> · {stats.widthMm.toFixed(0)}×{stats.heightMm.toFixed(0)} {t('มม.', 'mm')}</>}

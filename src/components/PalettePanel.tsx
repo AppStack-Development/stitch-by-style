@@ -37,6 +37,21 @@ interface Props {
 /** Offer the closest real DMC thread for a palette colour that isn't one already. */
 function DmcSuggest({ color, onApply }: { color: ThreadColor; onApply: (d: { hex: string; name: string; code: string }) => void }) {
   const best = useMemo(() => nearestDmc(color.hex, 1)[0], [color.hex]);
+  // a DMC code typed by hand that doesn't match the swatch: offer that thread's real colour and name
+  const typed = useMemo(() => {
+    if (color.brand.trim().toUpperCase() !== 'DMC') return undefined;
+    const code = color.code.trim().toUpperCase();
+    return DMC_SORTED.find((d) => d.code.toUpperCase() === code);
+  }, [color.brand, color.code]);
+  if (typed && (typed.hex.toLowerCase() !== color.hex.toLowerCase() || typed.name !== color.name)) {
+    return (
+      <div className="dmc-suggest">
+        <span className="dot" style={{ background: typed.hex }} />
+        <span>{t('รหัสนี้คือ', 'This code is')} <b>DMC {typed.code}</b> {typed.name}</span>
+        <button className="btn sm" onClick={() => onApply(typed)}>{t('ใช้สีตามรหัส', 'Use its colour')}</button>
+      </div>
+    );
+  }
   if (color.brand === 'DMC' && color.code === best.code) return null;
   return (
     <div className="dmc-suggest">

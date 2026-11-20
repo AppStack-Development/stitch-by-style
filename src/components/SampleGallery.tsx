@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { SAMPLES, type Sample } from '../lib/samples';
 import { computeStats } from '../lib/stats';
 import { DIFFICULTY_LABEL } from '../lib/pattern';
-import { savePattern } from '../lib/storage';
+import { listPatterns, savePattern } from '../lib/storage';
 import { t } from '../lib/i18n';
 import { Thumb } from './Thumb';
 import { Icon } from './Icon';
@@ -20,7 +20,13 @@ export function SampleGallery() {
 
   const open = (s: Sample, where: 'stitch' | 'edit') => {
     trackStep(`/sample/${s.id}`);
-    const p = s.make();
+    // already have a copy of this sample? reopen it (keeps its progress) instead of piling up duplicates
+    const mine = listPatterns().filter((x) => x.sampleId === s.id).sort((a, b) => b.updatedAt - a.updatedAt)[0];
+    if (mine) {
+      navigate(`#/${where}/${mine.id}`);
+      return;
+    }
+    const p = { ...s.make(), sampleId: s.id };
     if (!savePattern(p)) {
       alert(t('บันทึกไม่สำเร็จ พื้นที่ในเบราว์เซอร์อาจเต็ม', 'Could not save. Browser storage may be full.'));
       return;

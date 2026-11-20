@@ -69,7 +69,7 @@ const baseUrl = () => location.href.split('#')[0];
 /** Share with someone else: a fresh copy, without your stitching progress. */
 export async function encodeShare(p: Pattern): Promise<string> {
   // stitching progress is personal: never put it in a share link; community links live in their own columns
-  const { id, createdAt, updatedAt, progress, postId, remixOf, ...rest } = p;
+  const { id, createdAt, updatedAt, progress, postId, remixOf, sampleId, ...rest } = p;
   return deflateJson(pack(rest));
 }
 

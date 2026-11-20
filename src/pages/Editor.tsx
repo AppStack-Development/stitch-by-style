@@ -317,9 +317,9 @@ export function Editor({ id }: { id: string }) {
           ))}
           <button className="tool tool-x" onClick={() => setTextDlg(true)} title={t('ใส่ชื่อ / ข้อความ (T)', 'Name / text (T)')}><Icon name="text" size={20} /></button>
           <div className="tool-sep" />
-          <button className={'tool tool-x' + (mirrorX ? ' on' : '')} onClick={() => setMirrorX(!mirrorX)} title={t('สมมาตรซ้าย-ขวา (X)', 'Mirror left-right (X)')}><Icon name="mirrorX" size={20} /></button>
-          <button className={'tool tool-x' + (mirrorY ? ' on' : '')} onClick={() => setMirrorY(!mirrorY)} title={t('สมมาตรบน-ล่าง (Y)', 'Mirror top-bottom (Y)')}><Icon name="mirrorY" size={20} /></button>
-          <button className={'tool tool-x' + (grid ? ' on' : '')} onClick={() => setGrid(!grid)} title={t('เส้นตาราง', 'Grid lines')}><Icon name="grid" size={20} /></button>
+          <button className={'tool tool-x' + (mirrorX ? ' on' : '')} aria-pressed={mirrorX} onClick={() => setMirrorX(!mirrorX)} title={t('สมมาตรซ้าย-ขวา (X)', 'Mirror left-right (X)')}><Icon name="mirrorX" size={20} /></button>
+          <button className={'tool tool-x' + (mirrorY ? ' on' : '')} aria-pressed={mirrorY} onClick={() => setMirrorY(!mirrorY)} title={t('สมมาตรบน-ล่าง (Y)', 'Mirror top-bottom (Y)')}><Icon name="mirrorY" size={20} /></button>
+          <button className={'tool tool-x' + (grid ? ' on' : '')} aria-pressed={grid} onClick={() => setGrid(!grid)} title={t('เส้นตาราง', 'Grid lines')}><Icon name="grid" size={20} /></button>
           <div className="tool-sep" />
           <button className="tool tool-x" onClick={() => canvas.current?.zoomBy(1.25)} title={t('ซูมเข้า (+)', 'Zoom in (+)')}><Icon name="zoomIn" size={20} /></button>
           <button className="tool tool-x" onClick={() => canvas.current?.zoomBy(0.8)} title={t('ซูมออก (−)', 'Zoom out (−)')}><Icon name="zoomOut" size={20} /></button>

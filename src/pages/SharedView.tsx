@@ -12,6 +12,7 @@ import { LangSwitch } from '../components/LangSwitch';
 import { AccountButton } from '../components/AccountButton';
 import { navigate } from '../App';
 import { t } from '../lib/i18n';
+import { templateLabel } from '../lib/templates';
 import { APP_NAME } from '../lib/brand';
 
 export function SharedView({ data }: { data: string }) {
@@ -50,7 +51,7 @@ export function SharedView({ data }: { data: string }) {
           {p.details.author && <p>{t('ออกแบบโดย', 'Designed by')} {p.details.author}</p>}
           {p.details.description && <p>{p.details.description}</p>}
           <p className="hint">
-            {p.templateName ?? t('ออกแบบอิสระ', 'Free design')} · {p.cols}×{p.rows} {t('ช่อง', 'cells')} · {stats.widthMm.toFixed(0)}×{stats.heightMm.toFixed(0)} {t('มม.', 'mm')} · {stats.total.toLocaleString()} {t('ฝีเข็ม', 'stitches')}
+            {templateLabel(p.templateName) ?? t('ออกแบบอิสระ', 'Free design')} · {p.cols}×{p.rows} {t('ช่อง', 'cells')} · {stats.widthMm.toFixed(0)}×{stats.heightMm.toFixed(0)} {t('มม.', 'mm')} · {stats.total.toLocaleString()} {t('ฝีเข็ม', 'stitches')}
           </p>
           <div className="chips">
             {used.map((c) => {

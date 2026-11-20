@@ -79,8 +79,10 @@ export function cannotOrder(p: Pattern): string | null {
 }
 
 export interface Pricing {
-  /** 'kit:M' -> baht per piece */
+  /** 'kit:M' -> baht per piece; for 'stitched:*' it's the starting price before the per-stitch part */
   prices: Record<string, number>;
+  /** fully stitched: satang added per stitch (0.30 baht -> 30); kept whole so the sum matches the database exactly */
+  stitchRateSatang: number;
   shipping: number;
   /** only for signed-in users */
   promptpayId: string;
@@ -91,9 +93,10 @@ export async function loadPricing(): Promise<Pricing> {
   const c = await client();
   const { data, error } = await c.from('order_config').select('key, value');
   if (error) throw new Error(error.message);
-  const out: Pricing = { prices: {}, shipping: NaN, promptpayId: '', promptpayName: '' };
+  const out: Pricing = { prices: {}, stitchRateSatang: NaN, shipping: NaN, promptpayId: '', promptpayName: '' };
   for (const { key, value } of (data ?? []) as { key: string; value: string }[]) {
     if (key.startsWith('price:')) out.prices[key.slice(6)] = Number(value);
+    else if (key === 'stitch_rate') out.stitchRateSatang = Math.round(Number(value) * 100);
     else if (key === 'shipping') out.shipping = Number(value);
     else if (key === 'promptpay_id') out.promptpayId = value;
     else if (key === 'promptpay_name') out.promptpayName = value;
@@ -101,9 +104,23 @@ export async function loadPricing(): Promise<Pricing> {
   return out;
 }
 
+/**
+ * Baht per piece, as order_unit_price() in the database works it out: blank and kit are a flat price per size;
+ * fully stitched is its starting price + the per-stitch rate × stitches, rounded up to a price ending in 9.
+ * NaN when a price is missing.
+ */
+export function unitPrice(pr: Pricing, product: Product, size: Size, stitches: number): number {
+  const base = pr.prices[`${product}:${size}`];
+  if (!Number.isFinite(base)) return NaN;
+  if (product !== 'stitched') return base;
+  if (!Number.isFinite(pr.stitchRateSatang)) return NaN;
+  const satang = base * 100 + pr.stitchRateSatang * stitches;
+  return Math.ceil((satang + 100) / 1000) * 10 - 1;
+}
+
 /** The same sum the database makes when the order is placed. */
-export function quote(pr: Pricing, product: Product, size: Size, qty: number) {
-  const unit = pr.prices[`${product}:${size}`];
+export function quote(pr: Pricing, product: Product, size: Size, stitches: number, qty: number) {
+  const unit = unitPrice(pr, product, size, stitches);
   if (!Number.isFinite(unit) || !Number.isFinite(pr.shipping)) return null;
   return { unit, shipping: pr.shipping, total: unit * qty + pr.shipping };
 }

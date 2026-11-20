@@ -168,6 +168,28 @@ const tabFor = (w: number) => {
   return { R, r: Math.max(1, R * 0.48) };
 };
 
+/** Template names in both languages. A pattern stores the name in the language it was made in. */
+const TEMPLATE_NAMES: [string, string][] = [
+  ['ที่คั่นหนังสือ', 'Bookmark'],
+  ['ที่รองแก้วกลม', 'Round coaster'],
+  ['ที่รองแก้วสี่เหลี่ยม', 'Square coaster'],
+  ['พวงกุญแจหัวใจ', 'Heart keychain'],
+  ['พวงกุญแจกลม', 'Round keychain'],
+  ['ดาวแขวนตกแต่ง', 'Star ornament'],
+  ['เข็มกลัดหกเหลี่ยม', 'Hexagon badge'],
+  ['การ์ด / แพตช์', 'Card / patch'],
+];
+
+/**
+ * A stored template name shown in the current language: a built-in template's name is translated, anything
+ * else (an imported STL/3MF file name) is shown as is.
+ */
+export function templateLabel(name: string | null | undefined): string | undefined {
+  if (!name) return undefined;
+  const pair = TEMPLATE_NAMES.find(([th, en]) => th === name || en === name);
+  return pair ? t(pair[0], pair[1]) : name;
+}
+
 export const TEMPLATES: TemplateDef[] = [
   {
     id: 'bookmark',

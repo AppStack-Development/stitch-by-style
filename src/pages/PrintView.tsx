@@ -8,6 +8,7 @@ import { Thumb } from '../components/Thumb';
 import { Icon } from '../components/Icon';
 import { ownsThread, shoppingListText, threadNeeds, useStash } from '../lib/stash';
 import { t, locale } from '../lib/i18n';
+import { templateLabel } from '../lib/templates';
 import { APP_NAME } from '../lib/brand';
 import { Wordmark } from '../components/LogoMark';
 
@@ -63,7 +64,7 @@ export function PrintView({ pattern: p, backHref = '#/', onBack }: Props) {
     [t('ขนาดชิ้นงาน', 'Finished size'), `${fmtMm(stats.widthMm)} × ${fmtMm(stats.heightMm)} (${fmtInch(stats.widthMm)} × ${fmtInch(stats.heightMm)})`],
     [t('ตาราง', 'Grid'), t(`${p.cols} × ${p.rows} ช่อง · ระยะห่าง ${p.pitchMm.toFixed(2)} มม.`, `${p.cols} × ${p.rows} cells · ${p.pitchMm.toFixed(2)} mm pitch`)],
     [t('จำนวนฝีเข็ม', 'Stitches'), t(`${stats.total.toLocaleString()} ฝีเข็ม · ${used.length} สี`, `${stats.total.toLocaleString()} stitches · ${used.length} ${used.length === 1 ? 'color' : 'colors'}`)],
-    [t('พื้นที่ปัก', 'Stitched on'), d.baseType === 'aida' ? `${BASE_LABEL.aida} ${d.aidaCount} ct` : BASE_LABEL[d.baseType] + (p.templateName ? ` — ${p.templateName}` : '')],
+    [t('พื้นที่ปัก', 'Stitched on'), d.baseType === 'aida' ? `${BASE_LABEL.aida} ${d.aidaCount} ct` : BASE_LABEL[d.baseType] + (p.templateName ? ` — ${templateLabel(p.templateName)}` : '')],
     ...(d.baseType === 'print3d' ? [[t('ชิ้นงาน 3D', '3D piece'), t(`${d.filament}, หนา ${d.thicknessMm} มม., รู ${(p.pitchMm * d.holeRatio).toFixed(2)} มม.`, `${d.filament}, ${d.thicknessMm} mm thick, ${(p.pitchMm * d.holeRatio).toFixed(2)} mm holes`)] as [string, string]] : []),
     [t('รูปแบบการปัก', 'Stitch type'), STITCH_LABEL[d.stitchType]],
     [t('ด้าย', 'Thread'), t(`${d.threadBrand || '-'} · ใช้ ${d.strands} เส้น`, `${d.threadBrand || '-'} · ${d.strands} ${d.strands === 1 ? 'strand' : 'strands'}`)],

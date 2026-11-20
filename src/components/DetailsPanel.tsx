@@ -76,7 +76,7 @@ export function DetailsPanel({ pattern: p, onChange }: Props) {
       ) : (
         <label>{t('ระยะห่างระหว่างรู (มม.)', 'Hole pitch (mm)')}
           <input type="number" step={0.05} min={0.8} max={10} value={p.pitchMm}
-            onChange={(e) => onChange({ pitchMm: Math.max(0.5, +e.target.value || p.pitchMm) })} />
+            onChange={(e) => onChange({ pitchMm: Math.min(10, Math.max(0.8, +e.target.value || p.pitchMm)) })} />
         </label>
       )}
       {is3d && (
@@ -87,7 +87,7 @@ export function DetailsPanel({ pattern: p, onChange }: Props) {
           </div>
           <datalist id="filaments">{['PLA', 'PETG', 'TPU', 'PLA Matte', 'PLA Silk'].map((f) => <option key={f} value={f} />)}</datalist>
           <div className="row2">
-            <label><FieldHead label={t('ความหนาแผ่น (มม.)', 'Plate thickness (mm)')}>{!fromModel && <DefaultTag value={d.thicknessMm} def={DEF.thicknessMm} onReset={() => set({ thicknessMm: DEF.thicknessMm })} />}</FieldHead><input type="number" step={0.2} min={0.6} max={8} value={d.thicknessMm} onChange={(e) => set({ thicknessMm: +e.target.value || 2 })} /></label>
+            <label><FieldHead label={t('ความหนาแผ่น (มม.)', 'Plate thickness (mm)')}>{!fromModel && <DefaultTag value={d.thicknessMm} def={DEF.thicknessMm} onReset={() => set({ thicknessMm: DEF.thicknessMm })} />}</FieldHead><input type="number" step={0.2} min={0.6} max={8} value={d.thicknessMm} onChange={(e) => set({ thicknessMm: Math.min(8, Math.max(0.6, +e.target.value || 2)) })} /></label>
             <label><FieldHead label={t(<>ขนาดรู ({Math.round(d.holeRatio * 100)}% ของช่อง)</>, <>Hole size ({Math.round(d.holeRatio * 100)}% of cell)</>)}>{!fromModel && <DefaultTag value={d.holeRatio} def={DEF.holeRatio} onReset={() => set({ holeRatio: DEF.holeRatio })} />}</FieldHead>
               <input type="range" min={0.3} max={0.8} step={0.05} value={d.holeRatio} onChange={(e) => set({ holeRatio: +e.target.value })} />
             </label>
@@ -106,7 +106,7 @@ export function DetailsPanel({ pattern: p, onChange }: Props) {
         <label><FieldHead label={t('ยี่ห้อด้าย', 'Thread brand')}><DefaultTag value={d.threadBrand} def={DEF.threadBrand} onReset={() => set({ threadBrand: DEF.threadBrand })} /></FieldHead><input value={d.threadBrand} onChange={(e) => set({ threadBrand: e.target.value })} list="brands" /></label>
         <label><FieldHead label={t('จำนวนเส้นด้าย', 'Strands')}>
           <DefaultTag kind="suggested" reason={sug.reason} value={d.strands} def={sug.strand} equals={(v) => v >= sug.strands[0] && v <= sug.strands[1]} onReset={() => set({ strands: sug.strand })} />
-        </FieldHead><input type="number" min={1} max={12} value={d.strands} onChange={(e) => set({ strands: Math.max(1, +e.target.value || 1) })} /></label>
+        </FieldHead><input type="number" min={1} max={12} value={d.strands} onChange={(e) => set({ strands: Math.min(12, Math.max(1, Math.round(+e.target.value) || 1)) })} /></label>
       </div>
       <datalist id="brands">{['DMC', 'Anchor', 'Cosmo', 'Madeira', t('ไหมพรม', 'Yarn'), t('ด้ายทั่วไป', 'Generic thread')].map((f) => <option key={f} value={f} />)}</datalist>
       <div className="row2">
@@ -120,7 +120,7 @@ export function DetailsPanel({ pattern: p, onChange }: Props) {
       <p className="hint">{needleHint(p.pitchMm)}</p>
 
       <h4>{t('บันทึก / ขั้นตอน', 'Notes / steps')}</h4>
-      <textarea rows={4} value={d.notes} onChange={(e) => set({ notes: e.target.value })}
+      <textarea rows={4} value={d.notes} onChange={(e) => set({ notes: e.target.value })} aria-label={t('บันทึก / ขั้นตอน', 'Notes / steps')}
         placeholder={t('เช่น\n1. เริ่มปักจากจุดกึ่งกลาง (ลูกศรแดง)\n2. ปักสีเข้มก่อน\n3. เก็บปลายด้ายด้านหลัง', 'e.g.\n1. Start from the center (red arrows)\n2. Stitch dark colors first\n3. Weave in thread ends at the back')} />
 
       {used.length > 0 && (
