@@ -101,14 +101,14 @@ export function Preview3D({ pattern }: { pattern: Pattern }) {
         }
       }
       if (stitched.length) {
+        // each arm runs corner to corner over the solid middle of its cell, its ends dipping into the
+        // corner holes (plate.ts puts the holes on the grid corners)
         const r = s * 0.16;
-        const len = s * Math.SQRT2 * 0.78 - 2 * r;
+        const len = s * Math.SQRT2 * 0.96 - 2 * r;
         const cap = new THREE.CapsuleGeometry(r, Math.max(0.01, len), 3, 6);
-        const fill = new THREE.BoxGeometry(s * d.holeRatio, s * d.holeRatio, thick * 0.96);
         const mat = new THREE.MeshStandardMaterial({ roughness: 0.85 });
         const a = new THREE.InstancedMesh(cap, mat, stitched.length);
         const b = new THREE.InstancedMesh(cap, mat, stitched.length);
-        const f = new THREE.InstancedMesh(fill, mat, stitched.length);
         const m = new THREE.Matrix4(), q = new THREE.Quaternion(), sc = new THREE.Vector3(1, 1, 0.55), pos = new THREE.Vector3();
         const col = new THREE.Color();
         stitched.forEach((st, i) => {
@@ -119,12 +119,10 @@ export function Preview3D({ pattern }: { pattern: Pattern }) {
           pos.z = thick + r * 0.75;
           q.setFromAxisAngle(new THREE.Vector3(0, 0, 1), -Math.PI / 4);
           b.setMatrixAt(i, m.compose(pos, q, sc));
-          f.setMatrixAt(i, m.makeTranslation(st.x, st.y, thick / 2));
           a.setColorAt(i, col);
           b.setColorAt(i, col.clone().offsetHSL(0, 0, 0.05));
-          f.setColorAt(i, col.clone().offsetHSL(0, 0, -0.12));
         });
-        c.group.add(a, b, f);
+        c.group.add(a, b);
       }
 
       if (key !== lastKey.current) {

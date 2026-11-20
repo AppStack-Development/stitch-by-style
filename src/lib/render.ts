@@ -60,10 +60,6 @@ export function drawPattern(ctx: CanvasRenderingContext2D, p: Drawable, o: DrawO
       if (view === 'color' || view === 'both') {
         ctx.fillStyle = color ? color.hex : emptyHole;
         ctx.fillRect(px, py, s, s);
-        if (!color && is3d && s >= 6) {
-          ctx.fillStyle = holeDark;
-          ctx.fillRect(px + s * 0.3, py + s * 0.3, s * 0.4, s * 0.4);
-        }
         if (view === 'both' && color && s >= 9) {
           ctx.fillStyle = contrastText(color.hex);
           ctx.fillText(color.symbol, px + s / 2, py + s / 2 + s * 0.04);
@@ -76,40 +72,71 @@ export function drawPattern(ctx: CanvasRenderingContext2D, p: Drawable, o: DrawO
           ctx.fillText(color.symbol, px + s / 2, py + s / 2 + s * 0.04);
         }
       } else {
-        // "stitch" look: frame + hole, colour drawn as an X stitch
+        // "stitch" look: the plastic or fabric here; the corner holes and the X stitch come in later passes
         ctx.fillStyle = is3d ? plastic : '#fbfaf6';
         ctx.fillRect(px, py, s, s);
-        if (is3d) {
-          ctx.fillStyle = holeDark;
-          if (s < 8) ctx.fillRect(px + s * 0.2, py + s * 0.2, s * 0.6, s * 0.6);
-          else ctx.fillRect(px + pad * 1.6, py + pad * 1.6, s - pad * 3.2, s - pad * 3.2);
-        }
-        if (color) {
-          if (s < 6) {
-            ctx.fillStyle = color.hex;
-            ctx.fillRect(px, py, s, s);
-          } else {
-            ctx.lineCap = 'round';
-            ctx.lineWidth = s * 0.3;
-            ctx.strokeStyle = shade(color.hex, -0.18);
-            ctx.beginPath();
-            ctx.moveTo(px + pad, py + pad);
-            ctx.lineTo(px + s - pad, py + s - pad);
-            ctx.stroke();
-            ctx.strokeStyle = color.hex;
-            ctx.beginPath();
-            ctx.moveTo(px + s - pad, py + pad);
-            ctx.lineTo(px + pad, py + s - pad);
-            ctx.stroke();
-            ctx.lineWidth = Math.max(1, s * 0.06);
-            ctx.strokeStyle = shade(color.hex, 0.18);
-            ctx.beginPath();
-            ctx.moveTo(px + s - pad * 1.6, py + pad * 1.4);
-            ctx.lineTo(px + pad * 2, py + s - pad * 2.2);
-            ctx.stroke();
-          }
+        if (color && s < 6) {
+          ctx.fillStyle = color.hex;
+          ctx.fillRect(px, py, s, s);
         }
       }
+    }
+  }
+
+  // holes: a cross stitch goes through the four holes at its cell's corners, so on a printed piece the
+  // holes sit on the grid corners next to stitchable cells (see plate.ts), not in the middle of a cell
+  if (is3d && view !== 'symbol' && s >= 5) {
+    const hs = view === 'stitch' ? s * (s < 8 ? 0.4 : 0.34) : s * 0.24;
+    const at = (cx: number, cy: number) => cx >= 0 && cy >= 0 && cx < p.cols && cy < p.rows && p.mask[cy * p.cols + cx] === '2';
+    ctx.fillStyle = holeDark;
+    for (let vy = 0; vy <= p.rows; vy++) {
+      for (let vx = 0; vx <= p.cols; vx++) {
+        if (!(at(vx - 1, vy - 1) || at(vx, vy - 1) || at(vx - 1, vy) || at(vx, vy))) continue;
+        ctx.fillRect(ox + vx * s - hs / 2, oy + vy * s - hs / 2, hs, hs);
+      }
+    }
+  }
+
+  // X stitches, corner to corner, so each end goes into a hole
+  if (view === 'stitch' && s >= 6) {
+    const e = Math.max(0.5, s * 0.06);
+    for (let y = 0; y < p.rows; y++) {
+      for (let x = 0; x < p.cols; x++) {
+        const i = y * p.cols + x;
+        const c = p.cells[i];
+        if (p.mask[i] !== '2' || c < 0 || !p.palette[c]) continue;
+        const color = p.palette[c];
+        const px = ox + x * s, py = oy + y * s;
+        ctx.lineCap = 'round';
+        ctx.lineWidth = s * 0.3;
+        ctx.strokeStyle = shade(color.hex, -0.18);
+        ctx.beginPath();
+        ctx.moveTo(px + e, py + e);
+        ctx.lineTo(px + s - e, py + s - e);
+        ctx.stroke();
+        ctx.strokeStyle = color.hex;
+        ctx.beginPath();
+        ctx.moveTo(px + s - e, py + e);
+        ctx.lineTo(px + e, py + s - e);
+        ctx.stroke();
+        ctx.lineWidth = Math.max(1, s * 0.06);
+        ctx.strokeStyle = shade(color.hex, 0.18);
+        ctx.beginPath();
+        ctx.moveTo(px + s - pad * 1.6, py + pad * 1.4);
+        ctx.lineTo(px + pad * 2, py + s - pad * 2.2);
+        ctx.stroke();
+      }
+    }
+  }
+
+  // finished stitches and the colour focus sit on top of everything
+  for (let y = 0; y < p.rows; y++) {
+    for (let x = 0; x < p.cols; x++) {
+      const i = y * p.cols + x;
+      if (p.mask[i] !== '2') continue;
+      const c = p.cells[i];
+      const color = c >= 0 ? p.palette[c] : undefined;
+      const px = ox + x * s, py = oy + y * s;
       if (o.done && color && o.done.charCodeAt(i) === 49) {
         // finished stitch: dark wash + check mark
         ctx.fillStyle = 'rgba(24, 32, 52, 0.58)';

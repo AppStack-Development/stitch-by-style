@@ -194,7 +194,7 @@ function useSections(): Section[] {
         <>
           <div className="guide-figure">
             <Thumb pattern={heart} max={120} view="stitch" />
-            <p>ตัวอย่างแม่แบบพวงกุญแจหัวใจ: ช่องสีเข้มคือรูสำหรับปัก ส่วนสีอ่อนคือโครงพลาสติก</p>
+            <p>ตัวอย่างแม่แบบพวงกุญแจหัวใจ: 1 ช่อง = 1 ฝีกากบาท ปักทับพลาสติกตรงกลางช่อง โดยเข็มลอดรูเล็กสีเข้มที่มุมทั้ง 4 ของช่อง ส่วนขอบสีเข้มกว่าคือโครงที่ไม่ได้ปัก</p>
           </div>
           <p><b>แม่แบบสำเร็จรูป 8 แบบ:</b> ที่คั่นหนังสือ ที่รองแก้วกลม/สี่เหลี่ยม พวงกุญแจหัวใจ/กลม ดาวแขวน เข็มกลัดหกเหลี่ยม และการ์ด เลือกแล้วปรับขนาด (จำนวนช่อง) ระยะห่างรู และความหนาได้</p>
           <p><b>นำเข้าโมเดลของคุณ:</b> กดการ์ด “นำเข้าไฟล์ STL / 3MF” แล้วเลือกไฟล์ ระบบจะหารูที่เรียงเป็นตารางและแปลงเป็นช่องสำหรับเติมสีอัตโนมัติ</p>
@@ -208,7 +208,7 @@ function useSections(): Section[] {
         <>
           <div className="guide-figure">
             <Thumb pattern={heart} max={120} view="stitch" />
-            <p>The heart keychain template: dark cells are the stitch holes, light cells are the plastic frame.</p>
+            <p>The heart keychain template: one cell is one cross stitch. It lies on the plastic in the middle of the cell, and the needle goes through the small dark holes at the cell’s four corners. The darker edge is the frame, which isn’t stitched.</p>
           </div>
           <p><b>8 ready-made templates:</b> bookmark, round/square coaster, heart/round keychain, hanging star, hexagon pin and card. Pick one, then adjust its size (number of cells), hole pitch and thickness.</p>
           <p><b>Import your own model:</b> tap the “Import STL / 3MF file” card and choose a file. The app finds holes laid out in a grid and turns them into cells you can color.</p>

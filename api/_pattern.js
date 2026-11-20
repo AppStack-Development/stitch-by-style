@@ -74,26 +74,40 @@ export function renderPreview(p) {
   if (aida) fill(ox - s, oy - s, pw + 2 * s, ph + 2 * s, FABRIC);
   const t = Math.max(1, Math.round(s * 0.17)); // stitch thickness
 
+  const at = (x, y) => x >= 0 && y >= 0 && x < p.cols && y < p.rows && p.mask[y * p.cols + x] === '2';
+  // 1. the piece (or fabric) itself
   for (let y = 0; y < p.rows; y++) {
     for (let x = 0; x < p.cols; x++) {
-      const k = p.mask[y * p.cols + x], v = p.cells[y * p.cols + x];
-      const cx = ox + x * s, cy = oy + y * s;
+      const k = p.mask[y * p.cols + x];
       if (k === '0') continue;
-      if (k === '1') { fill(cx, cy, s, s, FRAME); continue; }
-      const base = aida ? FABRIC : FRAME;
-      if (v < 0 || !p.colors[v]) {
-        fill(cx, cy, s, s, base);
-        if (!aida) fill(cx + Math.floor(s / 4), cy + Math.floor(s / 4), Math.ceil(s / 2), Math.ceil(s / 2), HOLE);
-        continue;
+      fill(ox + x * s, oy + y * s, s, s, k === '1' || !aida ? FRAME : FABRIC);
+    }
+  }
+  // 2. holes: a cross stitch goes through the four holes at its cell's corners, so a printed piece has its
+  //    holes on the grid corners next to stitchable cells (src/lib/plate.ts)
+  if (!aida && s >= 4) {
+    const hs = Math.max(2, Math.round(s * 0.3));
+    for (let vy = 0; vy <= p.rows; vy++) {
+      for (let vx = 0; vx <= p.cols; vx++) {
+        if (at(vx - 1, vy - 1) || at(vx, vy - 1) || at(vx - 1, vy) || at(vx, vy)) {
+          fill(ox + vx * s - (hs >> 1), oy + vy * s - (hs >> 1), hs, hs, HOLE);
+        }
       }
+    }
+  }
+  // 3. the stitches, corner to corner
+  for (let y = 0; y < p.rows; y++) {
+    for (let x = 0; x < p.cols; x++) {
+      const v = p.cells[y * p.cols + x];
+      if (!at(x, y) || v < 0 || !p.colors[v]) continue;
+      const cx = ox + x * s, cy = oy + y * s;
       // the under-stitch only slightly darker, so white thread still reads as white
       const c = p.colors[v], dark = c.map((n) => Math.round(n * 0.9));
       if (s < 6) { fill(cx, cy, s, s, c); continue; }
-      // a cross stitch: two diagonals, the top one slightly lighter
       for (let dy = 0; dy < s; dy++) {
         for (let dx = 0; dx < s; dx++) {
           const a = Math.abs(dx - dy) <= t, b = Math.abs(dx + dy - (s - 1)) <= t;
-          put(cx + dx, cy + dy, b ? c : a ? dark : base);
+          if (a || b) put(cx + dx, cy + dy, b ? c : dark);
         }
       }
     }

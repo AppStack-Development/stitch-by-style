@@ -179,29 +179,47 @@ export function analyzePositions(pos: ArrayLike<number>, pitchOverrideMm?: numbe
   const h0 = holes[0];
   const iLo = Math.ceil((1 - h0.cx) / pitchPx - 0.2), iHi = Math.floor((r.W - 2 - h0.cx) / pitchPx + 0.2);
   const jLo = Math.ceil((1 - h0.cy) / pitchPx - 0.2), jHi = Math.floor((r.H - 2 - h0.cy) / pitchPx + 0.2);
-  const cols = iHi - iLo + 1, rows = jHi - jLo + 1;
-  if (cols < 1 || rows < 1 || cols * rows > 250 * 250) throw new Error(t('ขนาดตารางที่ตรวจพบไม่สมเหตุสมผล ลองกำหนดระยะห่างรูเอง', 'The detected grid size looks wrong. Try setting the hole pitch yourself.'));
-
-  const mask: CellKind[] = new Array(cols * rows).fill('0');
+  // A cross stitch goes through the four holes at its corners, so the holes found are the grid corners and
+  // a stitch cell is the square between four of them (the same layout plate.ts prints). The cell grid is
+  // one wider than the hole grid each way, so the ring of cells around the outer holes can hold the frame.
+  const hc = iHi - iLo + 1, hr = jHi - jLo + 1;
+  if (hc < 2 || hr < 2 || hc * hr > 251 * 251) throw new Error(t('ขนาดตารางที่ตรวจพบไม่สมเหตุสมผล ลองกำหนดระยะห่างรูเอง', 'The detected grid size looks wrong. Try setting the hole pitch yourself.'));
+  const found = new Set<number>();
   for (const h of holes) {
     const i = Math.round((h.cx - h0.cx) / pitchPx) - iLo;
     const j = Math.round((h.cy - h0.cy) / pitchPx) - jLo;
-    if (i >= 0 && j >= 0 && i < cols && j < rows) mask[j * cols + i] = '2';
+    if (i >= 0 && j >= 0 && i < hc && j < hr) found.add(j * hc + i);
   }
+  const hole = (i: number, j: number) => i >= 0 && j >= 0 && i < hc && j < hr && found.has(j * hc + i);
   const sample = (x: number, y: number) => {
     const xi = Math.floor(x), yi = Math.floor(y);
     if (xi < 0 || yi < 0 || xi >= r.W || yi >= r.H) return false;
     return r.px[yi * r.W + xi] === 1;
   };
+  // cell (c, k) spans hole corners (c - 1, k - 1) .. (c, k)
+  const fullCols = hc + 1, fullRows = hr + 1;
+  const full: CellKind[] = new Array(fullCols * fullRows).fill('0');
   const q = pitchPx * 0.3;
-  for (let j = 0; j < rows; j++) {
-    for (let i = 0; i < cols; i++) {
-      if (mask[j * cols + i] === '2') continue;
-      const cx = h0.cx + (i + iLo) * pitchPx, cy = h0.cy + (j + jLo) * pitchPx;
+  for (let k = 0; k < fullRows; k++) {
+    for (let c = 0; c < fullCols; c++) {
+      if (hole(c - 1, k - 1) && hole(c, k - 1) && hole(c - 1, k) && hole(c, k)) { full[k * fullCols + c] = '2'; continue; }
+      const cx = h0.cx + (c - 1 + iLo + 0.5) * pitchPx, cy = h0.cy + (k - 1 + jLo + 0.5) * pitchPx;
       const hits = [[0, 0], [q, 0], [-q, 0], [0, q], [0, -q]].filter(([dx, dy]) => sample(cx + dx, cy + dy)).length;
-      if (hits >= 3) mask[j * cols + i] = '1';
+      if (hits >= 3) full[k * fullCols + c] = '1';
     }
   }
+  // trim empty outer rows and columns
+  let c0 = fullCols, c1 = -1, k0 = fullRows, k1 = -1;
+  full.forEach((v, n) => { if (v === '0') return; const c = n % fullCols, k = (n / fullCols) | 0; c0 = Math.min(c0, c); c1 = Math.max(c1, c); k0 = Math.min(k0, k); k1 = Math.max(k1, k); });
+  if (c1 < 0 || !full.includes('2')) throw new Error(t('ไม่พบช่องปักในโมเดลนี้ (ต้องมีรู 4 รูล้อมเป็นสี่เหลี่ยม)', 'No stitch cells found in this model (each needs four holes around it)'));
+  const cols = c1 - c0 + 1, rows = k1 - k0 + 1;
+  const mask: CellKind[] = [];
+  for (let k = k0; k <= k1; k++) for (let c = c0; c <= c1; c++) mask.push(full[k * fullCols + c]);
+  /** raster point → index into `mask`, or -1 */
+  const cellAt = (x: number, y: number) => {
+    const c = Math.floor((x - h0.cx) / pitchPx - iLo + 1) - c0, k = Math.floor((y - h0.cy) / pitchPx - jLo + 1) - k0;
+    return c >= 0 && k >= 0 && c < cols && k < rows ? k * cols + c : -1;
+  };
   const pitchMm = Math.round(pitchPx * r.res * 100) / 100;
   const holeSide = Math.sqrt(median) * r.res;
   return {
@@ -214,8 +232,8 @@ export function analyzePositions(pos: ArrayLike<number>, pitchOverrideMm?: numbe
     heightMm: r.dims[r.B],
     // only geometry over stitch cells counts: lid walls and rims sit on frame cells
     thicknessMm: panelThickness(r, (x, y) => {
-      const i = Math.round((x - h0.cx) / pitchPx) - iLo, j = Math.round((y - h0.cy) / pitchPx) - jLo;
-      return i >= 0 && j >= 0 && i < cols && j < rows && mask[j * cols + i] === '2';
+      const n = cellAt(x, y);
+      return n >= 0 && mask[n] === '2';
     }),
     holeRatio: Math.min(0.85, Math.max(0.25, Math.round((holeSide / pitchMm) * 100) / 100)),
   };

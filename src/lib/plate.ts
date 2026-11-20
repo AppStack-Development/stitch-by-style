@@ -4,31 +4,59 @@ import { APP_SLUG } from './brand';
 type PlateSource = Pick<Pattern, 'cols' | 'rows' | 'pitchMm' | 'mask'>;
 
 /**
- * Build a printable plate from the mask. Every cell is split into 3x3 sub-cells
- * (bar | hole | bar); a hole cell leaves its centre sub-cell open.
+ * Build a printable plate from the mask. A cross stitch covers one cell and its four ends go through
+ * holes at the cell's corners, so the holes sit on the grid corners (every corner that touches a
+ * stitchable cell) and the middle of each cell stays solid for the stitch to lie on, like Aida fabric.
+ * Stitchable cells on the outside of the shape get a half-cell rim so their corner holes stay closed.
  * Returns non-indexed triangle positions (9 floats per triangle), centred on the origin,
  * with z from 0 to `thickness`.
  */
 export function buildPlate(p: PlateSource, thickness: number, holeRatio: number): Float32Array {
   const { cols, rows, pitchMm: pitch, mask } = p;
-  const m = (pitch * (1 - Math.min(0.9, Math.max(0.2, holeRatio)))) / 2;
+  const half = (pitch * Math.min(0.85, Math.max(0.2, holeRatio))) / 2; // half the hole's side
+  const rim = pitch / 2; // around stitchable cells that touch the outside
   const W = cols * pitch, H = rows * pitch;
+  const kind = (cx: number, cy: number) => (cx < 0 || cy < 0 || cx >= cols || cy >= rows ? '0' : mask[cy * cols + cx]);
+  const stitchable = (cx: number, cy: number) => kind(cx, cy) === '2';
+  const holeAt = (vx: number, vy: number) =>
+    stitchable(vx - 1, vy - 1) || stitchable(vx, vy - 1) || stitchable(vx - 1, vy) || stitchable(vx, vy);
+
+  // break lines: cell edges, hole edges around every corner, and the rim beyond the outer cells
   const lines = (n: number) => {
-    const a: number[] = [];
-    for (let i = 0; i < n; i++) a.push(i * pitch, i * pitch + m, (i + 1) * pitch - m);
-    a.push(n * pitch);
-    return a;
+    const a = new Set<number>();
+    for (let i = 0; i <= n; i++) [i * pitch, i * pitch - half, i * pitch + half].forEach((v) => a.add(+v.toFixed(6)));
+    a.add(-rim); a.add(n * pitch + rim);
+    for (let i = 0; i < n; i++) a.add(+(i * pitch + pitch / 2).toFixed(6));
+    return [...a].sort((u, v) => u - v);
   };
-  const xs = lines(cols).map((v) => v - W / 2);
-  const ys = lines(rows).map((v) => H / 2 - v);
-  const SW = cols * 3, SH = rows * 3;
-  const solid = (sx: number, sy: number): boolean => {
-    if (sx < 0 || sy < 0 || sx >= SW || sy >= SH) return false;
-    const k = mask[((sy / 3) | 0) * cols + ((sx / 3) | 0)];
-    if (k === '0') return false;
-    if (k === '1') return true;
-    return !(sx % 3 === 1 && sy % 3 === 1);
-  };
+  const gx = lines(cols), gy = lines(rows);
+  const NX = gx.length - 1, NY = gy.length - 1;
+  const xs = gx.map((v) => v - W / 2);
+  const ys = gy.map((v) => H / 2 - v);
+
+  // decide each small rectangle by its centre (grid units: x right, y down, origin at the top-left corner)
+  const filled = new Uint8Array(NX * NY);
+  for (let j = 0; j < NY; j++) {
+    for (let i = 0; i < NX; i++) {
+      const x = (gx[i] + gx[i + 1]) / 2, y = (gy[j] + gy[j + 1]) / 2;
+      const vx = Math.round(x / pitch), vy = Math.round(y / pitch);
+      if (Math.abs(x - vx * pitch) < half && Math.abs(y - vy * pitch) < half && holeAt(vx, vy)) continue;
+      const cx = Math.floor(x / pitch), cy = Math.floor(y / pitch);
+      let solid = kind(cx, cy) !== '0';
+      // outside the shape (or in a cut-out): solid only within the rim of a stitchable cell
+      for (let dy = -1; !solid && dy <= 1; dy++) {
+        for (let dx = -1; !solid && dx <= 1; dx++) {
+          if (!stitchable(cx + dx, cy + dy)) continue;
+          const ex = Math.max((cx + dx) * pitch - x, 0, x - (cx + dx + 1) * pitch);
+          const ey = Math.max((cy + dy) * pitch - y, 0, y - (cy + dy + 1) * pitch);
+          if (Math.max(ex, ey) <= rim) solid = true;
+        }
+      }
+      if (solid) filled[j * NX + i] = 1;
+    }
+  }
+  const solid = (sx: number, sy: number): boolean => sx >= 0 && sy >= 0 && sx < NX && sy < NY && filled[sy * NX + sx] === 1;
+  const SW = NX, SH = NY;
 
   const out: number[] = [];
   type V = [number, number, number];
