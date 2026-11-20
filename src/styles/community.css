@@ -144,3 +144,109 @@
 .tag-row .chip, .post-tags a.chip { cursor: pointer; font: inherit; font-size: 13px; }
 .tag-row .chip:not(.on), .post-tags a.chip { color: var(--ink); }
 .post-tags a.chip:hover { border-color: var(--brand); color: var(--brand); }
+
+/* orders: the order dialog (components/OrderRequestDialog.tsx), the order page (pages/OrderPage.tsx) and the team's order cards */
+.modal.order-dialog { width: min(560px, 100%); }
+.order-form .publish-head > div { gap: 0; }
+.order-form .publish-head .small { font-size: 13px; }
+.order-products { display: grid; gap: 8px; }
+.order-product { display: flex; flex-direction: row; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--paper); cursor: pointer; color: var(--ink); }
+.order-product.on { border-color: var(--brand); box-shadow: 0 0 0 1px var(--brand) inset; }
+/* same specificity as the global `label > input:not(...) { width: 100% }` in styles.css; this file loads later */
+.order-dialog label.order-product > input[type] { width: 18px; height: 18px; flex-shrink: 0; margin-top: 3px; accent-color: var(--brand); }
+.order-product span { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.order-product b { font-size: 15px; }
+.order-product small { font-size: 13px; color: var(--ink-2); line-height: 1.45; }
+.qty { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.qty output { min-width: 32px; text-align: center; font-weight: 600; font-size: 16px; font-variant-numeric: tabular-nums; color: var(--ink); }
+.qty .icon-btn { border: 1px solid var(--line-2); font-size: 18px; }
+.qty .hint { margin: 0 0 0 4px; }
+.order-form .publish-head > div > .small { display: block; }
+.order-product b { display: flex; justify-content: space-between; gap: 8px; }
+.order-each { font-style: normal; font-weight: 600; color: var(--brand); white-space: nowrap; }
+.order-address { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px 12px; margin: 0; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.order-address legend { padding: 0 6px; font-size: 14px; font-weight: 600; color: var(--ink); }
+.order-address-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+.order-postcode { max-width: 160px; }
+.order-sum { margin: 0; padding: 10px 12px; border-radius: 12px; background: var(--bg); display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+.order-sum > div { display: flex; justify-content: space-between; gap: 12px; }
+.order-sum dt { color: var(--ink-2); }
+.order-sum dd { margin: 0; font-variant-numeric: tabular-nums; color: var(--ink); }
+.order-sum .order-total { border-top: 1px solid var(--line); padding-top: 6px; margin-top: 2px; font-weight: 700; font-size: 16px; }
+.order-sum .order-total dt { color: var(--ink); }
+@media (max-width: 480px) { .order-address-row { grid-template-columns: 1fr; } }
+
+/* the customer's order page */
+.order-main { max-width: 720px; }
+.order-card-box { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; line-height: 1.55; }
+.order-card-box h3 { margin: 0; font-size: 17px; display: flex; align-items: center; gap: 8px; }
+.order-card-box h4 { margin: 4px 0 0; font-size: 14px; color: var(--ink-2); }
+.order-card-box p { margin: 0; }
+.order-status-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.order-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
+.order-steps li { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 12.5px; color: var(--ink-3); text-align: center; position: relative; }
+.order-steps li::before { content: ''; position: absolute; top: 13px; right: 50%; width: 100%; height: 2px; background: var(--line); z-index: 0; }
+.order-steps li:first-child::before { display: none; }
+.order-steps li.done::before, .order-steps li.now::before { background: var(--brand); }
+.order-steps i { position: relative; z-index: 1; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-style: normal; font-weight: 700; font-size: 13px; background: var(--paper); border: 2px solid var(--line-2); color: var(--ink-3); }
+.order-steps li.done i { background: var(--brand); border-color: var(--brand); color: #fff; }
+.order-steps li.now i { border-color: var(--brand); color: var(--brand); }
+.order-steps li.done, .order-steps li.now { color: var(--ink); }
+.order-pay { display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: 12px; background: var(--bg); }
+.order-qr { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.order-qr-canvas { width: 180px; height: 180px; image-rendering: pixelated; border-radius: 8px; border: 1px solid var(--line); background: #fff; }
+.order-slip { display: block; max-width: min(260px, 100%); max-height: 360px; border-radius: 8px; border: 1px solid var(--line); }
+.order-detail { display: flex; gap: 14px; align-items: flex-start; }
+.order-detail > div { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.order-detail .review-thumb { width: 104px; height: 104px; }
+.order-detail .review-thumb canvas { max-width: 96px; max-height: 96px; }
+.order-form textarea, .order-reply textarea { min-height: 0; }
+.order-addr { white-space: pre-line; overflow-wrap: anywhere; }
+/* messages */
+.order-thread { display: flex; flex-direction: column; gap: 10px; }
+.order-msgs { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.order-msgs li { max-width: 85%; align-self: flex-start; background: var(--bg); border: 1px solid var(--line); border-radius: 12px 12px 12px 4px; padding: 8px 12px; }
+.order-msgs li.own { align-self: flex-end; background: #243b6b0f; border-color: #243b6b2a; border-radius: 12px 12px 4px 12px; }
+.order-msgs p { margin: 2px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 14.5px; }
+.order-msg-who { font-size: 12px; color: var(--ink-3); }
+.order-reply { display: flex; gap: 8px; align-items: flex-end; }
+.order-reply textarea { flex: 1; min-width: 0; min-height: 0; }
+.order-reply .btn { height: var(--ctl); flex-shrink: 0; }
+/* My stuff: my orders */
+.acct-order-list { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; }
+.acct-order-list li + li { border-top: 1px solid var(--line); }
+.acct-order-list a { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; color: inherit; text-decoration: none; }
+.acct-order-list a:hover b { color: var(--brand); }
+.acct-order-main { display: flex; flex-direction: column; min-width: 0; }
+.acct-order-main b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.acct-order-list .status-chip { flex-shrink: 0; }
+.order-cta { width: 100%; justify-content: center; height: var(--ctl); }
+/* team side */
+.orders-closed { font-size: 14px; }
+.order-code-sm { font-family: ui-monospace, monospace; font-size: 15px; letter-spacing: .04em; color: var(--brand); }
+.order-facts { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14px; }
+.order-facts li { display: flex; gap: 6px; }
+.order-facts span { color: var(--ink-3); }
+.order-team { display: grid; grid-template-columns: minmax(140px, 200px) minmax(0, 1fr); gap: 8px 12px; align-items: start; }
+.order-team select { height: var(--ctl); border: 1px solid var(--line-2); border-radius: 10px; padding: 0 10px; background: var(--paper); color: var(--ink); font: inherit; }
+.order-team-note textarea { min-height: 0; }
+.order-next { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border-radius: 10px; background: var(--bg); }
+.order-next p { margin: 0; }
+.order-ship { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 8px; align-items: end; }
+.order-ship .btn { height: var(--ctl); }
+.order-team-thread summary, .order-pricing summary { cursor: pointer; font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 6px; color: var(--ink); }
+.order-team-thread[open] summary { margin-bottom: 10px; }
+.order-pricing { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 16px; display: block; }
+.order-pricing[open] { display: flex; flex-direction: column; gap: 12px; }
+.order-pricing summary .status-chip { margin-left: 4px; }
+.order-price-table { border-collapse: collapse; width: 100%; font-size: 14px; }
+.order-price-table th, .order-price-table td { padding: 4px 6px; text-align: left; }
+.order-price-table thead th { font-weight: 600; color: var(--ink-2); }
+.order-price-table small { font-weight: 400; color: var(--ink-3); }
+.order-price-table input { width: 100%; min-width: 56px; height: var(--ctl-sm); border: 1px solid var(--line-2); border-radius: 8px; padding: 0 8px; font: inherit; }
+.order-pay-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 600px) {
+  .order-team { grid-template-columns: 1fr; }
+  .order-ship { grid-template-columns: 1fr; }
+  .order-pay-fields { grid-template-columns: 1fr; }
+}

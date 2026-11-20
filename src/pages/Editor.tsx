@@ -20,6 +20,8 @@ import { Icon, type IconName } from '../components/Icon';
 import { ImageImportDialog } from '../components/ImageImportDialog';
 import { PublishDialog } from '../components/PublishDialog';
 import { communityEnabled } from '../lib/community';
+import { OrderRequestDialog } from '../components/OrderRequestDialog';
+import { ordersEnabled } from '../lib/orders';
 import { computeProgress, reconcileProgress } from '../lib/progress';
 import { navigate } from '../App';
 import { t } from '../lib/i18n';
@@ -62,6 +64,7 @@ export function Editor({ id }: { id: string }) {
   const [imgImport, setImgImport] = useState<{ file: File | null } | null>(null);
   const [transfer, setTransfer] = useState(false);
   const [publish, setPublish] = useState(false);
+  const [order, setOrder] = useState(false);
   const [textDlg, setTextDlg] = useState(false);
   /** phone "More" tools sheet */
   const [moreOpen, setMoreOpen] = useState(false);
@@ -282,6 +285,11 @@ export function Editor({ id }: { id: string }) {
               <button onClick={() => doExport('png')}><Icon name="image" /> <span><b>{t('รูปภาพ PNG', 'PNG image')}</b><small>{t('สำหรับส่งให้เพื่อนทาง LINE / โซเชียล', 'To send to friends on LINE / social media')}</small></span></button>
               <button onClick={() => doExport('transfer')}><Icon name="phone" /> <span><b>{t('ส่งไปมือถือ / อีกเครื่อง', 'Send to phone / another device')}</b><small>{t('สแกน QR เพื่อปักต่อในมือถือ (รวมความคืบหน้า)', 'Scan the QR to continue stitching on your phone (progress included)')}</small></span></button>
               <button onClick={() => doExport('share')}><Icon name="link" /> <span><b>{t('คัดลอกลิงก์แชร์', 'Copy share link')}</b><small>{t('เพื่อนเปิดดูและบันทึกต่อได้', 'Friends can open it and save a copy')}</small></span></button>
+              {ordersEnabled && (p.details.baseType === 'print3d' || p.mode === 'template') && (
+                <button onClick={() => { setMenu(false); savePattern({ ...p, updatedAt: Date.now() }); setOrder(true); }}>
+                  <Icon name="cube" /> <span><b>{t('สั่งผลิต', 'Order this piece')}</b><small>{t('ให้ทีมพิมพ์ชิ้นงานและจัดชุดด้ายส่งถึงบ้าน ดูราคาได้ทันที', 'We print the piece and pack the threads for you; see the price right away')}</small></span>
+                </button>
+              )}
               {communityEnabled && (
                 <button onClick={() => { setMenu(false); savePattern({ ...p, updatedAt: Date.now() }); setPublish(true); }}>
                   <Icon name="people" /> <span><b>{p.postId ? t('อัปเดตในชุมชน', 'Update in the community') : t('แชร์ในชุมชน', 'Share with the community')}</b><small>{t('ให้ทุกคนเห็นและลองปักลายนี้ได้', 'Let everyone see and stitch this pattern')}</small></span>
@@ -414,6 +422,7 @@ export function Editor({ id }: { id: string }) {
         />
       )}
       {transfer && <TransferDialog pattern={p} onClose={() => setTransfer(false)} />}
+      {order && <OrderRequestDialog pattern={p} onClose={() => setOrder(false)} />}
       {publish && (
         <PublishDialog pattern={p} onClose={() => setPublish(false)}
           // keep the link in the editor's copy too, or the next autosave would drop it

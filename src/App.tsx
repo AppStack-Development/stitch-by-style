@@ -15,6 +15,7 @@ import { Community } from './pages/Community';
 import { CommunityPost } from './pages/CommunityPost';
 import { Terms } from './pages/Terms';
 import { Moderation } from './pages/Moderation';
+import { OrderPage } from './pages/OrderPage';
 import { MergeDialog } from './components/MergeDialog';
 import { FeedbackDialog } from './components/FeedbackDialog';
 import { loadPattern } from './lib/storage';
@@ -55,6 +56,7 @@ function Routes() {
   if (route === 'terms') return <Terms />;
   if (route === 'community') return <Community key={arg ?? ''} tag={arg} />;
   if (route === 'moderation') return <Moderation />;
+  if (route === 'order' && arg) return <OrderPage key={arg} code={arg} />;
   if (route === 'c' && arg) return <CommunityPost key={arg} id={arg} />;
   if (route === 'new') return <NewPattern key={arg} mode={arg === 'template' ? 'template' : 'free'} />;
   if (route === 'edit' && arg) return <Editor key={arg} id={arg} />;

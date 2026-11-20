@@ -16,6 +16,8 @@ import { LangSwitch } from '../components/LangSwitch';
 import { AccountButton } from '../components/AccountButton';
 import { LikeButton, TeamBadge, usePostPattern } from '../components/PostCard';
 import { PrintView } from './PrintView';
+import { OrderRequestDialog } from '../components/OrderRequestDialog';
+import { ordersEnabled } from '../lib/orders';
 
 const REPORTED_KEY = 'sbs:reported';
 const reported = (): string[] => { try { return JSON.parse(localStorage.getItem(REPORTED_KEY) || '[]'); } catch { return []; } };
@@ -33,6 +35,7 @@ export function CommunityPost({ id }: { id: string }) {
   const [printing, setPrinting] = useState(false);
   const [reporting, setReporting] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [ordering, setOrdering] = useState(false);
   const p = usePostPattern(post);
 
   useEffect(() => {
@@ -173,6 +176,12 @@ export function CommunityPost({ id }: { id: string }) {
               <Icon name="edit" size={16} /> {busy === 'copy' ? t('กำลังเปิด…', 'Opening…') : t('แก้ไขเป็นสำเนาของฉัน', 'Edit as my copy')}
             </button>
           </div>
+          {/* pilot: only the team's own 3D patterns can be ordered; other designers' patterns need their permission first */}
+          {ordersEnabled && post.author.official && post.base === 'print3d' && p && (
+            <button className="btn order-cta" onClick={() => setOrdering(true)}>
+              <Icon name="send" size={16} /> {t('สั่งผลิตชิ้นนี้ (พิมพ์ + ด้ายพร้อมปัก)', 'Order this piece (printed + threads)')}
+            </button>
+          )}
           <div className="post-tools">
             <LikeButton post={post} liked={liked} onChange={(on, count) => { setLiked(on); setPost({ ...post, likeCount: count }); }} />
             <button className="btn sm ghost" onClick={copyLink}><Icon name={copied ? 'check' : 'link'} size={15} /> {copied ? t('คัดลอกแล้ว', 'Copied') : t('คัดลอกลิงก์', 'Copy link')}</button>
@@ -207,6 +216,7 @@ export function CommunityPost({ id }: { id: string }) {
         </div>
       </div>
       {reporting && <ReportDialog postId={post.id} onClose={() => setReporting(false)} />}
+      {ordering && p && <OrderRequestDialog pattern={p} onClose={() => setOrdering(false)} />}
     </div>
   );
 }

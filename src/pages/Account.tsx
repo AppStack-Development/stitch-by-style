@@ -14,6 +14,7 @@ import { communityEnabled, getMyCreator, myPosts, saveMyCreator, unpublish, type
 import { amModerator, openPostCount } from '../lib/moderation';
 import { useStash } from '../lib/stash';
 import { DMC_LIBRARY } from '../lib/threads';
+import { STATUS_LABEL as ORDER_STATUS, baht, isClosed, myOrders, ordersEnabled, type Order } from '../lib/orders';
 
 const errText = (e: unknown) => (e as Error)?.message || t('เกิดข้อผิดพลาด ลองอีกครั้ง', 'Something went wrong. Please try again.');
 
@@ -260,6 +261,35 @@ function ThreadsCard() {
   );
 }
 
+/** "ออเดอร์ของฉัน": the orders this account has placed, newest first. Hidden until there is one. */
+function OrdersCard() {
+  const [orders, setOrders] = useState<Order[] | null>(null);
+  useEffect(() => {
+    let live = true;
+    myOrders().then((x) => { if (live) setOrders(x); }).catch(() => { if (live) setOrders([]); });
+    return () => { live = false; };
+  }, []);
+  if (!orders || !orders.length) return null;
+  const open = orders.filter((o) => !isClosed(o.status));
+  const shown = [...open, ...orders.filter((o) => isClosed(o.status))].slice(0, 6);
+  return (
+    <section className="acct-card acct-orders">
+      <h3><Icon name="cube" size={18} /> {t('ออเดอร์ของฉัน', 'My orders')}</h3>
+      <ul className="acct-order-list">
+        {shown.map((o) => (
+          <li key={o.code}>
+            <a href={`#/order/${o.code}`}>
+              <span className="acct-order-main"><b>{o.title}</b><span className="muted small">{o.code} · {baht(o.total)}</span></span>
+              <span className={'status-chip ' + (o.status === 'cancelled' ? 'removed' : o.status === 'done' ? 'published' : 'hidden')}>{ORDER_STATUS[o.status]()}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+      {orders.length > shown.length && <p className="hint">{t(`และอีก ${orders.length - shown.length} ออเดอร์ที่ปิดแล้ว`, `and ${orders.length - shown.length} more closed orders`)}</p>}
+    </section>
+  );
+}
+
 /** Team accounts only: how many reports wait for review, and the way to the review page. */
 function ModeratorCard() {
   const [count, setCount] = useState<number | null>(null);
@@ -438,6 +468,7 @@ function SignedIn() {
       </section>
 
       <ThreadsCard />
+      {ordersEnabled && <OrdersCard />}
 
       <section className="acct-card">
         <h3><Icon name="sync" size={18} /> {t('การซิงก์', 'Sync')}</h3>

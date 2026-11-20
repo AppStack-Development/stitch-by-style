@@ -15,6 +15,8 @@ import { Icon } from '../components/Icon';
 import { FeedbackLink } from '../components/FeedbackDialog';
 import { trackStep } from '../lib/analytics';
 import { AccountButton } from '../components/AccountButton';
+import { OrderRequestDialog } from '../components/OrderRequestDialog';
+import { ordersEnabled } from '../lib/orders';
 import { navigate } from '../App';
 
 /** What the pattern goes on. Fabric sizes are the longest side in centimetres at 14 count. */
@@ -125,6 +127,7 @@ export function QuickCreate() {
   const [variants, setVariants] = useState<{ p: Pattern; poor: number; used: number }[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState<Pattern | null>(null);
+  const [ordering, setOrdering] = useState(false);
   const [copied, setCopied] = useState(false);
   const imgInput = useRef<HTMLInputElement>(null);
   const modelInput = useRef<HTMLInputElement>(null);
@@ -395,6 +398,11 @@ export function QuickCreate() {
                     <Icon name="cube" size={16} /> {t('ดาวน์โหลด STL ไปพิมพ์', 'Download STL to print')}
                   </button>
                 )}
+                {is3d && ordersEnabled && (
+                  <button className="btn" onClick={() => setOrdering(true)}>
+                    <Icon name="send" size={16} /> {t('ไม่มีเครื่องพิมพ์? ให้เราผลิตให้', 'No printer? Have us make it')}
+                  </button>
+                )}
                 <a className="btn ghost" href={`#/edit/${saved.id}`}><Icon name="edit" size={16} /> {t('ปรับละเอียดในโหมดขั้นสูง', 'Fine-tune in the editor')}</a>
               </div>
               <p className="hint qc-feedback">{t('ลายออกมาไม่ถูกใจ หรือมีอะไรอยากให้ปรับ?', 'Not quite what you wanted, or something to improve?')} <FeedbackLink kind="idea">{t('บอกเรา', 'Tell us')}</FeedbackLink></p>
@@ -417,6 +425,7 @@ export function QuickCreate() {
           </div>
         )}
       </main>
+      {ordering && saved && <OrderRequestDialog pattern={saved} onClose={() => setOrdering(false)} />}
     </div>
   );
 }

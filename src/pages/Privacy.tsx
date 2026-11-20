@@ -59,6 +59,15 @@ export function Privacy() {
               'If you use “Send feedback”, we keep: your message and the type you chose, the screen you were on, your language, device type and screen width, your email only if you ask for a reply, and your account id if you’re signed in. We use this to improve and fix the app, and to reply when you ask.')}</p>
           </Sec>
 
+          <Sec title={t('เมื่อคุณสั่งผลิตชิ้นงาน', 'When you order a piece')}>
+            <p>{t('การสั่งผลิตต้องเข้าสู่ระบบ เมื่อคุณสั่ง เราจะเก็บ: สำเนาลาย (ไม่มีความคืบหน้าการปัก) ตัวเลือกและราคา ชื่อผู้รับ เบอร์โทร ที่อยู่จัดส่ง ข้อความที่คุณเขียนถึงทีม รูปสลิปการโอน และเลขพัสดุ ทั้งหมดผูกกับบัญชีของคุณ',
+              'Ordering needs an account. When you order, we keep: a copy of the pattern (without your stitching progress), your options and the price, the recipient’s name, phone number and delivery address, the messages you write to the team, your payment slip image, and the tracking number, all linked to your account.')}</p>
+            <p>{t('ข้อมูลนี้เห็นได้เฉพาะคุณและทีมงาน เราใช้เพื่อตรวจการชำระเงิน ผลิต จัดส่ง และดูแลหลังการขายเท่านั้น ที่อยู่และเบอร์โทรจะส่งต่อให้บริษัทขนส่งเฉพาะที่จำเป็นต่อการส่งพัสดุ รูปสลิปเก็บแบบส่วนตัว ไม่มีลิงก์สาธารณะ',
+              'Only you and our team can see it. We use it only to check payment, make and ship your piece, and look after you afterwards. Your name, address and phone number go to the delivery company only as needed to deliver the parcel. Slip images are stored privately, with no public link.')}</p>
+            <p>{t('ข้อมูลการสั่งซื้อเก็บไว้ไม่เกิน 2 ปี เพื่อดูแลหลังการขายและทำบัญชี แม้คุณลบบัญชีแล้ว ออเดอร์จะยังอยู่ในระบบแต่ไม่ผูกกับบัญชีอีกต่อไป ถ้าต้องการให้ลบเร็วกว่านั้น ติดต่อเราตามช่องทางด้านล่าง',
+              'Order records are kept for at most 2 years, for after-sales care and bookkeeping. If you delete your account, your orders stay but are no longer linked to it. To have them deleted sooner, contact us using the details below.')}</p>
+          </Sec>
+
           <Sec title={t('ข้อมูลที่เราเก็บ (เฉพาะเมื่อเข้าสู่ระบบ)', 'What we collect (only when you sign in)')}>
             <ul>
               <li>{t('ชื่อ อีเมล และรูปโปรไฟล์จากบัญชี Google ของคุณ', 'Your name, email address and profile picture from your Google account')}</li>
