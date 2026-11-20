@@ -120,8 +120,10 @@ function DeleteDialog({ onClose }: { onClose: () => void }) {
           <Icon name="trash" size={16} /> {busy ? t('กำลังลบ…', 'Deleting…') : t('ลบบัญชีถาวร', 'Delete permanently')}
         </button>
       </>}>
-      <p>{t('บัญชีและข้อมูลทั้งหมดที่เก็บไว้ในระบบ (ลาย ความคืบหน้าการปัก และรายการด้าย) จะถูกลบถาวร กู้คืนไม่ได้',
-        'Your account and everything stored with it (patterns, stitching progress and thread list) will be permanently deleted. This can’t be undone.')}</p>
+      <p>{t('บัญชีและข้อมูลที่เก็บไว้ในระบบ (ลาย ความคืบหน้าการปัก และรายการด้าย) จะถูกลบถาวร กู้คืนไม่ได้',
+        'Your account and what’s stored with it (patterns, stitching progress and thread list) will be permanently deleted. This can’t be undone.')}</p>
+      <p className="muted">{t('ถ้าเคยสั่งผลิต ข้อมูลออเดอร์จะเก็บไว้ไม่เกิน 2 ปีเพื่อดูแลหลังการขายและทำบัญชี แต่จะไม่ผูกกับบัญชีอีกต่อไป ตามนโยบายความเป็นส่วนตัว',
+        'If you’ve ordered a piece, the order is kept for up to 2 years for after-sales care and accounting, no longer linked to you, as the privacy notice explains.')}</p>
       <p className="muted">{t('ลายที่อยู่ในเครื่องนี้จะยังอยู่ตามเดิม เว้นแต่จะติ๊กช่องด้านล่าง ถ้าอยากเก็บสำเนาไว้ ให้กด “ดาวน์โหลดข้อมูลของฉัน” ก่อน',
         'Copies on this device stay unless you tick the box below. To keep a copy, use “Download my data” first.')}</p>
       <label className="check">
@@ -495,7 +497,7 @@ function SignedIn() {
 
       <section className="acct-card">
         <h3><Icon name="file" size={18} /> {t('ข้อมูลของคุณ', 'Your data')}</h3>
-        <p className="muted">{t('ดาวน์โหลดข้อมูลทั้งหมดในบัญชี (โปรไฟล์ ลาย และรายการด้าย) เป็นไฟล์ JSON', 'Download everything in your account (profile, patterns and thread list) as a JSON file.')}</p>
+        <p className="muted">{t('ดาวน์โหลดข้อมูลทั้งหมดในบัญชี (โปรไฟล์ ลาย รายการด้าย ลายที่แชร์ และออเดอร์) เป็นไฟล์ JSON', 'Download everything in your account (profile, patterns, thread list, shared patterns and orders) as a JSON file.')}</p>
         <div className="btn-row">
           <button className="btn" onClick={download} disabled={exporting}>
             <Icon name="download" size={16} /> {exporting ? t('กำลังเตรียมไฟล์…', 'Preparing…') : t('ดาวน์โหลดข้อมูลของฉัน', 'Download my data')}

@@ -220,6 +220,28 @@ export async function myOrders(): Promise<Order[]> {
   return (data ?? []).map(toOrder);
 }
 
+/**
+ * Every order of yours with its messages, for "Download my data" (PDPA right to a copy). Rows as stored,
+ * minus internal ids; slip images stay in private storage and are listed by upload time only.
+ */
+export async function myOrderData(): Promise<unknown[]> {
+  const uid = getCloud().user?.id;
+  if (!uid) return [];
+  const c = await client();
+  const { data, error } = await c.from('orders').select(ORDER_COLS).eq('user_id', uid).order('created_at', { ascending: true }).limit(1000);
+  if (error) throw new Error(error.message);
+  const rows = data ?? [];
+  if (!rows.length) return [];
+  const { data: msgs, error: mErr } = await c.from('order_messages').select('order_id, created_at, from_team, body')
+    .in('order_id', rows.map((r) => r.id)).order('created_at', { ascending: true }).limit(5000);
+  if (mErr) throw new Error(mErr.message);
+  return rows.map(({ id, user_id: _u, slip_path: slip, ...r }) => ({
+    ...r,
+    slip_uploaded: !!slip,
+    messages: (msgs ?? []).filter((m) => m.order_id === id).map(({ order_id: _o, ...m }) => m),
+  }));
+}
+
 /** One order by code: yours, or any for the team. Null when not found or not yours. */
 export async function getOrder(code: string): Promise<Order | null> {
   const c = await client();

@@ -6,6 +6,7 @@ import { normalizePattern } from './pattern';
 import { mergeProgress, sameDesign } from './progress';
 import { lang } from './i18n';
 import { myCommunityData } from './community';
+import { myOrderData } from './orders';
 import { APP_NAME } from './brand';
 
 /**
@@ -282,6 +283,8 @@ export async function exportMyData(): Promise<Blob> {
     threads: stash?.codes ?? [],
     // public name and shared patterns (community gallery); null if those tables aren't reachable
     community: await myCommunityData().catch(() => null),
+    // printed-piece orders with their messages; null if the orders tables aren't reachable
+    orders: await myOrderData().catch(() => null),
   };
   return new Blob([JSON.stringify(out, null, 1)], { type: 'application/json' });
 }
