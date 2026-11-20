@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Post } from '../lib/community';
 import { amModerator, decide, recentlyHandled, reviewQueue, DECISION_LABEL, REASON_LABEL, type Decision, type ReviewItem } from '../lib/moderation';
 import { useCloud } from '../lib/cloud';
@@ -10,7 +10,7 @@ import { TeamBadge, usePostPattern } from '../components/PostCard';
 import type { Pattern } from '../types';
 import {
   ORDER_STATUSES, PRODUCTS, SIZE_LIMITS, STATUS_LABEL as ORDER_STATUS, baht, cm, getTeamNote, listOrders, loadPricing, ordersEnabled,
-  pieceMm, productName, promptPayPayload, saveConfig, saveTeamNote, sizeOf, updateOrder, type Order, type OrderStatus,
+  pieceMm, productName, promptPayPayload, saveConfig, saveTeamNote, sizeOf, updateOrder, type Order, type OrderMessage, type OrderStatus,
 } from '../lib/orders';
 import { OrderThread } from '../components/OrderThread';
 import { SlipPeek } from './OrderPage';
@@ -320,6 +320,17 @@ function OrderCard({ order }: { order: Order }) {
   const [savedNote, setSavedNote] = useState('');
   const [carrier, setCarrier] = useState(order.trackingCarrier);
   const [tracking, setTracking] = useState(order.trackingNo);
+  // messages: count on the summary; opens by itself (once) when the customer wrote last and nobody has replied
+  const [threadOpen, setThreadOpen] = useState(false);
+  const [msgCount, setMsgCount] = useState(0);
+  const [awaitingReply, setAwaitingReply] = useState(false);
+  const autoOpened = useRef(false);
+  const onMessages = useCallback((list: OrderMessage[]) => {
+    const waiting = list.length > 0 && !list[list.length - 1].fromTeam;
+    setMsgCount(list.length);
+    setAwaitingReply(waiting);
+    if (waiting && !autoOpened.current) { autoOpened.current = true; setThreadOpen(true); }
+  }, []);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
   useEffect(() => {
@@ -416,9 +427,13 @@ function OrderCard({ order }: { order: Order }) {
           <button className="btn sm" onClick={stl} disabled={!p}><Icon name="cube" size={15} /> {t('ดาวน์โหลด STL', 'Download STL')}</button>
         </div>
         {err && <p className="error small">{err}</p>}
-        <details className="order-team-thread">
-          <summary><Icon name="chat" size={15} /> {t('ข้อความกับลูกค้า', 'Messages with the customer')}</summary>
-          <OrderThread orderId={o.id} asTeam />
+        <details className="order-team-thread" open={threadOpen} onToggle={(e) => setThreadOpen(e.currentTarget.open)}>
+          <summary>
+            <Icon name="chat" size={15} /> {t('ข้อความกับลูกค้า', 'Messages with the customer')}
+            {msgCount > 0 && <span className="muted"> ({msgCount})</span>}
+            {awaitingReply && <span className="status-chip hidden">{t('รอทีมตอบ', 'Needs a reply')}</span>}
+          </summary>
+          <OrderThread orderId={o.id} asTeam onMessages={onMessages} />
         </details>
       </div>
     </article>

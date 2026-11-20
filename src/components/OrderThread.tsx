@@ -10,8 +10,15 @@ const when = (iso: string) => new Date(iso).toLocaleString(locale, { day: 'numer
  * Messages between the customer and the team on one order. `asTeam` flips whose messages sit on the right.
  * Reloads when the tab comes back into view, so a reply shows up without a refresh.
  */
-export function OrderThread({ orderId, asTeam }: { orderId: number; asTeam: boolean }) {
-  const [items, setItems] = useState<OrderMessage[] | null>(null);
+export function OrderThread({ orderId, asTeam, onMessages }: {
+  orderId: number; asTeam: boolean;
+  /** called with the messages every time they (re)load, e.g. so the team card can show a count */
+  onMessages?: (items: OrderMessage[]) => void;
+}) {
+  const [items, setItemsState] = useState<OrderMessage[] | null>(null);
+  const report = useRef(onMessages);
+  report.current = onMessages;
+  const setItems = useCallback((list: OrderMessage[]) => { setItemsState(list); report.current?.(list); }, []);
   const [text, setText] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
@@ -19,7 +26,7 @@ export function OrderThread({ orderId, asTeam }: { orderId: number; asTeam: bool
 
   const load = useCallback(() => {
     listMessages(orderId).then(setItems).catch((e) => setErr((e as Error).message));
-  }, [orderId]);
+  }, [orderId, setItems]);
   useEffect(() => {
     load();
     const back = () => { if (document.visibilityState === 'visible') load(); };

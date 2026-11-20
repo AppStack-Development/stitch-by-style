@@ -259,3 +259,4 @@
 .order-pricing summary::-webkit-details-marker { display: none; }
 .order-pricing-edit { margin-left: auto; font-size: 13px; font-weight: 600; color: var(--brand); padding: 4px 10px; border: 1px solid var(--line-2); border-radius: 8px; }
 .order-pricing[open] .order-pricing-edit { display: none; }
+.order-team-thread summary .status-chip { margin-left: 4px; }
