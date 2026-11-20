@@ -12,6 +12,8 @@ import { detectInApp, externalUrl, canOpenExternally, type InAppInfo } from '../
 import { trackStep } from '../lib/analytics';
 import { communityEnabled, getMyCreator, myPosts, saveMyCreator, unpublish, type Post } from '../lib/community';
 import { amModerator, openPostCount } from '../lib/moderation';
+import { useStash } from '../lib/stash';
+import { DMC_LIBRARY } from '../lib/threads';
 
 const errText = (e: unknown) => (e as Error)?.message || t('เกิดข้อผิดพลาด ลองอีกครั้ง', 'Something went wrong. Please try again.');
 
@@ -224,6 +226,40 @@ function SignedOut({ error }: { error: string }) {
   );
 }
 
+/** "ด้ายของฉัน": how many threads you own, a peek at them, and the way to the full list (#/threads). */
+function ThreadsCard() {
+  const cloud = useCloud();
+  const stash = useStash();
+  const owned = [...stash.codes];
+  const peek = owned.slice(0, 14).map((code) => DMC_LIBRARY.find((d) => d.code === code)).filter(Boolean);
+  const signedIn = cloud.status === 'signed-in';
+  return (
+    <section className="acct-card acct-threads">
+      <h3><Icon name="palette" size={18} /> {t('ด้ายของฉัน', 'My threads')}</h3>
+      {owned.length > 0 ? (
+        <>
+          <p className="acct-threads-count"><b>{t(`มี ${owned.length} สี`, `${owned.length} owned`)}</b></p>
+          <div className="acct-swatches" aria-hidden="true">
+            {peek.map((d) => <i key={d!.code} style={{ background: d!.hex }} title={`DMC ${d!.code}`} />)}
+            {owned.length > peek.length && <span>+{owned.length - peek.length}</span>}
+          </div>
+        </>
+      ) : (
+        <p className="muted">{t('บันทึกด้าย DMC ที่คุณมี เพื่อสร้างลายจากด้ายเดิมและรู้ว่าต้องซื้อสีไหนเพิ่ม',
+          'Record the DMC threads you own, to make patterns from what you have and see which colors to buy.')}</p>
+      )}
+      <p className="hint">{signedIn
+        ? t('ซิงก์ไปทุกเครื่องที่เข้าสู่ระบบบัญชีนี้', 'Synced to every device signed in to this account.')
+        : t('เก็บไว้ในเครื่องนี้ · เข้าสู่ระบบเพื่อให้ตามไปทุกเครื่อง (ไม่บังคับ)', 'Kept on this device · sign in to have them on every device (optional).')}</p>
+      <div className="btn-row">
+        <a className={'btn' + (owned.length ? '' : ' primary')} href="#/threads">
+          <Icon name={owned.length ? 'edit' : 'plus'} size={16} /> {owned.length ? t('จัดการด้าย', 'Manage threads') : t('เพิ่มด้ายของฉัน', 'Add my threads')}
+        </a>
+      </div>
+    </section>
+  );
+}
+
 /** Team accounts only: how many reports wait for review, and the way to the review page. */
 function ModeratorCard() {
   const [count, setCount] = useState<number | null>(null);
@@ -401,6 +437,8 @@ function SignedIn() {
         <button className="btn" onClick={() => setDialog('signout')}><Icon name="logout" size={16} /> {t('ออกจากระบบ', 'Sign out')}</button>
       </section>
 
+      <ThreadsCard />
+
       <section className="acct-card">
         <h3><Icon name="sync" size={18} /> {t('การซิงก์', 'Sync')}</h3>
         <p className="acct-sync-line" aria-live="polite"><SyncLine sync={cloud.sync} lastSync={cloud.lastSync} error={cloud.error} /></p>
@@ -454,17 +492,18 @@ export function Account() {
     <div className="account-page">
       <header className="site-head">
         <a className="icon-btn" href="#/" title={t('กลับหน้าแรก', 'Back to home')} aria-label={t('กลับหน้าแรก', 'Back to home')}><Icon name="back" /></a>
-        <h2><Icon name="user" size={18} /> {t('บัญชี', 'Account')}</h2>
+        <h2><Icon name="user" size={18} /> {t('ของฉัน', 'My stuff')}</h2>
         <div className="spacer" />
         <LangSwitch />
       </header>
       <main className="account-main">
         <div className="acct-col">
+          {/* My threads works without an account, so it comes first for everyone who isn't signed in */}
+          {cloud.status !== 'signed-in' && <ThreadsCard />}
           {cloud.status === 'off' && (
             <section className="acct-card">
               <h3><Icon name="info" size={18} /> {t('ยังไม่เปิดใช้บัญชี', 'Accounts aren’t available yet')}</h3>
-              <p className="muted">{t('ตอนนี้ยังเข้าสู่ระบบไม่ได้ ใช้งานได้ตามปกติ ลายทั้งหมดเก็บไว้ในเครื่องนี้', 'Signing in isn’t available yet. Everything works as usual, and your patterns are kept on this device.')}</p>
-              <div className="btn-row"><a className="btn" href="#/"><Icon name="back" size={16} /> {t('กลับหน้าแรก', 'Back to home')}</a></div>
+              <p className="muted">{t('ตอนนี้ยังเข้าสู่ระบบไม่ได้ ใช้งานได้ตามปกติ ลายและด้ายทั้งหมดเก็บไว้ในเครื่องนี้', 'Signing in isn’t available yet. Everything works as usual, and your patterns and threads are kept on this device.')}</p>
             </section>
           )}
           {cloud.status === 'loading' && <p className="muted acct-loading">{t('กำลังตรวจสอบการเข้าสู่ระบบ…', 'Checking your sign-in…')}</p>}

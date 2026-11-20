@@ -16,7 +16,6 @@ import { LangSwitch } from '../components/LangSwitch';
 import { AccountButton } from '../components/AccountButton';
 import { SampleGallery } from '../components/SampleGallery';
 import { FeedbackLink } from '../components/FeedbackDialog';
-import { useStash } from '../lib/stash';
 import { PATTERNS_PULLED } from '../lib/sync';
 import { communityEnabled, listPosts, myLikes, type Post } from '../lib/community';
 import { useCloud } from '../lib/cloud';
@@ -120,7 +119,6 @@ export function Home() {
   const [items, setItems] = useState<Pattern[]>(() => listPatterns());
   const fileRef = useRef<HTMLInputElement>(null);
   const inst = useInstall();
-  const stash = useStash();
   const [iosHelp, setIosHelp] = useState(false);
   const refresh = () => setItems(listPatterns());
   // patterns that arrive from the account (another device) show up without a reload
@@ -192,14 +190,6 @@ export function Home() {
             <p>{t('เลือกผ้าหรือโมเดล ใส่รูป แล้วเลือกแบบที่ชอบ ได้ลายพร้อมปักใน 3 ขั้นตอน', 'Pick fabric or a model, add a photo, choose the result you like: a ready-to-stitch pattern in 3 steps.')}</p>
             <span className="btn primary">{t('เริ่มเลย →', 'Start →')}</span>
           </div>
-        </a>
-        <a className="threads-card" href="#/threads">
-          <span className="tc-swatches" aria-hidden="true">{['#c72b3b', '#f2b33d', '#47a72f', '#466a8e', '#1f2a44'].map((c) => <i key={c} style={{ background: c }} />)}</span>
-          <span className="tc-text">
-            <b>{t('ด้ายของฉัน', 'My threads')}</b>
-            <small>{stash.codes.size ? t(`มี ${stash.codes.size} สี · ใช้สร้างลายจากด้ายที่มี`, `${stash.codes.size} owned · used when creating patterns`) : t('บันทึกด้ายที่มี เพื่อใช้ด้ายเดิมและรู้ว่าต้องซื้ออะไร', 'Record the threads you own to reuse them and see what to buy')}</small>
-          </span>
-          <span className="tc-go">→</span>
         </a>
       </section>
 

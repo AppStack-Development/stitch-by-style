@@ -32,12 +32,14 @@ export function syncLabel(sync: SyncState): string {
   }
 }
 
-/** Header control for the optional account. Renders nothing when accounts aren't configured. */
+/**
+ * Header link to "ของฉัน" (#/account): your threads, and the optional account. Signed in it shows your
+ * picture and sync state; otherwise it reads "My stuff", since My threads lives there for everyone.
+ */
 export function AccountButton() {
   const cloud = useCloud();
-  if (!cloudEnabled || cloud.status === 'off') return null;
 
-  if (cloud.status === 'signed-in' && cloud.user) {
+  if (cloudEnabled && cloud.status === 'signed-in' && cloud.user) {
     const label = `${cloud.user.name} · ${syncLabel(cloud.sync)}`;
     return (
       <a className="btn ghost account-btn icon-only" href="#/account" title={label} aria-label={t(`บัญชี: ${label}`, `Account: ${label}`)}>
@@ -50,13 +52,15 @@ export function AccountButton() {
   }
 
   const loading = cloud.status === 'loading';
-  const signIn = t('เข้าสู่ระบบ', 'Sign in');
+  const mine = t('ของฉัน', 'My stuff');
   return (
     <a className={'btn ghost account-btn' + (loading ? ' icon-only' : ' signed-out')} href="#/account"
-      title={loading ? t('บัญชี', 'Account') : t('เข้าสู่ระบบเพื่อซิงก์ลายระหว่างอุปกรณ์ (ไม่บังคับ)', 'Sign in to sync your patterns across devices (optional)')}
-      aria-label={loading ? t('บัญชี', 'Account') : signIn}>
+      title={cloudEnabled
+        ? t('ด้ายของฉัน และเข้าสู่ระบบเพื่อซิงก์ระหว่างอุปกรณ์ (ไม่บังคับ)', 'My threads, and signing in to sync across devices (optional)')
+        : t('ด้ายของฉัน', 'My threads')}
+      aria-label={mine}>
       <Icon name="user" size={16} />
-      {!loading && <span className="account-label">{signIn}</span>}
+      {!loading && <span className="account-label">{mine}</span>}
     </a>
   );
 }

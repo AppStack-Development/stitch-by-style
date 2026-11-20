@@ -112,7 +112,7 @@ function useSections(): Section[] {
       id: 'threads', title: t('ด้ายของฉัน', 'My threads'), icon: 'palette',
       body: t(
         <>
-          <p>บันทึกด้าย DMC ที่คุณมีอยู่แล้ว (แค่มีหรือไม่มี ไม่ต้องนับจำนวน) จากการ์ด <b>“ด้ายของฉัน”</b> ที่หน้าแรก</p>
+          <p>บันทึกด้าย DMC ที่คุณมีอยู่แล้ว (แค่มีหรือไม่มี ไม่ต้องนับจำนวน) กดปุ่ม <b>“ของฉัน”</b> (ไอคอนรูปคน มุมขวาบน) แล้วกด <b>“จัดการด้าย”</b> ในการ์ด “ด้ายของฉัน” ใช้ได้โดยไม่ต้องเข้าสู่ระบบ</p>
           <ul>
             <li>ค้นหาด้วยรหัสหรือชื่อ แล้วแตะสีที่มีเพื่อติ๊ก หรือพิมพ์หลายรหัสพร้อมกัน เช่น <Kbd>310, 321, 666</Kbd></li>
             <li>ตอนสร้างลายจากรูปหรือแปลงรูปในหน้าออกแบบ เลือก “ด้ายที่ฉันมี” ได้ ลายจะใช้ด้ายเดิมก่อน</li>
@@ -121,7 +121,7 @@ function useSections(): Section[] {
           <Note>รายการด้ายเก็บไว้ในเบราว์เซอร์ของเครื่องนี้ เหมือนกับลายของคุณ</Note>
         </>,
         <>
-          <p>Record the DMC threads you already own (just have or don’t have, no counting) from the <b>“My threads”</b> card on the home page.</p>
+          <p>Record the DMC threads you already own (just have or don’t have, no counting): tap <b>“My stuff”</b> (the person icon, top right), then <b>“Manage threads”</b> on the “My threads” card. No account needed.</p>
           <ul>
             <li>Search by code or name and tap the colors you have, or type several codes at once, e.g. <Kbd>310, 321, 666</Kbd>.</li>
             <li>When you make a pattern from a photo, or use Image to pattern in the editor, choose “My threads” and the pattern uses threads you already own first.</li>

@@ -112,7 +112,7 @@ export function MyThreads() {
   return (
     <div className="threads-page">
       <header className="site-head">
-        <a className="icon-btn" href="#/" title={t('กลับหน้าแรก', 'Back to home')} aria-label={t('กลับหน้าแรก', 'Back to home')}><Icon name="back" /></a>
+        <a className="icon-btn" href="#/account" title={t('กลับไปหน้าของฉัน', 'Back to My stuff')} aria-label={t('กลับไปหน้าของฉัน', 'Back to My stuff')}><Icon name="back" /></a>
         <h2><Icon name="palette" size={18} /> {t('ด้ายของฉัน', 'My threads')}</h2>
         <span className={'th-count' + (owned ? ' on' : '')} aria-live="polite">
           {t(`มี ${owned} สี`, `${owned} owned`)}
