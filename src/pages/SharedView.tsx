@@ -40,7 +40,7 @@ export function SharedView({ data }: { data: string }) {
   return (
     <div className="shared">
       <header className="site-head">
-        <a className="brand" href="#/" aria-label={t(`${APP_NAME} หน้าแรก`, `${APP_NAME} home`)}><LogoMark size={32} className="logo-mark" /><Wordmark /></a>
+        <a className="brand" href="#/" aria-label={t(`${APP_NAME} หน้าแรก`, `${APP_NAME} home`)}><LogoMark size={34} className="logo-mark" tight /><Wordmark /></a>
         <div className="spacer" /><AccountButton /><LangSwitch />
       </header>
       <div className="shared-body">

@@ -9,8 +9,11 @@ interface Props {
   size?: number;
   className?: string;
   title?: string;
-  /** 'light': drawn straight on a light page (navy under, red over); 'tile': on the navy app-icon tile */
+  /** 'light': drawn straight on a light page; 'tile': on the cream app-icon tile. Both use the wordmark's
+   *  threads (navy under, red over), so the favicon and the logo match. */
   variant?: 'light' | 'tile';
+  /** crop to the stitch and its holes (no tile margin), for small inline use such as the phone header */
+  tight?: boolean;
 }
 
 /**
@@ -18,13 +21,15 @@ interface Props {
  * and the "/" crosses on top, the way a cross stitch is worked. Drawn as SVG in a 100x100 box; the stroke
  * keeps a minimum on-screen width so small sizes stay legible. scripts/make-icons.mjs draws the same thing.
  */
-export function LogoMark({ size = 36, className, title = APP_NAME, variant = 'light' }: Props) {
+export function LogoMark({ size = 36, className, title = APP_NAME, variant = 'light', tight = false }: Props) {
   const S = 100;
+  // the stitch with its round caps and holes spans 20..80 of the 100 box
+  const view = tight && variant !== 'tile' ? [20, 60] : [0, S];
   const c = variant === 'tile' ? logo.tile : logo.light;
   const a = g.from * S, b = g.to * S, h = g.holeInset * S, k = S - h;
-  const sw = Math.max(g.stroke * S, (g.minStrokePx / size) * S);
+  const sw = Math.max(g.stroke * S, (g.minStrokePx / size) * view[1]);
   return (
-    <svg className={className} width={size} height={size} viewBox={`0 0 ${S} ${S}`} role="img" aria-label={title}>
+    <svg className={className} width={size} height={size} viewBox={`${view[0]} ${view[0]} ${view[1]} ${view[1]}`} role="img" aria-label={title}>
       <title>{title}</title>
       {variant === 'tile' && <rect width={S} height={S} rx={g.tileRadius * S} fill={logo.tile.background} />}
       {size >= 20 && (

@@ -157,7 +157,7 @@ export function Home() {
   return (
     <div className="home">
       <header className="site-head">
-        <a className="brand" href="#/" aria-label={t(`${APP_NAME} หน้าแรก`, `${APP_NAME} home`)}><LogoMark size={32} className="logo-mark" /><Wordmark /></a>
+        <a className="brand" href="#/" aria-label={t(`${APP_NAME} หน้าแรก`, `${APP_NAME} home`)}><LogoMark size={34} className="logo-mark" tight /><Wordmark /></a>
         <div className="spacer" />
         {(inst.canPrompt || inst.iosManual) && (
           <button className="btn install-btn" onClick={() => (inst.canPrompt ? inst.install() : setIosHelp(!iosHelp))} title={t('ติดตั้งเป็นแอปบนหน้าจอโฮม ใช้งานได้แม้ออฟไลน์', 'Install as an app on your home screen; works offline')}>
