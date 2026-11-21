@@ -15,6 +15,7 @@ import './styles/quick.css';
 import './styles/account.css';
 import './styles/feedback.css';
 import './styles/community.css';
+import './styles/season.css';
 import './styles/consistency.css';
 
 // the app moves to xstitch-design.vercel.app: bring data from the old address, or leave it

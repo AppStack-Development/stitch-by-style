@@ -1,0 +1,34 @@
+/* Seasonal banner on the home page (components/SeasonBanner.tsx). Lines up with the quick-start card below. */
+.season { padding: 0 var(--page-x) 8px; } /* the shared page margin (consistency.css) */
+.season-card {
+  position: relative; display: flex; align-items: center; gap: 22px; padding: 22px; border-radius: 16px;
+  background: linear-gradient(135deg, #1d4a37, #2c6a4e); color: #fff; box-shadow: var(--shadow);
+}
+.season-text { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.season-text h3 { font-size: 22px; padding-right: 28px; }
+.season-text p { margin: 0; opacity: .9; font-size: 14px; line-height: 1.5; max-width: 520px; }
+.season-badge { font-size: 12px; font-weight: 600; padding: 2px 10px; border-radius: 999px; background: #ffffff26; }
+.season-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.season-actions .btn.primary { background: var(--thread); border-color: var(--thread); color: #fff; font-weight: 600; }
+.season-actions .btn.season-ghost { background: transparent; border-color: #ffffff66; color: #fff; }
+.season-actions .btn.season-ghost:hover { border-color: #fff; }
+.season-art { display: flex; gap: 10px; flex-shrink: 0; margin-right: 26px; }
+.season-thumb {
+  width: 92px; height: 92px; display: flex; align-items: center; justify-content: center;
+  border-radius: 12px; background: #ffffff1a; transition: transform .15s;
+}
+.season-thumb:hover { transform: translateY(-2px); }
+.season-thumb canvas { max-width: 80px; max-height: 80px; width: auto; height: auto; }
+.season-wait { width: 60px; height: 60px; border-radius: 50%; background: #ffffff1f; }
+.season-close { position: absolute; top: 10px; right: 10px; color: #fff; }
+.season-close:hover { background: #ffffff26; }
+
+@media (max-width: 760px) {
+  .season-card { flex-direction: column; align-items: stretch; gap: 14px; padding: 18px; }
+  .season-art { margin-right: 0; order: -1; justify-content: flex-start; }
+  .season-text h3 { font-size: 19px; }
+}
+@media (max-width: 420px) {
+  .season-thumb { width: 76px; height: 76px; }
+  .season-thumb canvas { max-width: 64px; max-height: 64px; }
+}

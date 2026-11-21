@@ -15,6 +15,7 @@ import { t, locale } from '../lib/i18n';
 import { LangSwitch } from '../components/LangSwitch';
 import { AccountButton } from '../components/AccountButton';
 import { SampleGallery } from '../components/SampleGallery';
+import { SeasonBanner } from '../components/SeasonBanner';
 import { FeedbackLink } from '../components/FeedbackDialog';
 import { PATTERNS_PULLED } from '../lib/sync';
 import { communityEnabled, listPosts, myLikes, type Post } from '../lib/community';
@@ -179,6 +180,8 @@ export function Home() {
         <h1>{t(<>ออกแบบลายปัก<br />สำหรับผ้าและชิ้นงานพิมพ์&nbsp;3&nbsp;มิติ</>, <>Design stitch patterns<br />for fabric and 3D prints</>)}</h1>
         <p>{t('เติมสีลงในช่อง วางแผนด้าย เข็ม และขนาดชิ้นงาน แล้วพิมพ์แผนผังหรือแชร์ให้เพื่อนได้ในคลิกเดียว', 'Fill in the cells, plan your threads, needle and finished size, then print the chart or share it with a friend in one click.')}</p>
       </section>
+
+      <SeasonBanner />
 
       <section className="quick-start">
         <a className="quick-card" href="#/quick">
