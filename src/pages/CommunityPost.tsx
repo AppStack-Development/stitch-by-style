@@ -9,7 +9,7 @@ import { buildPlate, toBinaryStl } from '../lib/plate';
 import { downloadBlob, safeFilename } from '../lib/share';
 import { trackStep } from '../lib/analytics';
 import { t, locale } from '../lib/i18n';
-import { templateLabel } from '../lib/templates';
+import { modelOf, templateLabel } from '../lib/templates';
 import { navigate } from '../App';
 import { Thumb } from '../components/Thumb';
 import { Icon } from '../components/Icon';
@@ -187,7 +187,8 @@ export function CommunityPost({ id }: { id: string }) {
             <LikeButton post={post} liked={liked} onChange={(on, count) => { setLiked(on); setPost({ ...post, likeCount: count }); }} />
             <button className="btn sm ghost" onClick={copyLink}><Icon name={copied ? 'check' : 'link'} size={15} /> {copied ? t('คัดลอกแล้ว', 'Copied') : t('คัดลอกลิงก์', 'Copy link')}</button>
             <button className="btn sm ghost" onClick={() => setPrinting(true)} disabled={!p}><Icon name="print" size={15} /> {t('แผนผัง / พิมพ์', 'Chart / print')}</button>
-            {post.base === 'print3d' && (
+            {/* Stitch Box lids are made to order from the team's own files, so no STL for them */}
+            {post.base === 'print3d' && !modelOf(p?.templateId) && (
               <button className="btn sm ghost" onClick={downloadStl} disabled={!p}><Icon name="cube" size={15} /> {t('ดาวน์โหลด STL', 'Download STL')}</button>
             )}
           </div>
