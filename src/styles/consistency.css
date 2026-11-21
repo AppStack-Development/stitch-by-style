@@ -68,3 +68,6 @@
 /* old address only: data too big to move by link (App.tsx MovedNotice) */
 .moved-notice { padding: 10px var(--page-x); background: #f2b33d33; color: var(--ink); font-size: 14px; line-height: 1.5; text-align: center; }
 .moved-notice a { color: var(--brand); font-weight: 600; }
+
+/* keep a short phrase on one line (e.g. "3.6 × 12.6 ซม.") */
+.nowrap { white-space: nowrap; }

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 import qrcode from 'qrcode-generator';
 import type { Pattern } from '../types';
 import {
@@ -112,7 +112,12 @@ function OrderView({ order: o, onChanged }: { order: Order; onChanged: () => voi
           </a>
           <div>
             <b>{o.title}</b>
-            <p className="muted small">{templateLabel(o.templateName) ?? '3D'} · {cm(w)} × {cm(h)} {t('ซม.', 'cm')} · {SIZE_LABEL[o.size]()}</p>
+            <p className="muted small">
+              {/* each part stays whole, so a narrow screen wraps between parts, never inside one */}
+              {[templateLabel(o.templateName) ?? '3D', `${cm(w)} × ${cm(h)} ${t('ซม.', 'cm')}`, SIZE_LABEL[o.size]()].map((x, i, all) => (
+                <Fragment key={i}><span className="nowrap">{x}{i < all.length - 1 && ' ·'}</span>{i < all.length - 1 && ' '}</Fragment>
+              ))}
+            </p>
             <ul className="order-facts">
               <li><span>{t('แบบ', 'Product')}</span><b>{productName(o.product)}</b></li>
               <li><span>{t('สีพลาสติก', 'Plastic')}</span><b>{o.plasticColor || '–'}</b></li>
@@ -126,7 +131,7 @@ function OrderView({ order: o, onChanged }: { order: Order; onChanged: () => voi
           <div className="order-total"><dt>{t('รวม', 'Total')}</dt><dd>{baht(o.total)}</dd></div>
         </dl>
         <h4>{t('จัดส่งถึง', 'Deliver to')}</h4>
-        <p className="order-addr">{o.address.name} · {o.address.phone}<br />{o.address.address} {o.address.postcode}</p>
+        <p className="order-addr">{o.address.name}{'\u00a0· '}{o.address.phone}<br />{o.address.address} {o.address.postcode}</p>
         {o.note && <><h4>{t('ข้อความตอนสั่ง', 'Your note')}</h4><p className="review-note">{o.note}</p></>}
         <p className="hint"><a className="acct-link" href="#/order-terms">{t('เงื่อนไขการสั่งซื้อ', 'Order terms')}</a>{o.termsVersion && t(` · ยอมรับฉบับ ${o.termsVersion}`, ` · accepted version ${o.termsVersion}`)}</p>
       </section>
