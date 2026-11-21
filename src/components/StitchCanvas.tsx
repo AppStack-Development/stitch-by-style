@@ -45,6 +45,12 @@ function linePts(a: Pt, b: Pt): Pt[] {
 
 const TAP_SLOP = 8;
 
+/** a newly marked stitch is drawn like the real thing: "\" first, then "/" on top, then it settles */
+const FX_DRAW = 230, FX_FADE = 170; // ms
+/** more new stitches than this at once (a big area, a whole colour) skip the drawing */
+const FX_MAX = 40;
+const prefersLessMotion = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 export const StitchCanvas = forwardRef<StitchCanvasHandle, Props>(function StitchCanvas(props, ref) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -55,6 +61,63 @@ export const StitchCanvas = forwardRef<StitchCanvasHandle, Props>(function Stitc
   const propsRef = useRef(props);
   propsRef.current = props;
   const hoverRef = useRef<Pt | null>(null);
+  // the stitch-drawing layer: only the cells being animated are drawn on it, so the pattern itself isn't
+  // redrawn every frame
+  const fxRef = useRef<HTMLCanvasElement>(null);
+  const fxCells = useRef(new Map<number, number>()); // cell -> start time
+  const fxFrame = useRef(0);
+  const prevDone = useRef<string | null>(null);
+  const sizeRef = useRef(size);
+  sizeRef.current = size;
+
+  const runFx = useCallback(() => {
+    if (fxFrame.current) return;
+    const frame = () => {
+      const c = fxRef.current;
+      if (!c) { fxFrame.current = 0; return; }
+      const { w, h } = sizeRef.current;
+      const dpr = window.devicePixelRatio || 1;
+      if (c.width !== Math.round(w * dpr)) c.width = Math.round(w * dpr);
+      if (c.height !== Math.round(h * dpr)) c.height = Math.round(h * dpr);
+      const ctx = c.getContext('2d')!;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      const now = performance.now();
+      const { s, ox, oy } = viewRef.current;
+      const p = propsRef.current.pattern;
+      ctx.lineCap = 'round';
+      for (const [i, t0] of fxCells.current) {
+        const t = now - t0;
+        if (t < 0) continue;
+        if (t > FX_DRAW + FX_FADE) { fxCells.current.delete(i); continue; }
+        const px = ox + (i % p.cols) * s, py = oy + ((i / p.cols) | 0) * s, pad = s * 0.2;
+        const hex = p.palette[p.cells[i]]?.hex ?? '#c72b3b';
+        const k1 = Math.min(1, t / (FX_DRAW / 2)), k2 = Math.max(0, Math.min(1, (t - FX_DRAW / 2) / (FX_DRAW / 2)));
+        ctx.globalAlpha = t > FX_DRAW ? 1 - (t - FX_DRAW) / FX_FADE : 1;
+        // the fabric under the new stitch, then the two legs of the cross in the thread's colour
+        ctx.fillStyle = '#fbf8f2';
+        ctx.fillRect(px, py, s, s);
+        const leg = (ax: number, ay: number, bx: number, by: number, k: number) => {
+          if (k <= 0) return;
+          const ex = ax + (bx - ax) * k, ey = ay + (by - ay) * k;
+          ctx.lineWidth = Math.max(2, s * 0.17);
+          ctx.strokeStyle = hex;
+          ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(ex, ey); ctx.stroke();
+        };
+        leg(px + pad, py + pad, px + s - pad, py + s - pad, k1);
+        leg(px + s - pad, py + pad, px + pad, py + s - pad, k2);
+        // a thin outline so a very pale thread still shows on the fabric
+        ctx.globalAlpha *= 0.35;
+        ctx.strokeStyle = '#1f2a44';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(px + 0.5, py + 0.5, s - 1, s - 1);
+      }
+      ctx.globalAlpha = 1;
+      fxFrame.current = fxCells.current.size ? requestAnimationFrame(frame) : 0;
+    };
+    fxFrame.current = requestAnimationFrame(frame);
+  }, []);
+  useEffect(() => () => cancelAnimationFrame(fxFrame.current), []);
 
   const pointers = useRef(new Map<number, Pt>());
   const single = useRef<{
@@ -147,6 +210,20 @@ export const StitchCanvas = forwardRef<StitchCanvasHandle, Props>(function Stitc
     const { s, ox, oy } = viewRef.current;
     const p = props.pattern;
     drawPattern(ctx, p, { cell: s, view: props.view, grid: props.grid, ox, oy, done: props.done, focus: props.focus });
+    // stitches that were just marked get drawn in (not on load, not on undo, not for big batches)
+    const prev = prevDone.current;
+    prevDone.current = props.done;
+    if (prev != null && prev !== props.done && s >= 8 && !prefersLessMotion()) {
+      const fresh: number[] = [];
+      for (let i = 0; i < props.done.length && fresh.length <= FX_MAX; i++) {
+        if (props.done.charCodeAt(i) === 49 && prev.charCodeAt(i) !== 49) fresh.push(i);
+      }
+      if (fresh.length && fresh.length <= FX_MAX) {
+        const now = performance.now();
+        fresh.forEach((i, k) => fxCells.current.set(i, now + k * 12));
+        runFx();
+      }
+    }
     // centre markers
     ctx.fillStyle = '#e0533d';
     const cx = ox + (p.cols * s) / 2, cy = oy + (p.rows * s) / 2;
@@ -290,6 +367,7 @@ export const StitchCanvas = forwardRef<StitchCanvasHandle, Props>(function Stitc
         onWheel={onWheel}
         onContextMenu={(e) => e.preventDefault()}
       />
+      <canvas ref={fxRef} className="stitch-fx" aria-hidden="true" style={{ width: size.w, height: size.h, pointerEvents: 'none' }} />
     </div>
   );
 });

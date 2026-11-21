@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { StitchArt } from '../components/StitchArt';
 import { TAGS, communityEnabled, listPosts, myLikes, type Post, type PostBase, type PostSort } from '../lib/community';
 import { useCloud } from '../lib/cloud';
 import { t } from '../lib/i18n';
@@ -127,6 +128,7 @@ export function Community({ tag: initialTag }: { tag?: string }) {
             )}
             {!err && !loading && !posts.length && (
               <div className="community-msg">
+                <StitchArt kind="hoop" size={72} />
                 <p><b>{t('ยังไม่มีลายในหมวดนี้', 'No patterns here yet')}</b></p>
                 <p className="muted">{t('เป็นคนแรกที่แชร์ลายของคุณ', 'Be the first to share yours.')}</p>
                 <button className="btn primary" onClick={() => setSharing(true)}><Icon name="send" size={16} /> {t('แชร์ลายของคุณ', 'Share your pattern')}</button>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { StitchLoader } from '../components/StitchLoader';
 import type { Pattern } from '../types';
 import { decodeShare } from '../lib/share';
 import { savePattern } from '../lib/storage';
@@ -25,7 +26,7 @@ export function SharedView({ data }: { data: string }) {
   }, [data]);
 
   if (err) return <div className="empty-state"><h2>{err}</h2><a className="btn primary" href="#/">{t('ไปหน้าแรก', 'Go to home')}</a></div>;
-  if (!p) return <div className="empty-state"><p>{t('กำลังเปิดลาย…', 'Opening pattern…')}</p></div>;
+  if (!p) return <div className="empty-state"><StitchLoader label={t('กำลังเปิดลาย…', 'Opening pattern…')} /></div>;
   if (printing) return <PrintView pattern={p} onBack={() => setPrinting(false)} />;
 
   const stats = computeStats(p);

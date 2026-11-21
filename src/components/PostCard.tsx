@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import type { Pattern } from '../types';
 import { postPattern, setLike, type Post } from '../lib/community';
 import { useCloud } from '../lib/cloud';
@@ -35,6 +35,8 @@ export function LikeButton({ post, liked, onChange, size = 'sm' }: {
 }) {
   const cloud = useCloud();
   const [busy, setBusy] = useState(false);
+  /** bumps on each like so the heart's pop (and its little burst of crosses) plays again */
+  const [pop, setPop] = useState(0);
   const toggle = async () => {
     if (cloud.status !== 'signed-in') {
       const go = await askConfirm({
@@ -49,6 +51,7 @@ export function LikeButton({ post, liked, onChange, size = 'sm' }: {
     if (busy) return;
     const next = !liked;
     const count = Math.max(0, post.likeCount + (next ? 1 : -1));
+    if (next) setPop((n) => n + 1);
     onChange(next, count);
     setBusy(true);
     try {
@@ -64,7 +67,18 @@ export function LikeButton({ post, liked, onChange, size = 'sm' }: {
     <button type="button" className={`like-btn ${size}` + (liked ? ' on' : '')} onClick={toggle} aria-pressed={liked}
       title={liked ? t('เลิกกดหัวใจ', 'Unlike') : t('กดหัวใจ', 'Like')}
       aria-label={t(`หัวใจ ${post.likeCount}`, `${post.likeCount} likes`)}>
-      <Icon name="heart" size={size === 'md' ? 18 : 16} /> <span>{post.likeCount.toLocaleString()}</span>
+      <span key={pop} className={'like-heart' + (pop && liked ? ' pop' : '')}>
+        <Icon name="heart" size={size === 'md' ? 18 : 16} />
+        {pop > 0 && liked && (
+          <span className="like-burst" aria-hidden="true">
+            {[0, 1, 2, 3, 4, 5].map((i) => {
+              const a = (i / 6) * Math.PI * 2 - Math.PI / 2;
+              return <i key={i} style={{ '--dx': `${Math.round(Math.cos(a) * 17)}px`, '--dy': `${Math.round(Math.sin(a) * 17)}px`, '--r': `${i * 40}deg` } as CSSProperties}>✕</i>;
+            })}
+          </span>
+        )}
+      </span>
+      <span className="like-count">{post.likeCount.toLocaleString()}</span>
     </button>
   );
 }

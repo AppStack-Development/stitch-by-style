@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { StitchLoader } from '../components/StitchLoader';
 import { askConfirm } from '../components/ConfirmDialog';
 import type { Post } from '../lib/community';
 import { amModerator, decide, recentlyHandled, reviewQueue, DECISION_LABEL, REASON_LABEL, type Decision, type ReviewItem } from '../lib/moderation';
@@ -98,7 +99,7 @@ export function Moderation({ startTab }: { startTab?: Tab } = {}) {
         </div>
         {tab === 'orders' ? <OrdersPanel reload={reload} /> : <>
         {err && <p className="error">{err}</p>}
-        {!err && items === null && <p className="muted">{t('กำลังโหลด…', 'Loading…')}</p>}
+        {!err && items === null && <StitchLoader small label={t('กำลังโหลด…', 'Loading…')} />}
         {items && !items.length && (
           <div className="community-msg">
             <p><b>{tab === 'open' ? t('ไม่มีการแจ้งที่รอตรวจ', 'Nothing to review') : t('ยังไม่มีรายการที่จัดการแล้ว', 'Nothing handled yet')}</b></p>
@@ -247,7 +248,7 @@ function OrdersPanel({ reload }: { reload: number }) {
         <span>{t('แสดงเฉพาะที่ปิดแล้ว (ได้รับแล้ว / ยกเลิก)', 'Show closed only (received / cancelled)')}</span>
       </label>
       {err && <p className="error">{err}</p>}
-      {!err && items === null && <p className="muted">{t('กำลังโหลด…', 'Loading…')}</p>}
+      {!err && items === null && <StitchLoader small label={t('กำลังโหลด…', 'Loading…')} />}
       {items && !items.length && (
         <div className="community-msg"><p><b>{closed ? t('ยังไม่มีออเดอร์ที่ปิดแล้ว', 'No closed orders yet') : t('ไม่มีออเดอร์ที่รอดำเนินการ', 'No open orders')}</b></p></div>
       )}

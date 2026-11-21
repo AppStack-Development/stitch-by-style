@@ -1,4 +1,5 @@
 import { useMemo, useState, type FormEvent } from 'react';
+import { StitchArt } from '../components/StitchArt';
 import { askConfirm } from '../components/ConfirmDialog';
 import { DMC_LIBRARY, DMC_SORTED, contrastText } from '../lib/threads';
 import { useStash } from '../lib/stash';
@@ -129,12 +130,15 @@ export function MyThreads() {
       <main className="threads-main">
         {owned === 0 && (
           <section className="th-empty">
-            <h3>{t('บันทึกด้ายที่คุณมีอยู่แล้ว', 'Keep track of the threads you already own')}</h3>
-            <ul>
-              <li>{t(<>ตอนแปลงรูปเป็นลาย เลือก <b>“ด้ายที่ฉันมี”</b> เพื่อใช้เฉพาะสีที่มีอยู่ ไม่ต้องซื้อด้ายใหม่</>, <>When turning a photo into a pattern, choose <b>“My threads”</b> to use only colors you have, so there’s no new thread to buy</>)}</li>
-              <li>{t('ในหน้าออกแบบและหน้าพิมพ์แผนผัง จะเห็นว่าสีไหนมีแล้ว สีไหนต้องซื้อ', 'The editor and the printed chart show which threads you have and which ones to buy')}</li>
-            </ul>
-            <p className="hint">{t('แตะสีด้านล่างเพื่อทำเครื่องหมายว่ามีแล้ว หรือพิมพ์รหัสหลายสีพร้อมกันในช่องด้านล่างนี้', 'Tap colors below to mark them as owned, or type several codes at once in the box below')}</p>
+            <StitchArt kind="skeins" size={88} />
+            <div>
+              <h3>{t('บันทึกด้ายที่คุณมีอยู่แล้ว', 'Keep track of the threads you already own')}</h3>
+              <ul>
+                <li>{t(<>ตอนแปลงรูปเป็นลาย เลือก <b>“ด้ายที่ฉันมี”</b> เพื่อใช้เฉพาะสีที่มีอยู่ ไม่ต้องซื้อด้ายใหม่</>, <>When turning a photo into a pattern, choose <b>“My threads”</b> to use only colors you have, so there’s no new thread to buy</>)}</li>
+                <li>{t('ในหน้าออกแบบและหน้าพิมพ์แผนผัง จะเห็นว่าสีไหนมีแล้ว สีไหนต้องซื้อ', 'The editor and the printed chart show which threads you have and which ones to buy')}</li>
+              </ul>
+              <p className="hint">{t('แตะสีด้านล่างเพื่อทำเครื่องหมายว่ามีแล้ว หรือพิมพ์รหัสหลายสีพร้อมกันในช่องด้านล่างนี้', 'Tap colors below to mark them as owned, or type several codes at once in the box below')}</p>
+            </div>
           </section>
         )}
 

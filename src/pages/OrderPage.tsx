@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
+import { StitchLoader } from '../components/StitchLoader';
 import { askConfirm } from '../components/ConfirmDialog';
 import qrcode from 'qrcode-generator';
 import type { Pattern } from '../types';
@@ -52,7 +53,7 @@ export function OrderPage({ code }: { code: string }) {
       </div>
     );
   } else if (err) body = <p className="error">{err}</p>;
-  else if (order === undefined) body = <p className="muted">{t('กำลังโหลด…', 'Loading…')}</p>;
+  else if (order === undefined) body = <StitchLoader label={t('กำลังโหลด…', 'Loading…')} />;
   else if (order === null) {
     body = (
       <div className="community-msg">

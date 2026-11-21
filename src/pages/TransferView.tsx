@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { StitchLoader } from '../components/StitchLoader';
 import { askConfirm } from '../components/ConfirmDialog';
 import type { Pattern } from '../types';
 import { decodeTransfer } from '../lib/share';
@@ -27,7 +28,7 @@ export function TransferView({ data }: { data: string }) {
   }, [data]);
 
   if (err) return <div className="empty-state"><h2>{err}</h2><a className="btn primary" href="#/">{t('ไปหน้าแรก', 'Go to home')}</a></div>;
-  if (!incoming) return <div className="empty-state"><p>{t('กำลังเปิดลาย…', 'Opening pattern…')}</p></div>;
+  if (!incoming) return <div className="empty-state"><StitchLoader label={t('กำลังเปิดลาย…', 'Opening pattern…')} /></div>;
 
   const local = loadPattern(incoming.id);
   const same = local ? sameDesign(local, incoming) : false;

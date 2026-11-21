@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import { StitchArt } from '../components/StitchArt';
+import { StitchLoader } from '../components/StitchLoader';
 import { findDraft, putDraft } from '../lib/drafts';
 import { buildCopy, getPost, localCopyOf, myLikes, postShareUrl, reportPost, takeCopy, tagLabel, communityEnabled, type Post, type ReportReason } from '../lib/community';
 import { useCloud } from '../lib/cloud';
@@ -64,7 +66,7 @@ export function CommunityPost({ id }: { id: string }) {
     return () => { live = false; };
   }, [post?.remixOf]);
 
-  if (state === 'loading') return <div className="empty-state"><p>{t('กำลังเปิดลาย…', 'Opening pattern…')}</p></div>;
+  if (state === 'loading') return <div className="empty-state"><StitchLoader label={t('กำลังเปิดลาย…', 'Opening pattern…')} /></div>;
   if (state === 'error') {
     return (
       <div className="empty-state">
@@ -77,6 +79,7 @@ export function CommunityPost({ id }: { id: string }) {
   if (state === 'missing' || !post) {
     return (
       <div className="empty-state">
+        <StitchArt kind="lost" />
         <h2>{t('ไม่พบลายนี้', 'Pattern not found')}</h2>
         <p className="muted">{t('ผู้ออกแบบอาจถอนลายออกแล้ว', 'The designer may have taken it down.')}</p>
         <a className="btn primary" href="#/community">{t('ดูลายอื่นในชุมชน', 'Browse community patterns')}</a>

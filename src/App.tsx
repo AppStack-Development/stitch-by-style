@@ -1,4 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
+import { StitchArt } from './components/StitchArt';
+import { StitchLoader } from './components/StitchLoader';
 import { Home } from './pages/Home';
 import { ConfirmHost } from './components/ConfirmDialog';
 import { openPattern } from './lib/drafts';
@@ -44,7 +46,7 @@ function PageLoading() {
     const tm = setTimeout(() => setShow(true), 250);
     return () => clearTimeout(tm);
   }, []);
-  return <div className="empty-state" aria-busy="true">{show && <p className="muted">{t('กำลังโหลด…', 'Loading…')}</p>}</div>;
+  return <div className="empty-state" aria-busy="true">{show && <StitchLoader label={t('กำลังโหลด…', 'Loading…')} />}</div>;
 }
 
 export function navigate(hash: string) {
@@ -110,7 +112,7 @@ function Routes() {
   if (route === 'stitch' && arg) return <StitchMode key={arg} id={arg} />;
   if (route === 'print' && arg) {
     const p = openPattern(arg); // a saved pattern, or one only being tried in this tab
-    if (!p) return <div className="empty-state"><h2>{t('ไม่พบลายนี้', 'Pattern not found')}</h2><a className="btn primary" href="#/">{t('กลับหน้าแรก', 'Back to home')}</a></div>;
+    if (!p) return <div className="empty-state"><StitchArt kind="lost" /><h2>{t('ไม่พบลายนี้', 'Pattern not found')}</h2><p className="muted">{t('ลายอาจถูกลบไปแล้ว บันทึกไว้ในเบราว์เซอร์อื่น หรือเป็นลายที่ลองไว้ในแท็บที่ปิดไปแล้ว', 'It may have been deleted, saved in a different browser, or only tried in a tab that’s now closed.')}</p><a className="btn primary" href="#/">{t('กลับหน้าแรก', 'Back to home')}</a></div>;
     return <PrintView key={arg} pattern={p} backHref={`#/edit/${arg}`} />;
   }
   if (route === 's' && arg) return <SharedView key={arg} data={parts.slice(1).join('/')} />;

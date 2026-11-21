@@ -1,4 +1,5 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { StitchArt } from '../components/StitchArt';
 import type { HoleBrush, Pattern, ThreadColor, Tool, ViewMode } from '../types';
 import { draftState, openPattern, persist, saveDraft, unkeep, type DraftState } from '../lib/drafts';
 import { ActionToast, DraftBar } from '../components/DraftBar';
@@ -202,8 +203,9 @@ export function Editor({ id }: { id: string }) {
   if (!pattern || !stats) {
     return (
       <div className="empty-state">
+        <StitchArt kind="lost" />
         <h2>{t('ไม่พบลายนี้', 'Pattern not found')}</h2>
-        <p>{t('ลายอาจถูกลบไปแล้ว หรือบันทึกไว้ในเบราว์เซอร์อื่น', 'It may have been deleted, or saved in a different browser.')}</p>
+        <p className="muted">{t('ลายอาจถูกลบไปแล้ว บันทึกไว้ในเบราว์เซอร์อื่น หรือเป็นลายที่ลองไว้ในแท็บที่ปิดไปแล้ว', 'It may have been deleted, saved in a different browser, or only tried in a tab that’s now closed.')}</p>
         <a className="btn primary" href="#/">{t('กลับหน้าแรก', 'Back to home')}</a>
       </div>
     );

@@ -71,3 +71,13 @@
 
 /* keep a short phrase on one line (e.g. "3.6 × 12.6 ซม.") */
 .nowrap { white-space: nowrap; }
+
+/* every page title in a header row: icon and text share one centre line (a plain block let the icon
+   sit on the text baseline, riding ~3.5px high on the community, team and order pages) */
+.site-head h2 { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.site-head h2 > svg { flex-shrink: 0; }
+
+/* the like count: IBM Plex Sans Thai digits ride ~1px high next to the heart */
+.like-count { position: relative; top: .5px; }
+/* the heart's drawing hangs a little low in its box; lift it so heart and count share the button's centre */
+.like-heart { top: -.5px; }

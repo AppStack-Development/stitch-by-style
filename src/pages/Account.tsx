@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
+import { StitchLoader } from '../components/StitchLoader';
 import { askConfirm } from '../components/ConfirmDialog';
 import { useCloud, signInWithGoogle } from '../lib/cloud';
 import { syncNow, signOutAndClear, exportMyData, deleteMyAccount, accountCounts } from '../lib/sync';
@@ -394,7 +395,7 @@ function MyShared() {
           </button>
         </div>
       )}
-      {posts === null && <p className="muted">{t('กำลังโหลด…', 'Loading…')}</p>}
+      {posts === null && <StitchLoader small label={t('กำลังโหลด…', 'Loading…')} />}
       {posts && !posts.length && (
         <p className="muted">{t(<>ยังไม่ได้แชร์ลาย เปิดลายในหน้าแก้ไข แล้วกด <b>ส่งออก / แชร์ → แชร์ในชุมชน</b> · <a className="acct-link" href="#/community">ดูลายจากชุมชน</a></>,
           <>You haven’t shared any patterns. Open one in the editor and choose <b>Export / share → Share with the community</b> · <a className="acct-link" href="#/community">Browse community patterns</a></>)}</p>

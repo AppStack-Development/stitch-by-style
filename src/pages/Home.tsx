@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { StitchArt } from '../components/StitchArt';
 import type { Pattern } from '../types';
 import { deletePattern, listPatterns, savePattern } from '../lib/storage';
 import { normalizePattern } from '../lib/pattern';
@@ -277,7 +278,16 @@ export function Home() {
           <input ref={fileRef} type="file" accept=".json,application/json" hidden
             onChange={(e) => { const f = e.target.files?.[0]; if (f) importFile(f); e.target.value = ''; }} />
         </div>
-        {!items.length && <p className="muted">{t('ยังไม่มีลาย เริ่มจากเลือกรูปแบบการทำงานด้านบน', 'No patterns yet. Start by choosing a mode above.')}</p>}
+        {!items.length && (
+          <div className="empty-invite">
+            <StitchArt kind="hoop" />
+            <div>
+              <h3>{t('เริ่มลายแรกของคุณ', 'Start your first pattern')}</h3>
+              <p className="muted">{t('สร้างลายจากรูปที่ชอบ หรือกด “ลองปัก” ลายตัวอย่างด้านบนได้เลย ลายที่ปักหรือแก้จะเก็บไว้ที่นี่', 'Make one from a photo you like, or tap “Stitch it” on a sample above. Patterns you stitch or edit are kept here.')}</p>
+              <a className="btn primary" href="#/quick"><Icon name="image" size={16} /> {t('สร้างลายจากรูป', 'Pattern from a photo')}</a>
+            </div>
+          </div>
+        )}
         <div className="gallery">
           {items.map((p) => {
             const st = computeStats(p);
