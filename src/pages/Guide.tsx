@@ -387,7 +387,7 @@ function useSections(): Section[] {
             <li><b>ปักทีละสี</b> แตะสีในรายการด้านขวา (หรือด้านล่างบนมือถือ) สีอื่นจะจางลงและติ๊กได้เฉพาะสีนั้น ปุ่ม “ช่องที่เหลือ” จะซูมไปยังช่องที่ยังไม่ได้ปัก</li>
             <li><b>สถิติ</b> เปอร์เซ็นต์รวม ฝีเข็มวันนี้ และความคืบหน้าแต่ละสี</li>
             <li><b>จับเวลา</b> กด ▶ เพื่อเริ่ม หลังจับเวลาเกิน 5 นาที ระบบจะประมาณความเร็วและเวลาที่เหลือ เวลาจะหยุดเองเมื่อสลับแอปหรือปิดจอ</li>
-            <li><b>เปิดหน้าจอค้างไว้</b> ปุ่ม ☀ กันหน้าจอดับระหว่างปัก (ในเบราว์เซอร์ที่รองรับ)</li>
+            <li><b>จอไม่ดับ</b> สวิตช์ในแผงความคืบหน้า (บนมือถืออยู่ใต้แผนผัง) กันหน้าจอดับระหว่างปัก ขึ้นป้าย “เปิดอยู่” เมื่อเปิด (ในเบราว์เซอร์ที่รองรับ)</li>
           </ul>
           <Tip>ถ้าแก้สีของช่องที่ติ๊กแล้วในหน้าออกแบบ ช่องนั้นจะกลับเป็น “ยังไม่ได้ปัก” อัตโนมัติ</Tip>
         </>,
@@ -400,7 +400,7 @@ function useSections(): Section[] {
             <li><b>One color at a time</b> Tap a color in the list on the right (or at the bottom on phones). Other colors fade and only that color can be ticked. The “Remaining” button zooms to cells you haven’t stitched yet.</li>
             <li><b>Stats</b> Overall percentage, stitches today and progress for each color.</li>
             <li><b>Timer</b> Press ▶ to start. After more than 5 minutes, the app estimates your speed and the time left. The timer pauses on its own when you switch apps or the screen turns off.</li>
-            <li><b>Keep screen on</b> The ☀ button stops the screen from going dark while you stitch (in supported browsers).</li>
+            <li><b>Keep screen on</b> The switch in the progress panel (below the chart on phones) stops the screen from going dark while you stitch; it shows “On” while on (in supported browsers).</li>
           </ul>
           <Tip>If you change the color of a ticked cell in the editor, that cell goes back to “not stitched” automatically.</Tip>
         </>,
@@ -412,7 +412,7 @@ function useSections(): Section[] {
         <>
           <p>ใช้ย้ายลาย<b>พร้อมความคืบหน้า</b>ระหว่างเครื่องของคุณเอง เช่น ออกแบบในคอม แล้วไปปักต่อในมือถือ</p>
           <ol>
-            <li>ในหน้าออกแบบ: “ส่งออก / แชร์” → <b>“ส่งไปมือถือ / อีกเครื่อง”</b> หรือในโหมดปักกดไอคอน <Icon name="phone" size={15} /></li>
+            <li>ในหน้าออกแบบ: “ส่งออก / แชร์” → <b>“ส่งไปมือถือ / อีกเครื่อง”</b> หรือในโหมดปักกด <b>“ส่งไปมือถือ”</b> (<Icon name="sendOut" size={15} />)</li>
             <li>สแกน QR ด้วยกล้องมือถือ (กด QR เพื่อขยายเต็มจอถ้าสแกนยาก) หรือกด “คัดลอกลิงก์ / แชร์…” เพื่อส่งให้ตัวเองทาง LINE</li>
             <li>เปิดลิงก์ในอีกเครื่อง แล้วกด “เปิดในโหมดปัก”</li>
           </ol>
@@ -425,7 +425,7 @@ function useSections(): Section[] {
         <>
           <p>Move a pattern <b>with its progress</b> between your own devices, for example design on a computer and keep stitching on your phone.</p>
           <ol>
-            <li>In the editor: “Export / Share” → <b>“Send to phone / another device”</b>, or in Stitch mode tap the <Icon name="phone" size={15} /> icon.</li>
+            <li>In the editor: “Export / Share” → <b>“Send to phone / another device”</b>, or in Stitch mode tap <b>“Send to phone”</b> (<Icon name="sendOut" size={15} />).</li>
             <li>Scan the QR code with your phone’s camera (tap the QR to make it full screen if it’s hard to scan), or tap “Copy link / Share…” to send it to yourself over LINE.</li>
             <li>Open the link on the other device and tap “Open in Stitch mode”.</li>
           </ol>

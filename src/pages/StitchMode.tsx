@@ -42,6 +42,15 @@ export function StitchMode({ id }: { id: string }) {
   const [grid, setGrid] = useState(true);
   const [timerSince, setTimerSince] = useState<number | null>(null);
   const [awake, setAwake] = useState(false);
+  // a short note when the keep-awake button is toggled, so its meaning is clear on phones too (no hover)
+  const [awakeNote, setAwakeNote] = useState('');
+  const awakeTimer = useRef<number>();
+  const sayAwake = (msg: string) => {
+    setAwakeNote(msg);
+    window.clearTimeout(awakeTimer.current);
+    awakeTimer.current = window.setTimeout(() => setAwakeNote(''), 2500);
+  };
+  useEffect(() => () => window.clearTimeout(awakeTimer.current), []);
   const [transfer, setTransfer] = useState(false);
   const [, force] = useState(0);
   const undo = useRef<string[]>([]);
@@ -110,15 +119,18 @@ export function StitchMode({ id }: { id: string }) {
     if (!awake || !wakeSupported) return;
     let lock: { release: () => Promise<void> } | null = null;
     let live = true;
-    const request = async () => {
+    const request = async (first: boolean) => {
       try {
         lock = await (navigator as any).wakeLock.request('screen');
+        if (first && live) sayAwake(t('หน้าจอจะเปิดค้างไว้ ไม่ดับระหว่างปัก', 'The screen stays on while you stitch'));
       } catch {
-        if (live) setAwake(false);
+        if (!live) return;
+        setAwake(false);
+        sayAwake(t('เปิดหน้าจอค้างไม่ได้ตอนนี้ (เบราว์เซอร์ไม่อนุญาต หรือแบตเตอรี่เหลือน้อย)', 'Couldn’t keep the screen on (the browser refused, or the battery is low)'));
       }
     };
-    request();
-    const onVis = () => { if (document.visibilityState === 'visible' && live) request(); };
+    request(true);
+    const onVis = () => { if (document.visibilityState === 'visible' && live) request(false); };
     document.addEventListener('visibilitychange', onVis);
     return () => {
       live = false;
@@ -228,18 +240,14 @@ export function StitchMode({ id }: { id: string }) {
           onClick={() => (timerSince != null ? stopTimer() : setTimerSince(Date.now()))}
           title={timerSince != null ? t('หยุดจับเวลา', 'Stop timer') : t('เริ่มจับเวลาการปัก', 'Start stitching timer')}>
           <Icon name={timerSince != null ? 'pause' : 'play'} size={15} />
-          <Clock base={progress.seconds} since={timerSince} />
+          <span className="timer-num"><Clock base={progress.seconds} since={timerSince} /></span>
         </button>
         <a className="icon-btn" href="#/guide/stitch" onClick={flush} title={t('วิธีใช้โหมดปัก', 'Stitch mode help')}><Icon name="help" /></a>
-        <button className="icon-btn" onClick={() => { flush(); setTransfer(true); }} title={t('ส่งไปอีกเครื่อง (QR) พร้อมความคืบหน้า', 'Send to another device (QR) with progress')}>
-          <Icon name="phone" />
+        <button className="btn sm send-btn" onClick={() => { flush(); setTransfer(true); }} title={t('ส่งไปอีกเครื่อง (QR) พร้อมความคืบหน้า', 'Send to another device (QR) with progress')}
+          aria-label={t('ส่งไปมือถือ', 'Send to phone')}>
+          <Icon name="sendOut" size={16} />
+          <span className="hide-xs">{t('ส่งไปมือถือ', 'Send to phone')}</span>
         </button>
-        {wakeSupported && (
-          <button className={'icon-btn' + (awake ? ' on' : '')} onClick={() => setAwake(!awake)}
-            title={awake ? t('ปิด: ให้หน้าจอดับตามปกติ', 'Off: let the screen sleep as usual') : t('เปิดหน้าจอค้างไว้ระหว่างปัก', 'Keep the screen on while stitching')}>
-            <Icon name="sun" />
-          </button>
-        )}
       </header>
 
       {transfer && <TransferDialog pattern={{ ...p, progress, updatedAt: Date.now() }} onClose={() => setTransfer(false)} />}
@@ -293,6 +301,7 @@ export function StitchMode({ id }: { id: string }) {
           ) : (
             <div className="stitch-banner hint-only">{MODES.find((m) => m.id === mode)!.hint}</div>
           )}
+          {awakeNote && <div className="toast" role="status">{awakeNote}</div>}
         </section>
 
         <aside className="side stitch-side">
@@ -309,6 +318,21 @@ export function StitchMode({ id }: { id: string }) {
                   <span>{stats.rate != null ? t(`เหลือโดยประมาณ (${Math.round(stats.rate)} ฝีเข็ม/ชม.)`, `est. remaining (${Math.round(stats.rate)} stitches/hr)`) : t('จับเวลา 5 นาทีขึ้นไปเพื่อประมาณเวลา', 'Track 5+ min for an estimate')}</span>
                 </div>
               </div>
+              {wakeSupported && (
+                <button type="button" role="switch" aria-checked={awake} className={'awake-row' + (awake ? ' on' : '')}
+                  onClick={() => {
+                    const next = !awake;
+                    setAwake(next);
+                    // "on" is announced once the browser grants it (see the wake-lock effect)
+                    if (!next) sayAwake(t('หน้าจอจะดับตามปกติ', 'The screen will sleep as usual'));
+                  }}>
+                  <span className="sw" aria-hidden="true" />
+                  <span className="awake-text">
+                    <b>{t('จอไม่ดับ', 'Keep screen on')}{awake && <em className="awake-pill">{t('เปิดอยู่', 'On')}</em>}</b>
+                    <small>{t('กันหน้าจอดับระหว่างปัก', 'Stops the screen going dark while you stitch')}</small>
+                  </span>
+                </button>
+              )}
             </section>
 
             <h4>{t(<>แต่ละสี <small>แตะเพื่อปักทีละสี</small></>, <>By color <small>tap to stitch one color at a time</small></>)}</h4>

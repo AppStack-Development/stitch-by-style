@@ -50,7 +50,7 @@
   }
     .toolbar .tool {
     position: relative; flex: 1 1 0; min-width: 0; max-width: 92px; width: auto; height: 52px;
-    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 0 2px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 4px 2px 0; /* Thai labels sit high in their line: nudge icon+label down to look centred */
   }
   .tool-label {
     display: block; max-width: 100%; font-size: 11px; line-height: 1.35; font-weight: 500;
@@ -155,7 +155,7 @@
 /* stitch mode on touch screens: the Tap / Paint / Area buttons keep a visible name and a finger-sized target */
 @media (max-width: 900px) {
   .stitch-tools .seg span { display: inline; }
-  .stitch-tools .seg button { flex-direction: column; gap: 1px; min-width: 52px; min-height: 42px; padding: 4px 8px; font-size: 11px; line-height: 1.2; }
+  .stitch-tools .seg button { flex-direction: column; gap: 1px; min-width: 52px; min-height: 42px; padding: 6px 8px 2px; font-size: 11px; line-height: 1.2; }
   .stitch-tools .icon-btn.sm { width: 40px; height: 40px; }
   .stitch-tools .view-select { min-height: 40px; }
 }

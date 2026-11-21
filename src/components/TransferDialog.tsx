@@ -84,7 +84,7 @@ export function TransferDialog({ pattern, onClose }: Props) {
     <div className="modal-back" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="modal transfer" role="dialog" aria-label={t('ส่งไปอีกเครื่อง', 'Send to another device')}>
         <header className="modal-head">
-          <h3><Icon name="phone" /> {t('ส่งไปมือถือ / อีกเครื่อง', 'Send to phone / another device')}</h3>
+          <h3><Icon name="sendOut" /> {t('ส่งไปมือถือ / อีกเครื่อง', 'Send to phone / another device')}</h3>
           <button className="icon-btn" onClick={onClose} title={t('ปิด (Esc)', 'Close (Esc)')}><Icon name="close" /></button>
         </header>
         <div className="transfer-body">

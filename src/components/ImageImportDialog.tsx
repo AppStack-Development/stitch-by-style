@@ -218,7 +218,7 @@ export function ImageImportDialog({ pattern, initialFile, onApply, onClose }: Pr
                   <input type="checkbox" checked={opts.skipBackground} disabled={!src.bg}
                     onChange={(e) => set({ skipBackground: e.target.checked })} />
                   <FieldHead label={<>{t('ไม่ปักพื้นหลัง', 'Skip the background')}
-                    {src.bgHex ? <i className="bg-swatch" style={{ background: src.bgHex }} /> : <small>{t(` (ไม่พบพื้นสีเรียบ${src.hasAlpha ? ' · ใช้ความโปร่งใสแทน' : ''})`, ` (no plain background found${src.hasAlpha ? ' · using transparency instead' : ''})`)}</small>}</>}>
+                    {src.bgHex ? <i className="bg-swatch" style={{ background: src.bgHex }} role="img" title={t(`สีพื้นหลังที่พบ ${src.bgHex}`, `Background colour found: ${src.bgHex}`)} aria-label={t(`สีพื้นหลังที่พบ ${src.bgHex}`, `Background colour found: ${src.bgHex}`)} /> : <small>{t(` (ไม่พบพื้นสีเรียบ${src.hasAlpha ? ' · ใช้ความโปร่งใสแทน' : ''})`, ` (no plain background found${src.hasAlpha ? ' · using transparency instead' : ''})`)}</small>}</>}>
                     {src.bg && <DefaultTag kind="suggested" value={opts.skipBackground} def={autoSkip}
                       reason={t('พบพื้นหลังสีเรียบในรูปนี้', 'this image has a plain background')} onReset={reset('skipBackground', autoSkip)} />}
                   </FieldHead>

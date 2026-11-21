@@ -284,7 +284,7 @@ export function Editor({ id }: { id: string }) {
             <div className="menu" onMouseLeave={() => setMenu(false)}>
               <button onClick={() => doExport('print')}><Icon name="print" /> <span><b>{t('พิมพ์ / บันทึกเป็น PDF', 'Print / save as PDF')}</b><small>{t('แผนผัง + รายการด้าย + รายละเอียด', 'Chart + thread list + details')}</small></span></button>
               <button onClick={() => doExport('png')}><Icon name="image" /> <span><b>{t('รูปภาพ PNG', 'PNG image')}</b><small>{t('สำหรับส่งให้เพื่อนทาง LINE / โซเชียล', 'To send to friends on LINE / social media')}</small></span></button>
-              <button onClick={() => doExport('transfer')}><Icon name="phone" /> <span><b>{t('ส่งไปมือถือ / อีกเครื่อง', 'Send to phone / another device')}</b><small>{t('สแกน QR เพื่อปักต่อในมือถือ (รวมความคืบหน้า)', 'Scan the QR to continue stitching on your phone (progress included)')}</small></span></button>
+              <button onClick={() => doExport('transfer')}><Icon name="sendOut" /> <span><b>{t('ส่งไปมือถือ / อีกเครื่อง', 'Send to phone / another device')}</b><small>{t('สแกน QR เพื่อปักต่อในมือถือ (รวมความคืบหน้า)', 'Scan the QR to continue stitching on your phone (progress included)')}</small></span></button>
               <button onClick={() => doExport('share')}><Icon name="link" /> <span><b>{t('คัดลอกลิงก์แชร์', 'Copy share link')}</b><small>{t('เพื่อนเปิดดูและบันทึกต่อได้', 'Friends can open it and save a copy')}</small></span></button>
               {ordersEnabled && (p.details.baseType === 'print3d' || p.mode === 'template') && (
                 <button onClick={() => { setMenu(false); savePattern({ ...p, updatedAt: Date.now() }); setOrder(true); }}>

@@ -59,7 +59,7 @@ export function TransferView({ data }: { data: string }) {
       <div className="shared-body">
         <div className="preview-card"><Thumb pattern={incoming} max={400} view="stitch" /></div>
         <div className="form-card">
-          <p className="muted"><Icon name="phone" size={15} /> {t('ลายที่ส่งมาจากอีกเครื่อง', 'Pattern sent from another device')}</p>
+          <p className="muted"><Icon name="sendOut" size={15} /> {t('ลายที่ส่งมาจากอีกเครื่อง', 'Pattern sent from another device')}</p>
           <h1>{incoming.name}</h1>
           <p className="hint">
             {incoming.cols}×{incoming.rows} {t('ช่อง', 'cells')} · {t('ส่งมาเมื่อ', 'sent')} {fmtWhen(incoming.updatedAt)}

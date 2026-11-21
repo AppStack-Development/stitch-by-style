@@ -61,7 +61,7 @@
 .qc-toggle small { color: var(--ink-2); font-size: 12.5px; }
 .qc-toggle a { color: var(--brand); text-decoration: underline; }
 .qc-inline { display: flex; flex-direction: row; align-items: center; gap: 8px; font-size: 13.5px; color: var(--ink-2); flex-wrap: wrap; }
-.qc-inline select { padding: 4px 8px; border-radius: 8px; border: 1px solid var(--line-2); background: var(--paper); }
+.qc-inline select { padding: 4px 8px; border-radius: 8px; border: 1px solid var(--line-2); background-color: var(--paper); }
 .qc-inline input[type=range] { width: 140px; }
 .qc-variants { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; transition: opacity .15s; }
 .qc-variants.busy { opacity: .55; }
