@@ -35,6 +35,7 @@ const PATHS: Record<string, string> = {
   play: 'M7 4.5l12 7.5-12 7.5z',
   pause: 'M7 4.5h3.5v15H7z M13.5 4.5H17v15h-3.5z',
   sun: 'M12 17a5 5 0 1 0 0-10 5 5 0 0 0 0 10z M12 2v2 M12 20v2 M4.9 4.9l1.4 1.4 M17.7 17.7l1.4 1.4 M2 12h2 M20 12h2 M4.9 19.1l1.4-1.4 M17.7 6.3l1.4-1.4',
+  eye: 'M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12z M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
   target: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M12 16a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M12 12h.01',
   needle: 'M19.5 4.5L7 17 M16.5 3l4.5 4.5-2 2L14.5 5z M7 17l-3 4 4-3 M15.5 6.5l2 2',
   // send to another device: an arrow leaving its frame ("continue somewhere else")

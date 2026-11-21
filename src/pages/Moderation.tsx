@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { askConfirm } from '../components/ConfirmDialog';
 import type { Post } from '../lib/community';
 import { amModerator, decide, recentlyHandled, reviewQueue, DECISION_LABEL, REASON_LABEL, type Decision, type ReviewItem } from '../lib/moderation';
 import { useCloud } from '../lib/cloud';
@@ -156,8 +157,14 @@ function ReviewCard({ item, handled, onDecided }: { item: ReviewItem; handled: b
   const days = Math.floor((Date.now() - new Date(item.reports[0].createdAt).getTime()) / 86400000);
 
   const act = async (d: Decision) => {
-    if (d === 'removed' && !confirm(t(`นำ “${item.post.title}” ออกจากชุมชน? คนอื่นจะไม่เห็นลายนี้อีก (ผู้ออกแบบยังเห็นในหน้าบัญชีว่าถูกนำออก)`,
-      `Remove “${item.post.title}” from the community? Nobody else will see it (the designer sees it marked as removed).`))) return;
+    if (d === 'removed' && !(await askConfirm({
+      title: t('นำลายออกจากชุมชน?', 'Remove from the community?'),
+      message: <p>{t(<><b>“{item.post.title}”</b> จะไม่แสดงให้คนอื่นเห็นอีก ผู้ออกแบบยังเห็นในหน้าบัญชีว่าถูกนำออก</>,
+        <>Nobody else will see <b>“{item.post.title}”</b>. The designer sees it marked as removed on their account page.</>)}</p>,
+      ok: t('นำออก', 'Remove'),
+      tone: 'danger',
+      icon: 'flag',
+    }))) return;
     setBusy(d);
     setErr('');
     try {

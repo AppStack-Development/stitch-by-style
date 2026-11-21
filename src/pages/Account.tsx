@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
+import { askConfirm } from '../components/ConfirmDialog';
 import { useCloud, signInWithGoogle } from '../lib/cloud';
 import { syncNow, signOutAndClear, exportMyData, deleteMyAccount, accountCounts } from '../lib/sync';
 import { downloadBlob } from '../lib/share';
@@ -359,8 +360,14 @@ function MyShared() {
     }
   };
   const takeDown = async (post: Post) => {
-    if (!confirm(t(`ถอน “${post.title}” ออกจากชุมชน? ลายในเครื่องของคุณยังอยู่ แต่หัวใจทั้งหมดจะหายไป`,
-      `Take “${post.title}” down from the community? Your own copy stays, but its likes are lost.`))) return;
+    if (!(await askConfirm({
+      title: t('ถอนลายออกจากชุมชน?', 'Take it down?'),
+      message: <p>{t(<><b>“{post.title}”</b> จะไม่แสดงในชุมชนอีก ลายในเครื่องของคุณยังอยู่ แต่หัวใจทั้งหมดจะหายไป</>,
+        <><b>“{post.title}”</b> leaves the community. Your own copy stays, but its likes are lost.</>)}</p>,
+      ok: t('ถอนออก', 'Take down'),
+      tone: 'danger',
+      icon: 'people',
+    }))) return;
     setBusy(post.id);
     setErr('');
     try {

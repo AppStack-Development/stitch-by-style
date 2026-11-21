@@ -1,4 +1,5 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
+import { askConfirm } from '../components/ConfirmDialog';
 import qrcode from 'qrcode-generator';
 import type { Pattern } from '../types';
 import {
@@ -148,8 +149,8 @@ function OrderView({ order: o, onChanged }: { order: Order; onChanged: () => voi
 function NextStep({ order: o, onChanged }: { order: Order; onChanged: () => void }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
-  const act = async (fn: () => Promise<void>, ask?: string) => {
-    if (ask && !confirm(ask)) return;
+  const act = async (fn: () => Promise<void>, ask?: Parameters<typeof askConfirm>[0]) => {
+    if (ask && !(await askConfirm(ask))) return;
     setBusy(true);
     setErr('');
     try { await fn(); onChanged(); } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
@@ -161,7 +162,14 @@ function NextStep({ order: o, onChanged }: { order: Order; onChanged: () => void
         <>
           <Payment order={o} onChanged={onChanged} />
           <div className="btn-row">
-            <button className="btn ghost sm" disabled={busy} onClick={() => act(() => cancelOrder(o.code), t('ยกเลิกออเดอร์นี้?', 'Cancel this order?'))}>{t('ยกเลิกออเดอร์', 'Cancel order')}</button>
+            <button className="btn ghost sm" disabled={busy} onClick={() => act(() => cancelOrder(o.code), {
+              title: t('ยกเลิกออเดอร์นี้?', 'Cancel this order?'),
+              message: <p>{t('ทีมจะไม่ผลิตออเดอร์นี้ ถ้าอยากได้อีกต้องสั่งใหม่', 'The team won’t make this order. To get it later, you’ll need to order again.')}</p>,
+              ok: t('ยกเลิกออเดอร์', 'Cancel order'),
+              cancel: t('ไม่ยกเลิก', 'Keep order'),
+              tone: 'danger',
+              icon: 'close',
+            })}>{t('ยกเลิกออเดอร์', 'Cancel order')}</button>
           </div>
           {err && <p className="error small">{err}</p>}
         </>

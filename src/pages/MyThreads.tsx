@@ -1,4 +1,5 @@
 import { useMemo, useState, type FormEvent } from 'react';
+import { askConfirm } from '../components/ConfirmDialog';
 import { DMC_LIBRARY, DMC_SORTED, contrastText } from '../lib/threads';
 import { useStash } from '../lib/stash';
 import { Icon } from '../components/Icon';
@@ -102,8 +103,13 @@ export function MyThreads() {
     setQuick(unknown.join(' '));
   };
 
-  const clearAll = () => {
-    if (!confirm(t(`ลบด้ายทั้ง ${owned} สีออกจากรายการ “ด้ายของฉัน” หรือไม่?`, `Remove all ${plural(owned, 'thread', 'threads')} from “My threads”?`))) return;
+  const clearAll = async () => {
+    if (!(await askConfirm({
+      title: t('ลบด้ายทั้งหมด?', 'Remove all threads?'),
+      message: <p>{t(`ด้ายทั้ง ${owned} สีจะถูกลบออกจากรายการ “ด้ายของฉัน”`, `All ${plural(owned, 'thread', 'threads')} are removed from “My threads”.`)}</p>,
+      ok: t('ลบทั้งหมด', 'Remove all'),
+      tone: 'danger',
+    }))) return;
     stash.replace([]);
     setMineOnly(false);
     setMsg(null);

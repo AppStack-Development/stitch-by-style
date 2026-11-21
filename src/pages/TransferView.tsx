@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { askConfirm } from '../components/ConfirmDialog';
 import type { Pattern } from '../types';
 import { decodeTransfer } from '../lib/share';
 import { loadPattern, savePattern } from '../lib/storage';
@@ -43,9 +44,14 @@ export function TransferView({ data }: { data: string }) {
     }
     navigate(`#/${where}/${p.id}`);
   };
-  const replace = (where: 'stitch' | 'edit') => {
-    if (local && local.updatedAt > incoming.updatedAt &&
-      !confirm(t('ลายในเครื่องนี้แก้ไขล่าสุดหลังจากลิงก์นี้ ต้องการแทนที่ด้วยเวอร์ชันจากลิงก์หรือไม่?', 'The pattern on this device was edited after this link was made. Replace it with the version from the link?'))) return;
+  const replace = async (where: 'stitch' | 'edit') => {
+    if (local && local.updatedAt > incoming.updatedAt && !(await askConfirm({
+      title: t('แทนที่ลายในเครื่องนี้?', 'Replace the pattern on this device?'),
+      message: <p>{t('ลายในเครื่องนี้แก้ไขหลังจากสร้างลิงก์นี้ ถ้าแทนที่ การแก้ไขล่าสุดในเครื่องนี้จะหายไป', 'The copy on this device was edited after this link was made. Replacing it loses those newer edits.')}</p>,
+      ok: t('แทนที่', 'Replace'),
+      tone: 'danger',
+      icon: 'sync',
+    }))) return;
     open({ ...incoming, updatedAt: Date.now() }, where);
   };
   const keepBoth = () => open({ ...incoming, id: uid(), name: t(`${incoming.name} (จากอีกเครื่อง)`, `${incoming.name} (from another device)`), createdAt: Date.now(), updatedAt: Date.now() }, 'edit');

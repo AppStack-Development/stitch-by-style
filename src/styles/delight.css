@@ -1,0 +1,72 @@
+/*
+ * Small touches of the craft: the hero heart that stitches itself, running-stitch dividers, stitched
+ * card hover and the burst of crosses when a thread colour is finished. Motion plays once or on an
+ * action, never loops, and is turned off when the device asks for less motion.
+ */
+
+/* ---------- hero: text + a heart that stitches itself, over a faint Aida weave behind it ---------- */
+.hero { position: relative; display: flex; align-items: center; gap: 32px; }
+.hero::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background-image: radial-gradient(#ddd3bf 1.1px, transparent 1.4px); background-size: 9px 9px;
+  -webkit-mask-image: radial-gradient(ellipse 380px 210px at calc(100% - 130px) 55%, #000 20%, transparent 72%);
+  mask-image: radial-gradient(ellipse 380px 210px at calc(100% - 130px) 55%, #000 20%, transparent 72%);
+}
+.hero-text { position: relative; flex: 1; min-width: 0; }
+.hero-stitch { position: relative; flex-shrink: 0; width: 168px; height: auto; margin-right: 28px; }
+.hs-holes circle { fill: #d8cfbe; }
+.hs-x { transform-box: fill-box; transform-origin: center; }
+.hs-x line { stroke-width: 3.2; stroke-linecap: round; }
+.hs-x .under { stroke: #a3202f; }
+.hs-x .over { stroke: var(--thread); }
+.hero-stitch.play .hs-x { animation: hs-in .22s ease-out both; }
+@keyframes hs-in { from { opacity: 0; transform: scale(.4); } to { opacity: 1; transform: none; } }
+@media (max-width: 600px) {
+  .hero { flex-direction: column-reverse; align-items: flex-start; gap: 14px; }
+  .hero-stitch { width: 92px; margin: 0; }
+  .hero::before {
+    -webkit-mask-image: radial-gradient(ellipse 180px 120px at 62px 70px, #000 20%, transparent 72%);
+    mask-image: radial-gradient(ellipse 180px 120px at 62px 70px, #000 20%, transparent 72%);
+  }
+}
+
+/* ---------- running-stitch line under the home page's section headings ---------- */
+.home .section-head h2, .home .advanced-head { position: relative; padding-bottom: 10px; }
+.home .section-head h2::after, .home .advanced-head::after {
+  content: ""; position: absolute; left: 0; bottom: 0; width: 64px; height: 2px; border-radius: 1px;
+  background: repeating-linear-gradient(90deg, var(--thread) 0 7px, transparent 7px 12px);
+}
+.home .advanced-head::after { left: var(--page-x); }
+
+/* ---------- pattern cards: lift a little and show a stitched edge on hover ---------- */
+.home .card, .mode-card, .sample-card:not(.post-skeleton) { position: relative; transition: transform .18s ease; }
+.home .card::after, .mode-card::after, .sample-card:not(.post-skeleton)::after {
+  content: ""; position: absolute; inset: 4px; border: 1.5px dashed var(--thread); border-radius: 9px;
+  opacity: 0; transition: opacity .18s ease; pointer-events: none;
+}
+.mode-card::after { inset: 6px; border-radius: 13px; } /* follows the card's rounder corners */
+@media (hover: hover) {
+  .home .card:hover, .mode-card:hover, .sample-card:not(.post-skeleton):hover { transform: translateY(-3px); }
+  .home .card:hover::after, .mode-card:hover::after, .sample-card:not(.post-skeleton):hover::after { opacity: .5; }
+}
+
+/* ---------- Stitch mode: a burst of crosses in the thread's colours when a colour is finished ---------- */
+.cross-burst { position: absolute; left: 50%; bottom: 70px; width: 0; height: 0; pointer-events: none; z-index: 6; }
+.cross-burst i {
+  position: absolute; left: -6px; top: -10px; font-style: normal; font-size: 15px; font-weight: 700; line-height: 1;
+  animation: cb-fly .95s cubic-bezier(.2, .7, .3, 1) both;
+  -webkit-text-stroke: .6px #1f2a4440; /* so a white or pale thread still shows */
+}
+.cross-burst.big i { font-size: 18px; animation-duration: 1.3s; }
+@keyframes cb-fly {
+  from { transform: translate(0, 0) rotate(0) scale(.5); opacity: 1; }
+  70% { opacity: 1; }
+  to { transform: translate(var(--dx), var(--dy)) rotate(var(--r)) scale(1); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-stitch.play .hs-x { animation: none; }
+  .home .card, .mode-card, .sample-card { transition: none; }
+  .home .card:hover, .mode-card:hover, .sample-card:hover { transform: none; }
+  .cross-burst { display: none; }
+}

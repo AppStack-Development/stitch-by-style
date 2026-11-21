@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { askConfirm } from './ConfirmDialog';
 import type { Pattern, ThreadColor } from '../types';
 import { DMC_SORTED, SYMBOLS, contrastText, makeThread } from '../lib/threads';
 import { colorSortKey } from '../lib/dmc';
@@ -74,9 +75,14 @@ export function PalettePanel({ pattern: p, active, setActive, onPalette }: Props
   const update = (i: number, patch: Partial<ThreadColor>) =>
     onPalette(p.palette.map((c, j) => (j === i ? { ...c, ...patch } : c)));
 
-  const remove = (i: number) => {
+  const remove = async (i: number) => {
     const count = stats.colors[i]?.count ?? 0;
-    if (count > 0 && !confirm(t(`สีนี้ใช้อยู่ ${count} ช่อง ต้องการลบและล้างช่องเหล่านั้นหรือไม่?`, `This color is used in ${count} ${count === 1 ? 'cell' : 'cells'}. Delete it and clear ${count === 1 ? 'that cell' : 'those cells'}?`))) return;
+    if (count > 0 && !(await askConfirm({
+      title: t('ลบสีนี้?', 'Delete this color?'),
+      message: <p>{t(`สีนี้ใช้อยู่ ${count} ช่อง ช่องเหล่านั้นจะกลายเป็นช่องว่าง`, `It’s used in ${count} ${count === 1 ? 'cell' : 'cells'}, which will be cleared.`)}</p>,
+      ok: t('ลบสี', 'Delete color'),
+      tone: 'danger',
+    }))) return;
     onPalette(p.palette.filter((_, j) => j !== i), (k) => (k === i ? -1 : k > i ? k - 1 : k));
     setEditing(null);
     if (active >= p.palette.length - 1) setActive(Math.max(0, p.palette.length - 2));

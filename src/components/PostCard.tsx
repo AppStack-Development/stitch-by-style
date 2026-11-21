@@ -7,6 +7,7 @@ import { t } from '../lib/i18n';
 import { navigate } from '../App';
 import { Thumb } from './Thumb';
 import { Icon } from './Icon';
+import { askConfirm } from './ConfirmDialog';
 
 /** Decodes a post's pattern for previews; null until ready (or if the data is broken). */
 export function usePostPattern(post: Post | null): Pattern | null {
@@ -36,7 +37,13 @@ export function LikeButton({ post, liked, onChange, size = 'sm' }: {
   const [busy, setBusy] = useState(false);
   const toggle = async () => {
     if (cloud.status !== 'signed-in') {
-      if (confirm(t('กดหัวใจได้เมื่อเข้าสู่ระบบ ไปหน้าเข้าสู่ระบบไหม?', 'Sign in to like patterns. Go to the sign-in page?'))) navigate('#/account');
+      const go = await askConfirm({
+        title: t('เข้าสู่ระบบเพื่อกดหัวใจ', 'Sign in to like patterns'),
+        message: <p>{t('กดหัวใจเก็บลายที่ชอบได้เมื่อเข้าสู่ระบบ ไปหน้าเข้าสู่ระบบไหม?', 'You can like patterns once you’re signed in. Go to the sign-in page?')}</p>,
+        ok: t('ไปหน้าเข้าสู่ระบบ', 'Go to sign in'),
+        icon: 'heart',
+      });
+      if (go) navigate('#/account');
       return;
     }
     if (busy) return;

@@ -10,6 +10,8 @@ import { Guide } from './pages/Guide';
 import { QuickCreate } from './pages/QuickCreate';
 import { MyThreads } from './pages/MyThreads';
 import { Account } from './pages/Account';
+import { ConfirmHost } from './components/ConfirmDialog';
+import { openPattern } from './lib/drafts';
 import { Privacy } from './pages/Privacy';
 import { Community } from './pages/Community';
 import { CommunityPost } from './pages/CommunityPost';
@@ -43,7 +45,7 @@ function useHash() {
 
 export function App() {
   // the account merge question can come up on any page right after signing in
-  return <>{stuckOnOldDomain && <MovedNotice />}<Routes /><MergeDialog /><FeedbackDialog /></>;
+  return <>{stuckOnOldDomain && <MovedNotice />}<Routes /><MergeDialog /><FeedbackDialog /><ConfirmHost /></>;
 }
 
 /** Only on the old address when this browser has too much data to carry over in a link. */
@@ -76,7 +78,7 @@ function Routes() {
   if (route === 'edit' && arg) return <Editor key={arg} id={arg} />;
   if (route === 'stitch' && arg) return <StitchMode key={arg} id={arg} />;
   if (route === 'print' && arg) {
-    const p = loadPattern(arg);
+    const p = openPattern(arg); // a saved pattern, or one only being tried in this tab
     if (!p) return <div className="empty-state"><h2>{t('ไม่พบลายนี้', 'Pattern not found')}</h2><a className="btn primary" href="#/">{t('กลับหน้าแรก', 'Back to home')}</a></div>;
     return <PrintView key={arg} pattern={p} backHref={`#/edit/${arg}`} />;
   }

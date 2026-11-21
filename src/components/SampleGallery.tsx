@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react';
 import { SAMPLES, type Sample } from '../lib/samples';
 import { computeStats } from '../lib/stats';
 import { DIFFICULTY_LABEL } from '../lib/pattern';
-import { listPatterns, savePattern } from '../lib/storage';
+import { listPatterns } from '../lib/storage';
+import { findDraft, putDraft } from '../lib/drafts';
 import { t } from '../lib/i18n';
 import { Thumb } from './Thumb';
 import { Icon } from './Icon';
@@ -26,11 +27,9 @@ export function SampleGallery() {
       navigate(`#/${where}/${mine.id}`);
       return;
     }
-    const p = { ...s.make(), sampleId: s.id };
-    if (!savePattern(p)) {
-      alert(t('บันทึกไม่สำเร็จ พื้นที่ในเบราว์เซอร์อาจเต็ม', 'Could not save. Browser storage may be full.'));
-      return;
-    }
+    // otherwise try it as a draft: it only goes into My patterns once they stitch or edit (lib/drafts.ts)
+    const p = findDraft((x) => x.sampleId === s.id) ?? { ...s.make(), sampleId: s.id };
+    putDraft(p);
     navigate(`#/${where}/${p.id}`);
   };
 

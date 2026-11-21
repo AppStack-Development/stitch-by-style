@@ -268,14 +268,19 @@ export function localCopyOf(postId: string): Pattern | undefined {
   return listPatterns().find((p) => p.remixOf?.id === postId && !p.postId);
 }
 
-/** Save a post as a new local pattern that credits the original. */
-export async function takeCopy(post: Post): Promise<Pattern> {
+/** A post as a new local pattern that credits the original, not saved yet. */
+export async function buildCopy(post: Post): Promise<Pattern> {
   const p = await postPattern(post);
   const now = Date.now();
-  const copy: Pattern = {
+  return {
     ...p, id: uid(), createdAt: now, updatedAt: now, postId: undefined,
     remixOf: { id: post.id, title: post.title, author: post.author.name },
   };
+}
+
+/** Save a post as a new local pattern that credits the original ("Edit as my copy"). */
+export async function takeCopy(post: Post): Promise<Pattern> {
+  const copy = await buildCopy(post);
   if (!savePattern(copy)) throw new Error(t('บันทึกไม่สำเร็จ พื้นที่ในเบราว์เซอร์อาจเต็ม', 'Could not save. Browser storage may be full.'));
   return copy;
 }

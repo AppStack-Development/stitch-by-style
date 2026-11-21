@@ -1,6 +1,7 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { HoleBrush, Pattern, ThreadColor, Tool, ViewMode } from '../types';
-import { loadPattern, savePattern } from '../lib/storage';
+import { draftState, openPattern, persist, saveDraft, unkeep, type DraftState } from '../lib/drafts';
+import { ActionToast, DraftBar } from '../components/DraftBar';
 import { computeStats } from '../lib/stats';
 import { exportPng } from '../lib/render';
 import { buildPlate, toBinaryStl } from '../lib/plate';
@@ -49,7 +50,17 @@ const TOOLS: { id: Tool; icon: IconName; label: string; short: string; key: stri
 const VIEWS = [['stitch', t('ฝีเข็ม', 'Stitches')], ['color', t('สี', 'Color')], ['symbol', t('สัญลักษณ์', 'Symbol')]] as const;
 
 export function Editor({ id }: { id: string }) {
-  const [pattern, setPattern] = useState<Pattern | null>(() => loadPattern(id));
+  const [pattern, setPattern] = useState<Pattern | null>(() => openPattern(id));
+  /** only trying it (lib/drafts.ts): saved into My patterns on the first edit */
+  const [dstate, setDstate] = useState<DraftState>(() => draftState(id));
+  const [savedNote, setSavedNote] = useState(false);
+  const closeSavedNote = useCallback(() => setSavedNote(false), []);
+  /** store after an action; intent = the action shows they want this pattern */
+  const keep = (p: Pattern, intent: boolean) => {
+    const r = persist({ ...p, updatedAt: Date.now() }, intent);
+    if (r === 'saved-now') { setDstate('saved'); setSavedNote(true); }
+    return r;
+  };
   const [tool, setTool] = useState<Tool>('pencil');
   const [active, setActive] = useState(0);
   const [holeBrush, setHoleBrush] = useState<HoleBrush>('2');
@@ -93,8 +104,7 @@ export function Editor({ id }: { id: string }) {
     }
     setSaveState('saving');
     const t = setTimeout(() => {
-      const ok = savePattern({ ...pattern, updatedAt: Date.now() });
-      setSaveState(ok ? 'saved' : 'error');
+      setSaveState(keep(pattern, true) === 'error' ? 'error' : 'saved');
     }, 500);
     return () => clearTimeout(t);
   }, [pattern]);
@@ -233,7 +243,7 @@ export function Editor({ id }: { id: string }) {
 
   const doExport = async (kind: 'print' | 'png' | 'json' | 'stl' | 'share' | 'transfer') => {
     setMenu(false);
-    savePattern({ ...p, updatedAt: Date.now() });
+    keep(p, false); // printing or sharing a pattern you're only looking at doesn't save it
     const fname = safeFilename(p.name);
     if (kind === 'print') navigate(`#/print/${p.id}`);
     if (kind === 'transfer') setTransfer(true);
@@ -261,7 +271,7 @@ export function Editor({ id }: { id: string }) {
         <a className="icon-btn" href="#/" title={t('กลับหน้าแรก', 'Back to home')}><Icon name="back" /></a>
         <input className="name-input" value={p.name} onChange={(e) => setPattern({ ...p, name: e.target.value })} aria-label={t('ชื่อลาย', 'Pattern name')} />
         <span className={'save-state ' + saveState}>
-          {saveState === 'saved' ? t('บันทึกแล้ว', 'Saved') : saveState === 'saving' ? t('กำลังบันทึก…', 'Saving…') : t('บันทึกไม่สำเร็จ (พื้นที่เต็ม?)', 'Save failed (storage full?)')}
+          {dstate !== 'saved' ? t('ยังไม่บันทึก', 'Not saved') : saveState === 'saved' ? t('บันทึกแล้ว', 'Saved') : saveState === 'saving' ? t('กำลังบันทึก…', 'Saving…') : t('บันทึกไม่สำเร็จ (พื้นที่เต็ม?)', 'Save failed (storage full?)')}
         </span>
         <div className="spacer" />
         <button className="btn ghost sm img-btn" onClick={() => setImgImport({ file: null })} title={t('แปลงรูปภาพเป็นลายปัก (หรือลากรูปมาวาง / Ctrl+V)', 'Turn an image into a pattern (or drag one in / Ctrl+V)')}>
@@ -275,7 +285,7 @@ export function Editor({ id }: { id: string }) {
         <a className="icon-btn" href="#/guide/editor" title={t('คู่มือการใช้งาน', 'Guide')}><Icon name="help" /></a>
         <button className="icon-btn" onClick={doUndo} disabled={!undo.current.length} title={t('เลิกทำ (Ctrl/⌘+Z)', 'Undo (Ctrl/⌘+Z)')}><Icon name="undo" /></button>
         <button className="icon-btn" onClick={doRedo} disabled={!redo.current.length} title={t('ทำซ้ำ (Shift+Ctrl/⌘+Z)', 'Redo (Shift+Ctrl/⌘+Z)')}><Icon name="redo" /></button>
-        <a className="btn sm stitch-btn" href={`#/stitch/${p.id}`} onClick={() => savePattern({ ...p, updatedAt: Date.now() })}
+        <a className="btn sm stitch-btn" href={`#/stitch/${p.id}`} onClick={() => keep(p, false)}
           title={t('เปิดโหมดปัก: ติ๊กช่องที่ปักแล้ว ดูความคืบหน้าแต่ละสี', 'Open Stitch mode: tick off stitched cells and see progress per color')}>
           <Icon name="needle" size={16} /> <span>{t('โหมดปัก', 'Stitch mode')}{p.progress ? ` · ${Math.floor(computeProgress(p).pct)}%` : ''}</span>
         </a>
@@ -288,12 +298,12 @@ export function Editor({ id }: { id: string }) {
               <button onClick={() => doExport('transfer')}><Icon name="sendOut" /> <span><b>{t('ส่งไปมือถือ / อีกเครื่อง', 'Send to phone / another device')}</b><small>{t('สแกน QR เพื่อปักต่อในมือถือ (รวมความคืบหน้า)', 'Scan the QR to continue stitching on your phone (progress included)')}</small></span></button>
               <button onClick={() => doExport('share')}><Icon name="link" /> <span><b>{t('คัดลอกลิงก์แชร์', 'Copy share link')}</b><small>{t('เพื่อนเปิดดูและบันทึกต่อได้', 'Friends can open it and save a copy')}</small></span></button>
               {ordersEnabled && (p.details.baseType === 'print3d' || p.mode === 'template') && (
-                <button onClick={() => { setMenu(false); savePattern({ ...p, updatedAt: Date.now() }); setOrder(true); }}>
+                <button onClick={() => { setMenu(false); keep(p, true); setOrder(true); }}>
                   <Icon name="cube" /> <span><b>{t('สั่งผลิต', 'Order this piece')}</b><small>{t('ให้ทีมพิมพ์ชิ้นงานและจัดชุดด้ายส่งถึงบ้าน ดูราคาได้ทันที', 'We print the piece and pack the threads for you; see the price right away')}</small></span>
                 </button>
               )}
               {communityEnabled && (
-                <button onClick={() => { setMenu(false); savePattern({ ...p, updatedAt: Date.now() }); setPublish(true); }}>
+                <button onClick={() => { setMenu(false); keep(p, true); setPublish(true); }}>
                   <Icon name="people" /> <span><b>{p.postId ? t('อัปเดตในชุมชน', 'Update in the community') : t('แชร์ในชุมชน', 'Share with the community')}</b><small>{t('ให้ทุกคนเห็นและลองปักลายนี้ได้', 'Let everyone see and stitch this pattern')}</small></span>
                 </button>
               )}
@@ -305,6 +315,13 @@ export function Editor({ id }: { id: string }) {
           )}
         </div>
       </header>
+      {dstate !== 'saved' && <DraftBar state={dstate} kind="edit" onSave={() => {
+        const cur = current.current;
+        if (cur && saveDraft({ ...cur, updatedAt: Date.now() })) { setDstate('saved'); setSavedNote(true); }
+      }} />}
+      {savedNote && <ActionToast text={t('บันทึกไว้ในลายของฉันแล้ว', 'Saved to My patterns')} action={t('ไม่เก็บ', 'Don’t keep')}
+        onAction={() => { const cur = current.current; if (cur) unkeep({ ...cur, updatedAt: Date.now() }); setDstate('declined'); setSavedNote(false); }}
+        onClose={closeSavedNote} />}
 
       <div className="editor-main ed-main">
         {/* desktop/tablet: the full vertical rail. Phones (editor-mobile.css): a bottom bar with the

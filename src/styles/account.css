@@ -106,6 +106,22 @@
   .acct-dialog-foot .btn { width: 100%; }
 }
 
+/* ---------- the shared confirmation box (components/ConfirmDialog.tsx) ---------- */
+.confirm-back { z-index: 60; } /* above any dialog that asked */
+.modal.confirm-dialog { width: min(420px, 100%); }
+.confirm-body { display: flex; align-items: flex-start; gap: 14px; padding: 20px 18px 18px; } /* sides match .modal-foot */
+.confirm-icon {
+  flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+  background: #243b6b14; color: var(--brand);
+}
+.confirm-icon.danger { background: #b3261e14; color: var(--err); }
+/* the title's first line sits on the icon's centre line */
+.confirm-text { min-width: 0; display: flex; flex-direction: column; gap: 6px; padding-top: 8px; }
+.confirm-text h3 { font-size: 17px; line-height: 24px; overflow-wrap: anywhere; }
+.confirm-msg { color: var(--ink-2); font-size: 14.5px; line-height: 1.6; overflow-wrap: anywhere; }
+.confirm-msg p { margin: 0; }
+.confirm-msg p + p { margin-top: 6px; }
+
 /* ---------- privacy notice ---------- */
 .privacy-doc {
   max-width: 720px; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);

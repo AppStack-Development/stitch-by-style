@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { askConfirm } from '../components/ConfirmDialog';
 import type { Pattern, Progress, ViewMode } from '../types';
-import { loadPattern, savePattern } from '../lib/storage';
+import { draftState, openPattern, persist, saveDraft, unkeep, type DraftState } from '../lib/drafts';
+import { ActionToast, DraftBar } from '../components/DraftBar';
 import {
   cellsOfColor, computeProgress, emptyProgress, fmtClock, fmtDuration, getProgress, isStitch, markCells, todayKey,
 } from '../lib/progress';
@@ -22,6 +24,25 @@ const ones = (s: string) => {
   return n;
 };
 
+/** A short burst of crosses in the finished thread's colours (hidden when the device asks for less motion). */
+function CrossBurst({ colors, big }: { colors: string[]; big: boolean }) {
+  const n = big ? 26 : 14;
+  return (
+    <div className={'cross-burst' + (big ? ' big' : '')} aria-hidden="true">
+      {Array.from({ length: n }, (_, i) => {
+        const a = (i / n) * Math.PI * 2 + (i % 2 ? 0.22 : 0);
+        const d = (big ? 72 : 46) + ((i * 37) % 30);
+        return (
+          <i key={i} style={{
+            color: colors[i % colors.length],
+            '--dx': `${Math.round(Math.cos(a) * d)}px`, '--dy': `${Math.round(Math.sin(a) * d - 16)}px`, '--r': `${((i * 67) % 200) - 100}deg`,
+          } as CSSProperties}>✕</i>
+        );
+      })}
+    </div>
+  );
+}
+
 /** Live clock for the running timer, kept separate so the canvas doesn't re-render every second. */
 function Clock({ base, since }: { base: number; since: number | null }) {
   const [, tick] = useState(0);
@@ -34,8 +55,14 @@ function Clock({ base, since }: { base: number; since: number | null }) {
 }
 
 export function StitchMode({ id }: { id: string }) {
-  const [pattern] = useState<Pattern | null>(() => loadPattern(id));
+  const [pattern] = useState<Pattern | null>(() => openPattern(id));
   const [progress, setProgress] = useState<Progress>(() => (pattern ? getProgress(pattern) : emptyProgress(0)));
+  /** what the page opened with: only a change from this counts (and saves) */
+  const openedWith = useRef(progress);
+  /** only trying it (lib/drafts.ts): saved into My patterns on the first change */
+  const [dstate, setDstate] = useState<DraftState>(() => draftState(id));
+  const [savedNote, setSavedNote] = useState(false);
+  const closeSavedNote = useCallback(() => setSavedNote(false), []);
   const [focus, setFocus] = useState<number | null>(null);
   const [mode, setMode] = useState<MarkMode>('tap');
   const [view, setView] = useState<ViewMode>('both');
@@ -66,13 +93,32 @@ export function StitchMode({ id }: { id: string }) {
   const flush = useCallback(() => {
     if (!pattern || !dirty.current) return;
     dirty.current = false;
-    savePattern({ ...pattern, progress: progressRef.current, updatedAt: Date.now() });
+    // a change while trying a pattern is the sign they want it: it goes into My patterns now
+    if (persist({ ...pattern, progress: progressRef.current, updatedAt: Date.now() }, true) === 'saved-now') {
+      setDstate('saved');
+      setSavedNote(true);
+    }
   }, [pattern]);
+
+  const saveNow = () => {
+    if (!pattern) return;
+    dirty.current = false;
+    if (saveDraft({ ...pattern, progress: progressRef.current, updatedAt: Date.now() })) {
+      setDstate('saved');
+      setSavedNote(true);
+    }
+  };
+  const dontKeep = () => {
+    if (!pattern) return;
+    unkeep({ ...pattern, progress: progressRef.current, updatedAt: Date.now() });
+    setDstate('declined');
+    setSavedNote(false);
+  };
 
   // save shortly after each change, and on leave
   useEffect(() => {
     if (!pattern) return;
-    if (progress === pattern.progress) return;
+    if (progress === openedWith.current) return;
     dirty.current = true;
     const tm = setTimeout(flush, 400);
     return () => clearTimeout(tm);
@@ -178,6 +224,33 @@ export function StitchMode({ id }: { id: string }) {
 
   const stats = useMemo(() => (pattern ? computeProgress(pattern, progress) : null), [pattern, progress]);
 
+  // a little celebration when a colour (or the whole pattern) becomes finished; not on load, not on undo
+  const [cheer, setCheer] = useState<{ id: number; colors: string[]; big: boolean; text: string } | null>(null);
+  const prevDone = useRef<number[] | null>(null);
+  useEffect(() => {
+    if (!pattern || !stats) return;
+    const prev = prevDone.current;
+    prevDone.current = stats.perColor.map((c) => c.done);
+    if (!prev) return;
+    const finished = stats.perColor.filter((c, i) => c.total > 0 && c.done === c.total && (prev[i] ?? 0) < c.total);
+    if (!finished.length) return;
+    const all = stats.total > 0 && stats.done === stats.total;
+    const left = stats.perColor.filter((c) => c.total > 0 && c.done < c.total).length;
+    const thr = pattern.palette[finished[0].index];
+    const label = [thr.brand, thr.code].filter(Boolean).join(' ') || thr.name;
+    setCheer({
+      id: Date.now(),
+      big: all,
+      colors: (all ? stats.perColor.filter((c) => c.total > 0) : finished).map((c) => pattern.palette[c.index].hex),
+      text: all ? '' : t(`ปักครบ ${label} แล้ว${left ? ` · เหลืออีก ${left} สี` : ''}`, `${label} done${left ? ` · ${left} more to go` : ''}`),
+    });
+  }, [stats, pattern]);
+  useEffect(() => {
+    if (!cheer) return;
+    const tm = setTimeout(() => setCheer(null), 3200);
+    return () => clearTimeout(tm);
+  }, [cheer]);
+
   // measure the floating toolbar so the pattern is never hidden underneath it
   useEffect(() => {
     const el = toolsRef.current;
@@ -202,16 +275,25 @@ export function StitchMode({ id }: { id: string }) {
   const focusThread = focus != null ? p.palette[focus] : null;
   const complete = stats.total > 0 && stats.done === stats.total;
 
-  const markColor = (value: boolean) => {
+  const markColor = async (value: boolean) => {
     if (focus == null || !focusThread) return;
     const label = [focusThread.brand, focusThread.code].filter(Boolean).join(' ') || focusThread.name;
-    if (!confirm(value ? t(`ทำเครื่องหมายว่าปัก ${label} ครบทุกช่องแล้ว?`, `Mark every ${label} cell as stitched?`) : t(`ล้างเครื่องหมายของ ${label} ทั้งหมด?`, `Clear all marks for ${label}?`))) return;
+    if (!(await askConfirm(value
+      ? { title: t(`ปัก ${label} ครบแล้ว?`, `Done with ${label}?`), message: <p>{t(`ทุกช่องสี ${label} จะถูกทำเครื่องหมายว่าปักแล้ว`, `Every ${label} cell is marked as stitched.`)}</p>,
+          ok: t('ทำเครื่องหมายครบ', 'Mark all done'), icon: 'check' }
+      : { title: t(`ล้างเครื่องหมายของ ${label}?`, `Clear the marks for ${label}?`), message: <p>{t(`ทุกช่องสี ${label} จะกลับเป็นยังไม่ได้ปัก`, `Every ${label} cell goes back to not stitched.`)}</p>,
+          ok: t('ล้างเครื่องหมาย', 'Clear marks'), tone: 'danger', icon: 'undo' }))) return;
     onStrokeStart();
     onMark(cellsOfColor(p, focus), value);
   };
 
-  const resetAll = () => {
-    if (!confirm(t('ล้างความคืบหน้าทั้งหมดของลายนี้? (เวลาที่จับไว้และสถิติรายวันจะถูกล้างด้วย)', 'Clear all progress for this pattern? (Tracked time and daily stats will be cleared too.)'))) return;
+  const resetAll = async () => {
+    if (!(await askConfirm({
+      title: t('ล้างความคืบหน้าทั้งหมด?', 'Clear all progress?'),
+      message: <p>{t('เครื่องหมายทุกช่อง เวลาที่จับไว้ และสถิติรายวันของลายนี้จะถูกล้าง', 'Every mark, the tracked time and the daily stats for this pattern are cleared.')}</p>,
+      ok: t('ล้างความคืบหน้า', 'Clear progress'),
+      tone: 'danger',
+    }))) return;
     onStrokeStart();
     setTimerSince(null);
     setProgress(emptyProgress(p.cols * p.rows));
@@ -250,6 +332,9 @@ export function StitchMode({ id }: { id: string }) {
         </button>
       </header>
 
+      {dstate !== 'saved' && <DraftBar state={dstate} kind="stitch" onSave={saveNow} />}
+      {savedNote && <ActionToast text={t('บันทึกไว้ในลายของฉันแล้ว', 'Saved to My patterns')} action={t('ไม่เก็บ', 'Don’t keep')}
+        onAction={dontKeep} onClose={closeSavedNote} />}
       {transfer && <TransferDialog pattern={{ ...p, progress, updatedAt: Date.now() }} onClose={() => setTransfer(false)} />}
       <div className="editor-main stitch-main">
         <section className="stage">
@@ -287,7 +372,10 @@ export function StitchMode({ id }: { id: string }) {
             onMark={onMark}
           />
 
-          {complete ? (
+          {cheer && <CrossBurst key={cheer.id} colors={cheer.colors} big={cheer.big} />}
+          {!complete && cheer?.text ? (
+            <div className="stitch-banner done" role="status"><span>✓ {cheer.text}</span></div>
+          ) : complete ? (
             <div className="stitch-banner done">
               <span>🎉 {t('ปักครบทุกช่องแล้ว!', 'All stitched!')} {progress.seconds > 0 && t(`ใช้เวลา ${fmtDuration(progress.seconds)}`, `Time spent: ${fmtDuration(progress.seconds)}`)}</span>
             </div>

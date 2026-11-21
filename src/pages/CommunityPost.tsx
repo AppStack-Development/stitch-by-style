@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { getPost, localCopyOf, myLikes, postShareUrl, reportPost, takeCopy, tagLabel, communityEnabled, type Post, type ReportReason } from '../lib/community';
+import { findDraft, putDraft } from '../lib/drafts';
+import { buildCopy, getPost, localCopyOf, myLikes, postShareUrl, reportPost, takeCopy, tagLabel, communityEnabled, type Post, type ReportReason } from '../lib/community';
 import { useCloud } from '../lib/cloud';
 import { useStash } from '../lib/stash';
 import { computeStats } from '../lib/stats';
@@ -93,7 +94,9 @@ export function CommunityPost({ id }: { id: string }) {
   const stitch = async () => {
     setBusy('stitch');
     try {
-      const copy = existing ?? await takeCopy(post);
+      // "Stitch it" tries the pattern as a draft; it joins My patterns at the first stitch (lib/drafts.ts)
+      let copy = existing ?? findDraft((x) => x.remixOf?.id === post.id);
+      if (!copy) { copy = await buildCopy(post); putDraft(copy); }
       trackStep('/c/stitch');
       navigate(`#/stitch/${copy.id}`);
     } catch (e) {
