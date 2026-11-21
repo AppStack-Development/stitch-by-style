@@ -56,10 +56,15 @@ export interface Cell { x: number; y: number; d: number; dx: number; dy: number;
 export function onTemplate(o: { name: string; description: string; tags: string[]; difficulty: PatternDetails['difficulty']; template: string; w: number; h: number; legend: Legend; paint: (c: Cell, maxD: number) => string }): Pattern {
   const tpl = TEMPLATES.find((x) => x.id === o.template)!;
   const b = tpl.build(o.w, o.h);
-  const pitch = 3;
+  // a fixed model (Stitch Box lid) brings its own pitch, thickness and hole size
+  const m = tpl.model;
+  const pitch = m ? m.pitchMm : 3;
   const p = createPattern({
     name: o.name, mode: 'template', templateId: tpl.id, templateName: tpl.name, cols: b.cols, rows: b.rows, mask: b.mask, pitchMm: pitch,
-    details: { baseType: 'print3d', strands: 4, needleSize: '#22', author: AUTHOR, description: o.description, tags: o.tags, difficulty: o.difficulty },
+    details: {
+      baseType: 'print3d', strands: 4, needleSize: '#22', author: AUTHOR, description: o.description, tags: o.tags, difficulty: o.difficulty,
+      ...(m ? { thicknessMm: m.thicknessMm, holeRatio: m.holeRatio } : {}),
+    },
   });
   const { pal, index } = palette(o.legend);
   p.palette = pal;

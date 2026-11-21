@@ -215,13 +215,19 @@ function TemplatePicker() {
       mode: 'template',
       templateId: sel === 'stl' ? 'stl' : sel.id,
       templateName: tname,
-      cols: built.cols, rows: built.rows, mask: built.mask, pitchMm: pitch,
-      details: { baseType: 'print3d', holeRatio, thicknessMm: thick, needleSize: suggestNeedle(pitch).size, strands: suggestNeedle(pitch).strand },
+      cols: built.cols, rows: built.rows, mask: built.mask, pitchMm: model ? model.pitchMm : pitch,
+      details: {
+        baseType: 'print3d', holeRatio: model ? model.holeRatio : holeRatio, thicknessMm: model ? model.thicknessMm : thick,
+        needleSize: suggestNeedle(model ? model.pitchMm : pitch).size, strands: suggestNeedle(model ? model.pitchMm : pitch).strand,
+      },
     });
     savePattern(p);
     navigate(`#/edit/${p.id}`);
   };
 
+  // a fixed model (Stitch Box lid) brings its own pitch, thickness and hole size
+  const model = sel !== 'stl' ? sel.model : undefined;
+  const ePitch = model ? model.pitchMm : pitch;
   const holes = built ? built.mask.split('').filter((c) => c === '2').length : 0;
 
   return (
@@ -285,6 +291,10 @@ function TemplatePicker() {
         ) : (
           <>
             <h3>{sel.name}</h3>
+            {sel.model ? (
+              <p className="hint">{t(`โมเดลกล่องจริง ขนาดคงที่ · ระยะห่างรู ${sel.model.pitchMm} มม. ปักลายบนฝากล่อง สั่งผลิตได้จากหน้าออกแบบ`,
+                `A real box model with a fixed size · ${sel.model.pitchMm} mm hole pitch. Stitch on the lid; order it from the editor.`)}</p>
+            ) : (<>
             <label><FieldHead label={t(<>ความกว้าง: {w} ช่อง</>, <>Width: {w} cells</>)}>
               <DefaultTag value={w} def={sel.w} reason={t('ขนาดมาตรฐานของแม่แบบนี้', 'this template’s standard size')} onReset={resetWidth} />
             </FieldHead>
@@ -301,12 +311,13 @@ function TemplatePicker() {
               <label><FieldHead label={t('ระยะห่างรู (มม.)', 'Hole pitch (mm)')}><DefaultTag value={pitch} def={TPL_DEF.pitch} onReset={() => setPitch(TPL_DEF.pitch)} /></FieldHead><input type="number" step={0.1} min={1} max={8} value={pitch} onChange={(e) => setPitch(within(+e.target.value, 1, 8, 3))} /></label>
               <label><FieldHead label={t('ความหนา (มม.)', 'Thickness (mm)')}><DefaultTag value={thick} def={TPL_DEF.thick} onReset={() => setThick(TPL_DEF.thick)} /></FieldHead><input type="number" step={0.2} min={0.6} max={8} value={thick} onChange={(e) => setThick(within(+e.target.value, 0.6, 8, 2))} /></label>
             </div>
+            </>)}
           </>
         )}
         <label>{t('ชื่อลาย', 'Pattern name')}<input value={name} onChange={(e) => setName(e.target.value)} placeholder={t('ตั้งชื่อภายหลังได้', 'You can name it later')} /></label>
         {built && (
           <p className="hint">
-            {t(<>ขนาด ≈ {(built.cols * pitch).toFixed(1)} × {(built.rows * pitch).toFixed(1)} มม. · {holes} ช่องปัก</>, <>Size ≈ {(built.cols * pitch).toFixed(1)} × {(built.rows * pitch).toFixed(1)} mm · {holes} stitch cells</>)} · {needleHint(pitch)}
+            {t(<>ขนาด ≈ {(built.cols * ePitch).toFixed(1)} × {(built.rows * ePitch).toFixed(1)} มม. · {holes} ช่องปัก</>, <>Size ≈ {(built.cols * ePitch).toFixed(1)} × {(built.rows * ePitch).toFixed(1)} mm · {holes} stitch cells</>)} · {needleHint(ePitch)}
           </p>
         )}
         <button className="btn primary lg" disabled={!built} onClick={create}>{t('เริ่มออกแบบบนแม่แบบนี้', 'Use this template')} <Icon name="check" size={16} /></button>

@@ -1,4 +1,5 @@
 import type { CellKind } from '../types';
+import { BOX_LIDS } from './boxLids';
 import { t } from './i18n';
 
 export interface TemplateResult {
@@ -18,6 +19,11 @@ export interface TemplateDef {
   max: number;
   lockAspect: boolean;
   build: (w: number, h: number) => TemplateResult;
+  /**
+   * A real printed model with a fixed shape and size (a Stitch Box lid): no size, pitch or thickness to pick,
+   * and no STL download (the team prints from the original files when it's ordered).
+   */
+  model?: { kind: 'box-lid'; pitchMm: number; thicknessMm: number; holeRatio: number };
 }
 
 type Inside = (u: number, v: number) => boolean;
@@ -170,6 +176,7 @@ const tabFor = (w: number) => {
 
 /** Template names in both languages. A pattern stores the name in the language it was made in. */
 const TEMPLATE_NAMES: [string, string][] = [
+  ...BOX_LIDS.map((b) => [b.th, b.en] as [string, string]),
   ['ที่คั่นหนังสือ', 'Bookmark'],
   ['ที่รองแก้วกลม', 'Round coaster'],
   ['ที่รองแก้วสี่เหลี่ยม', 'Square coaster'],
@@ -190,7 +197,21 @@ export function templateLabel(name: string | null | undefined): string | undefin
   return pair ? t(pair[0], pair[1]) : name;
 }
 
+/** Stitch Box lids (lib/boxLids.ts): fixed models, listed first. */
+const BOX_TEMPLATES: TemplateDef[] = BOX_LIDS.map((b) => ({
+  id: b.id,
+  name: t(b.th, b.en),
+  description: t(b.descTh, b.descEn),
+  w: b.cols, h: b.rows, min: b.cols, max: b.cols, lockAspect: true,
+  build: () => ({ cols: b.cols, rows: b.rows, mask: b.mask }),
+  model: { kind: 'box-lid', pitchMm: b.pitchMm, thicknessMm: b.thicknessMm, holeRatio: b.holeRatio },
+}));
+
+/** A built-in fixed model (a Stitch Box lid) by template id, if it is one. */
+export const modelOf = (templateId: string | undefined) => BOX_TEMPLATES.find((x) => x.id === templateId)?.model;
+
 export const TEMPLATES: TemplateDef[] = [
+  ...BOX_TEMPLATES,
   {
     id: 'bookmark',
     name: t('ที่คั่นหนังสือ', 'Bookmark'),

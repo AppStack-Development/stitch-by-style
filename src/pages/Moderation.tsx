@@ -3,7 +3,7 @@ import type { Post } from '../lib/community';
 import { amModerator, decide, recentlyHandled, reviewQueue, DECISION_LABEL, REASON_LABEL, type Decision, type ReviewItem } from '../lib/moderation';
 import { useCloud } from '../lib/cloud';
 import { t, locale } from '../lib/i18n';
-import { templateLabel } from '../lib/templates';
+import { modelOf, templateLabel } from '../lib/templates';
 import { Thumb } from '../components/Thumb';
 import { Icon } from '../components/Icon';
 import { LangSwitch } from '../components/LangSwitch';
@@ -437,7 +437,9 @@ function OrderCard({ order }: { order: Order }) {
         <div className="review-actions">
           <button className="btn sm" onClick={() => run(async () => { await saveTeamNote(o.id, note); setSavedNote(note); })} disabled={busy || note === savedNote}>{t('บันทึกโน้ต', 'Save note')}</button>
           <a className="btn sm" href={`#/s/${o.data}`}><Icon name="edit" size={15} /> {t('เปิดลาย', 'Open pattern')}</a>
-          <button className="btn sm" onClick={stl} disabled={!p}><Icon name="cube" size={15} /> {t('ดาวน์โหลด STL', 'Download STL')}</button>
+          {p && modelOf(p.templateId)
+            ? <span className="hint">{t('กล่องปักลาย: พิมพ์จากไฟล์ต้นฉบับของทีม', 'Stitch box: print from the team’s original files')}</span>
+            : <button className="btn sm" onClick={stl} disabled={!p}><Icon name="cube" size={15} /> {t('ดาวน์โหลด STL', 'Download STL')}</button>}
         </div>
         {err && <p className="error small">{err}</p>}
         <details className="order-team-thread" open={threadOpen} onToggle={(e) => setThreadOpen(e.currentTarget.open)}>

@@ -1,5 +1,6 @@
 import type { Pattern } from '../types';
 import { fabric, onTemplate, type Legend } from '../lib/samples';
+import { BOX_CHRISTMAS } from './boxChristmas';
 
 /**
  * Patterns the XStitch.Design team shares in the community gallery (not seasonal, unlike lib/samples.ts).
@@ -380,6 +381,8 @@ const MONSTERS: TeamPattern[] = [
   },
 ];
 TEAM_PATTERNS.push(...MONSTERS);
+// Christmas designs for the Stitch Box lids go first, so they publish last and show as the newest
+TEAM_PATTERNS.unshift(...BOX_CHRISTMAS);
 
 /** Share every team pattern the team account hasn't shared yet. Returns what happened per title. */
 export async function publishTeamPatterns(opts: { dryRun?: boolean } = {}) {

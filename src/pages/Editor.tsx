@@ -4,6 +4,7 @@ import { loadPattern, savePattern } from '../lib/storage';
 import { computeStats } from '../lib/stats';
 import { exportPng } from '../lib/render';
 import { buildPlate, toBinaryStl } from '../lib/plate';
+import { modelOf } from '../lib/templates';
 import { downloadBlob, safeFilename, shareUrl } from '../lib/share';
 import { contrastText } from '../lib/threads';
 import { PatternCanvas, type CanvasHandle } from '../components/PatternCanvas';
@@ -297,7 +298,9 @@ export function Editor({ id }: { id: string }) {
                 </button>
               )}
               <button onClick={() => doExport('json')}><Icon name="file" /> <span><b>{t('ไฟล์ลาย (.json)', 'Pattern file (.json)')}</b><small>{t('สำรองข้อมูล / นำเข้าเครื่องอื่น', 'Backup / import on another device')}</small></span></button>
-              <button onClick={() => doExport('stl')}><Icon name="cube" /> <span><b>{t('โมเดล 3D (.stl)', '3D model (.stl)')}</b><small>{t('แผ่นเจาะรูตามรูปทรงนี้ สำหรับพิมพ์', 'A plate with holes in this shape, ready to 3D print')}</small></span></button>
+              {!modelOf(p.templateId) && (
+                <button onClick={() => doExport('stl')}><Icon name="cube" /> <span><b>{t('โมเดล 3D (.stl)', '3D model (.stl)')}</b><small>{t('แผ่นเจาะรูตามรูปทรงนี้ สำหรับพิมพ์', 'A plate with holes in this shape, ready to 3D print')}</small></span></button>
+              )}
             </div>
           )}
         </div>

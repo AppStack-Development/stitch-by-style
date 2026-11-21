@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Pattern } from '../types';
-import { TEMPLATES, freeMask, type TemplateDef } from '../lib/templates';
+import { TEMPLATES, freeMask, modelOf, type TemplateDef } from '../lib/templates';
 import { createPattern } from '../lib/pattern';
 import { DEFAULT_IMPORT, convertImage, loadSourceImage, type SourceImage } from '../lib/imageImport';
 import { savePattern } from '../lib/storage';
@@ -62,10 +62,13 @@ function basePattern(target: Target, src: SourceImage, name: string): Pattern {
   }
   if (target.kind === 'template') {
     const b = target.tpl.build(target.tpl.w, target.tpl.h);
-    const sug = suggestNeedle(3);
+    // a fixed model (Stitch Box lid) brings its own pitch, thickness and hole size
+    const m = target.tpl.model;
+    const pitch = m ? m.pitchMm : 3;
+    const sug = suggestNeedle(pitch);
     return createPattern({
-      name, mode: 'template', templateId: target.tpl.id, templateName: target.tpl.name, cols: b.cols, rows: b.rows, mask: b.mask, pitchMm: 3,
-      details: { baseType: 'print3d', needleSize: sug.size, strands: sug.strand },
+      name, mode: 'template', templateId: target.tpl.id, templateName: target.tpl.name, cols: b.cols, rows: b.rows, mask: b.mask, pitchMm: pitch,
+      details: { baseType: 'print3d', needleSize: sug.size, strands: sug.strand, ...(m ? { thicknessMm: m.thicknessMm, holeRatio: m.holeRatio } : {}) },
     });
   }
   const sug = suggestNeedle(target.pitchMm);
@@ -393,7 +396,7 @@ export function QuickCreate() {
               <div className="qc-actions">
                 <a className="btn primary" href={`#/stitch/${saved.id}`}><Icon name="needle" size={16} /> {t('เริ่มปัก', 'Start stitching')}</a>
                 <a className="btn" href={`#/print/${saved.id}`}><Icon name="print" size={16} /> {t('พิมพ์แผนผัง', 'Print chart')}</a>
-                {is3d && (
+                {is3d && !modelOf(saved.templateId) && (
                   <button className="btn" onClick={() => downloadBlob(toBinaryStl(buildPlate(saved, saved.details.thicknessMm, saved.details.holeRatio), saved.name), `${saved.name || 'pattern'}.stl`)}>
                     <Icon name="cube" size={16} /> {t('ดาวน์โหลด STL ไปพิมพ์', 'Download STL to print')}
                   </button>
