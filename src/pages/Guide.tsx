@@ -154,7 +154,7 @@ function useSections(): Section[] {
             <li>Filter by fabric / 3D prints and by category, such as animals or holidays, or sort by “Most liked”.</li>
             <li><b>Stitch it</b> saves a copy on this device and opens Stitch mode right away; next time the button says “Continue stitching”.</li>
             <li><b>Edit as my copy</b> opens a copy in the editor to change colors or add a name. The original stays as it is.</li>
-            <li>For 3D pieces, tap <b>Download STL</b> right on the pattern page.</li>
+            <li>For 3D pieces, tap <b>Download STL</b> right on the pattern page, except designs on the team’s Stitch Box lids, which can only be <b>ordered</b>.</li>
             <li>Tap the <b>heart</b> on patterns you like (needs an account).</li>
           </ul>
           <p><b>Share your own</b>: in the editor, open “Export / share” → <b>“Share with the community”</b> (needs you to <a className="guide-link" href="#/account">sign in</a>). Choose a display name (a nickname is fine), a title, a description and categories, and confirm you designed it or have permission. If you change the pattern later, use the same menu and tap “Update”; its likes stay. Take a pattern down any time from your Account page (“Patterns I’ve shared”).</p>
@@ -196,6 +196,7 @@ function useSections(): Section[] {
             <Thumb pattern={heart} max={120} view="stitch" />
             <p>ตัวอย่างแม่แบบพวงกุญแจหัวใจ: 1 ช่อง = 1 ฝีกากบาท ปักทับพลาสติกตรงกลางช่อง โดยเข็มลอดรูเล็กสีเข้มที่มุมทั้ง 4 ของช่อง ส่วนขอบสีเข้มกว่าคือโครงที่ไม่ได้ปัก</p>
           </div>
+          <p><b>กล่องปักลาย 7 แบบ</b> (อยู่บนสุด): ฝากล่องกลม หัวใจ ดาว สี่เหลี่ยม รูปไข่ วงรี และสามเหลี่ยม เป็นโมเดลจริงของทีม ขนาดคงที่ ระยะห่างรู 2.5 มม. ออกแบบลายแล้วกด <b>สั่งผลิต</b> ได้ (ไม่มีไฟล์ STL ให้ดาวน์โหลด)</p>
           <p><b>แม่แบบสำเร็จรูป 8 แบบ:</b> ที่คั่นหนังสือ ที่รองแก้วกลม/สี่เหลี่ยม พวงกุญแจหัวใจ/กลม ดาวแขวน เข็มกลัดหกเหลี่ยม และการ์ด เลือกแล้วปรับขนาด (จำนวนช่อง) ระยะห่างรู และความหนาได้</p>
           <p><b>นำเข้าโมเดลของคุณ:</b> กดการ์ด “นำเข้าไฟล์ STL / 3MF” แล้วเลือกไฟล์ ระบบจะหารูที่เรียงเป็นตารางและแปลงเป็นช่องสำหรับเติมสีอัตโนมัติ</p>
           <ul>
@@ -210,6 +211,7 @@ function useSections(): Section[] {
             <Thumb pattern={heart} max={120} view="stitch" />
             <p>The heart keychain template: one cell is one cross stitch. It lies on the plastic in the middle of the cell, and the needle goes through the small dark holes at the cell’s four corners. The darker edge is the frame, which isn’t stitched.</p>
           </div>
+          <p><b>7 Stitch Box lids</b> (at the top): round, heart, star, square, egg, oval and triangle. They’re the team’s real box models with a fixed size and a 2.5 mm hole pitch. Design on one and <b>order</b> it (there’s no STL to download).</p>
           <p><b>8 ready-made templates:</b> bookmark, round/square coaster, heart/round keychain, hanging star, hexagon pin and card. Pick one, then adjust its size (number of cells), hole pitch and thickness.</p>
           <p><b>Import your own model:</b> tap the “Import STL / 3MF file” card and choose a file. The app finds holes laid out in a grid and turns them into cells you can color.</p>
           <ul>
@@ -218,6 +220,45 @@ function useSections(): Section[] {
             <li>The app measures the hole pitch, hole size and plate thickness. If the grid doesn’t line up, type the hole pitch (mm) and press “Re-analyze”.</li>
           </ul>
           <Note>The piece should be a flat plate with holes in a square grid. If a single STL file has several parts merged together, you can’t pick a part the way you can with a 3MF file.</Note>
+        </>,
+      ),
+    },
+    {
+      id: 'print3d-tools', title: t('ด้ายและเข็มสำหรับชิ้นงาน 3D', 'Thread and needles for 3D pieces'), icon: 'needle',
+      body: t(
+        <>
+          <p>เลือกเข็มและจำนวนเส้นด้ายจาก<b>ระยะห่างรู</b>ของชิ้นงาน (ดูได้ในแท็บ “รายละเอียด”) ใช้เข็ม <b>Tapestry (ปลายมน)</b> เสมอ เพราะไม่ขูดขอบรูพลาสติกและไม่เกี่ยวด้ายที่ปักไว้แล้ว</p>
+          <ul>
+            <li>ระยะรู 3.2 มม. ขึ้นไป: เข็มเบอร์ 18–20 ด้าย 6 เส้น</li>
+            <li>ระยะรู 2.4–3.2 มม.: เข็มเบอร์ 22 ด้าย 4–6 เส้น</li>
+            <li>ระยะรู 1.75–2.4 มม.: เข็มเบอร์ 24 ด้าย 2–3 เส้น</li>
+            <li>ระยะรูเล็กกว่านั้น: เข็มเบอร์ 26–28 ด้าย 1–2 เส้น</li>
+          </ul>
+          <p><b>กล่องปักลาย (ระยะรู 2.5 มม. รูกว้างราว 1.2 มม.):</b> เข็ม Tapestry เบอร์ 22 ด้าย DMC Mouliné (ด้าย 6 เส้นแบบแยกได้) <b>3–4 เส้น</b> รูหนึ่งรูมีด้ายผ่านได้ถึงราว 8 ครั้ง ด้าย 6 เส้นจะแน่นเกินรูถ้าลายปักเต็มทุกช่อง ใช้ 6 เส้นได้เฉพาะลายที่ปักแค่บางส่วน ถ้ารูแน่นให้ลองเข็มเบอร์ 24 หรือใช้ด้าย Perle (Pearl cotton) เบอร์ 8 ซึ่งเป็นเส้นเดียว เงากว่า หนาพอๆ กับด้ายแยก 2–3 เส้น</p>
+          <ul>
+            <li><b>ไม่ผูกปม</b> ปมด้ายเล็กกว่ารูจึงหลุดลอดได้ ให้สอดปลายด้ายใต้ฝีเข็มด้านหลัง หรือแต้มกาวเล็กน้อย</li>
+            <li><b>ตัดด้ายเส้นละ 40–50 ซม.</b> ด้ายถูกับขอบพลาสติกบ่อย ถ้ายาวเกินจะเป็นขุยเร็ว</li>
+            <li><b>เคลียร์รูก่อนปัก</b> ถ้ามีเส้นพลาสติกเหลือหรือขอบล่างบาน ใช้เข็มหมุดหรือดอกสว่าน 1.2 มม. แยงทีละรู</li>
+            <li><b>เก็บด้านหลังให้แบน</b> ด้านหลังของฝาอยู่ในกล่อง ไม่ต้องเรียบมาก แต่ควรแบนพอให้ฝาปิดสนิท</li>
+          </ul>
+          <Note>ก่อนปักชิ้นจริง ลองพิมพ์หนึ่งชิ้นแล้วปักมุมเล็กๆ เทียบด้าย 3, 4 และ 6 เส้น เพราะขนาดรูที่ได้ขึ้นกับเครื่องพิมพ์และเส้นพลาสติก หาซื้อได้ตามร้านอุปกรณ์งานฝีมือ หรือค้นใน Shopee / Lazada ด้วยคำว่า “เข็ม tapestry 22” “ด้าย DMC” หรือ “ด้าย perle 8”</Note>
+        </>,
+        <>
+          <p>Choose the needle and number of strands from the piece’s <b>hole pitch</b> (shown in the “Details” tab). Always use a <b>tapestry (blunt) needle</b>: it won’t scrape the plastic holes or catch stitches you’ve already made.</p>
+          <ul>
+            <li>Pitch 3.2 mm or more: needle size 18–20, 6 strands</li>
+            <li>Pitch 2.4–3.2 mm: needle size 22, 4–6 strands</li>
+            <li>Pitch 1.75–2.4 mm: needle size 24, 2–3 strands</li>
+            <li>Smaller pitch: needle size 26–28, 1–2 strands</li>
+          </ul>
+          <p><b>Stitch Box lids (2.5 mm pitch, holes about 1.2 mm wide):</b> a size 22 tapestry needle and DMC Mouliné stranded cotton, <b>3–4 strands</b>. A hole can take the thread up to about 8 times, so 6 strands are too tight for a fully stitched design; keep 6 for designs that only cover part of the lid. If the holes feel tight, try a size 24 needle, or Perle (pearl) cotton no. 8: a single shiny thread about as thick as 2–3 strands.</p>
+          <ul>
+            <li><b>No knots.</b> A knot is smaller than the hole and can slip through. Weave the tail under stitches on the back, or add a dot of glue.</li>
+            <li><b>Cut 40–50 cm lengths.</b> The thread rubs on the plastic a lot, and longer lengths fray.</li>
+            <li><b>Clear the holes first.</b> If there are strings or a flared bottom edge, run a pin or a 1.2 mm drill bit through each hole.</li>
+            <li><b>Keep the back flat.</b> The back of a lid sits inside the box, so it needn’t be neat, but it should lie flat for the lid to close.</li>
+          </ul>
+          <Note>Before the real piece, print one and stitch a small corner with 3, 4 and 6 strands: the hole size depends on the printer and filament. Find supplies at craft shops, or search Shopee / Lazada for “tapestry needle 22”, “DMC thread” or “perle 8”.</Note>
         </>,
       ),
     },
