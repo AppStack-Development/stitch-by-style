@@ -1,30 +1,51 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Home } from './pages/Home';
-import { NewPattern } from './pages/NewPattern';
-import { Editor } from './pages/Editor';
-import { PrintView } from './pages/PrintView';
-import { SharedView } from './pages/SharedView';
-import { StitchMode } from './pages/StitchMode';
-import { TransferView } from './pages/TransferView';
-import { Guide } from './pages/Guide';
-import { QuickCreate } from './pages/QuickCreate';
-import { MyThreads } from './pages/MyThreads';
-import { Account } from './pages/Account';
 import { ConfirmHost } from './components/ConfirmDialog';
 import { openPattern } from './lib/drafts';
-import { Privacy } from './pages/Privacy';
-import { Community } from './pages/Community';
-import { CommunityPost } from './pages/CommunityPost';
-import { Terms } from './pages/Terms';
-import { Moderation } from './pages/Moderation';
-import { OrderPage } from './pages/OrderPage';
-import { OrderTerms } from './pages/OrderTerms';
 import { MergeDialog } from './components/MergeDialog';
 import { FeedbackDialog } from './components/FeedbackDialog';
 import { loadPattern } from './lib/storage';
 import { NEW_ORIGIN, stuckOnOldDomain } from './lib/domainMove';
 import { t } from './lib/i18n';
 import { SITE_HOST } from './lib/brand';
+
+// Only the home page is in the first download; every other page loads when it's opened (and the service
+// worker still caches them all for offline use). The ones people go to next are fetched once the home page
+// is idle, so opening them stays instant.
+const NewPattern = lazy(() => import('./pages/NewPattern').then((m) => ({ default: m.NewPattern })));
+const Editor = lazy(() => import('./pages/Editor').then((m) => ({ default: m.Editor })));
+const PrintView = lazy(() => import('./pages/PrintView').then((m) => ({ default: m.PrintView })));
+const SharedView = lazy(() => import('./pages/SharedView').then((m) => ({ default: m.SharedView })));
+const StitchMode = lazy(() => import('./pages/StitchMode').then((m) => ({ default: m.StitchMode })));
+const TransferView = lazy(() => import('./pages/TransferView').then((m) => ({ default: m.TransferView })));
+const Guide = lazy(() => import('./pages/Guide').then((m) => ({ default: m.Guide })));
+const QuickCreate = lazy(() => import('./pages/QuickCreate').then((m) => ({ default: m.QuickCreate })));
+const MyThreads = lazy(() => import('./pages/MyThreads').then((m) => ({ default: m.MyThreads })));
+const Account = lazy(() => import('./pages/Account').then((m) => ({ default: m.Account })));
+const Privacy = lazy(() => import('./pages/Privacy').then((m) => ({ default: m.Privacy })));
+const Community = lazy(() => import('./pages/Community').then((m) => ({ default: m.Community })));
+const CommunityPost = lazy(() => import('./pages/CommunityPost').then((m) => ({ default: m.CommunityPost })));
+const Terms = lazy(() => import('./pages/Terms').then((m) => ({ default: m.Terms })));
+const Moderation = lazy(() => import('./pages/Moderation').then((m) => ({ default: m.Moderation })));
+const OrderPage = lazy(() => import('./pages/OrderPage').then((m) => ({ default: m.OrderPage })));
+const OrderTerms = lazy(() => import('./pages/OrderTerms').then((m) => ({ default: m.OrderTerms })));
+
+const LIKELY_NEXT = [() => import('./pages/Editor'), () => import('./pages/StitchMode'), () => import('./pages/QuickCreate')];
+function prefetchLikelyPages() {
+  const go = () => LIKELY_NEXT.forEach((load) => load().catch(() => { /* fetched on demand instead */ }));
+  const idle = (window as Window & { requestIdleCallback?: (cb: () => void) => void }).requestIdleCallback;
+  if (idle) idle(go); else setTimeout(go, 1500);
+}
+
+/** Shown only if a page takes more than a moment to arrive, so fast loads don't flash anything. */
+function PageLoading() {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    const tm = setTimeout(() => setShow(true), 250);
+    return () => clearTimeout(tm);
+  }, []);
+  return <div className="empty-state" aria-busy="true">{show && <p className="muted">{t('กำลังโหลด…', 'Loading…')}</p>}</div>;
+}
 
 export function navigate(hash: string) {
   location.hash = hash;
@@ -44,8 +65,18 @@ function useHash() {
 }
 
 export function App() {
+  useEffect(() => {
+    if (document.readyState === 'complete') prefetchLikelyPages();
+    else window.addEventListener('load', prefetchLikelyPages, { once: true });
+  }, []);
   // the account merge question can come up on any page right after signing in
-  return <>{stuckOnOldDomain && <MovedNotice />}<Routes /><MergeDialog /><FeedbackDialog /><ConfirmHost /></>;
+  return (
+    <>
+      {stuckOnOldDomain && <MovedNotice />}
+      <Suspense fallback={<PageLoading />}><Routes /></Suspense>
+      <MergeDialog /><FeedbackDialog /><ConfirmHost />
+    </>
+  );
 }
 
 /** Only on the old address when this browser has too much data to carry over in a link. */
